@@ -213,7 +213,8 @@ th.num{text-align:right}
 .pbtns button:hover{transform:translateY(-1px)}
 .pbtns button.on{color:#fff;border-color:var(--acc);background:color-mix(in srgb,var(--acc) 24%,transparent)}
 .tools label{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:6px;cursor:pointer}
-.twrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--card);max-height:70vh;box-shadow:0 10px 34px rgba(0,0,0,.3)}
+.twrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--card);max-height:70vh;box-shadow:0 10px 34px rgba(0,0,0,.3);max-width:100%}
+.grid>*{min-width:0}
 .twrap thead th{position:sticky;top:0;background:var(--card2);cursor:pointer;user-select:none;z-index:2}
 .twrap thead th:hover{color:var(--txt)}
 .pos{display:inline-block;min-width:35px;text-align:center;padding:2.5px 6px;border-radius:7px;font-weight:800;font-size:10.5px;color:#0b0e1a}
@@ -385,15 +386,21 @@ tr.avoided td:nth-child(3){text-decoration:line-through;text-decoration-color:va
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font-size:11px;position:relative;z-index:1}
 @media(max-width:860px){
-  .hero{grid-template-columns:1fr;text-align:center}.hero img{max-width:130px}.hero h1{font-size:24px}
+  .hero{grid-template-columns:1fr;text-align:center}.hero img{max-width:110px}.hero h1{font-size:22px}
   .home3,.hist{grid-template-columns:1fr}.count{display:none}.pcGrid{grid-template-columns:repeat(3,1fr)}
-  main{padding:8px 8px 30px}.hwrap{padding:6px 8px;gap:8px}.brand b{font-size:14px}.brand span{font-size:8.5px;letter-spacing:1.6px}
-  nav{overflow-x:auto;flex-wrap:nowrap;padding:0 8px 6px;scrollbar-width:none}nav::-webkit-scrollbar{display:none}
+  main{padding:8px 8px 30px}.hwrap{padding:6px 8px;gap:8px}.brand b{font-size:13.5px}.brand span{font-size:8.5px;letter-spacing:1.4px}
+  .hright a.mychip{display:none}
+  nav{overflow-x:auto;flex-wrap:nowrap;padding:0 30px 6px 8px;scrollbar-width:none;
+    -webkit-mask:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent);
+    mask:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent)}
+  nav::-webkit-scrollbar{display:none}
   nav button{flex:none;padding:5px 11px;font-size:12px}
   .statrow{grid-template-columns:repeat(2,1fr)}.stakes{grid-template-columns:1fr}
-  .clubwrap{grid-template-columns:1fr}#club{height:420px}.chatlog{height:200px}
+  .card{overflow-x:auto}
+  .clubwrap{grid-template-columns:1fr}#club{min-width:620px;height:400px}.chatlog{height:220px!important}
   .tcases{grid-template-columns:repeat(2,1fr)}.rafter{width:100px;padding:9px 6px 16px}.rafter .yr{font-size:15px}.rafter .tm{font-size:9.5px}
   #rostboards{grid-template-columns:repeat(2,1fr)}
+  #rostboards .board .bh{flex-wrap:wrap;row-gap:2px}
   .dossiers{grid-template-columns:1fr}
   #v-myboard .grid,#w-deep .grid,#w-lab .grid,#mcwrap{grid-template-columns:1fr!important}
   #v-myboard div[style*="sticky"]{position:static!important}
@@ -403,8 +410,24 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
   #universe{height:360px}
   .draftbar{padding:9px 10px}.otc b{font-size:13.5px}
   td,th{padding:4px 5px;font-size:12px}
-  .mvs{display:none}.mbrow{cursor:default}
+  .mbrow{cursor:default;gap:6px;padding:7px 8px}
+  .grip{display:none}
+  .mvs button{width:26px;height:26px}
+  .mby,.mbstat{display:none}
+  .mbrow .pname{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .modal{padding:16px}
   .mteams{grid-template-columns:1fr}
+  #t-rank th:nth-child(1),#t-rank td:nth-child(1){position:sticky;left:0;z-index:3;background:var(--card);min-width:30px}
+  #t-rank th:nth-child(2),#t-rank td:nth-child(2){position:sticky;left:30px;z-index:3;background:var(--card);min-width:50px;max-width:50px}
+  #t-rank th:nth-child(3),#t-rank td:nth-child(3){position:sticky;left:80px;z-index:3;background:var(--card);max-width:130px;overflow:hidden;text-overflow:ellipsis;box-shadow:6px 0 8px -4px rgba(0,0,0,.55)}
+  #t-rank thead th:nth-child(-n+3){z-index:4;background:var(--card2)}
+  #t-rank tr.rowdrafted td{opacity:1;filter:grayscale(.75) brightness(.6)}
+}
+@media(max-width:600px){
+  #rostboards{grid-template-columns:1fr}
+  #rostboards .board li{font-size:12px;padding:4px 10px}
+  #rostboards .board li .pos{min-width:30px;font-size:10px}
+  .pcGrid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -1370,9 +1393,9 @@ function renderBoard(){
       ondragstart="mbDragStart(event,${yr})" ondragover="mbDragOver(event,${yr})" ondragleave="mbDragLeave(event)" ondrop="mbDrop(event,${yr})" ondragend="mbDragEnd(event)">
       <span class="grip">⠿</span><span class="mbn">${i+1}</span>
       <div class="mvs"><button onclick="mbMove(${yr},-1)">▲</button><button onclick="mbMove(${yr},1)">▼</button><button onclick="mbTop(${yr})" title="to top">⤒</button></div>
-      ${posTag(p.pos)} <b class="pname" onclick="openCard(${yr})">${esc(p.name)}</b>${nfl(p.tm)}<span style="color:var(--dim2)">Y#${p.yr}</span>
+      ${posTag(p.pos)} <b class="pname" onclick="openCard(${yr})">${esc(p.name)}</b>${nfl(p.tm)}<span class="mby" style="color:var(--dim2)">Y#${p.yr}</span>
       ${tg.s?"⭐":""}${tg.a?"🚫":""}${tg.n?"📝":""}
-      <span style="margin-left:auto;color:var(--dim2);font-size:11px">${fmt(p.p25)} '25 · <b style="color:var(--acc)">${fmt(p.proj)} proj</b></span>
+      <span class="mbstat" style="margin-left:auto;color:var(--dim2);font-size:11px">${fmt(p.p25)} '25 · <b style="color:var(--acc)">${fmt(p.proj)} proj</b></span>
     </div>`; }).join("");
 }
 function renderBoardSide(){
