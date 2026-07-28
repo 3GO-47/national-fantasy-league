@@ -2000,6 +2000,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 /* ═══════════ THE CLUBHOUSE — fullscreen free-roam floor (NFL 2K7 lounge) ═══════════ */
 (function(){
   const fs=$("#clubfs"), cv=$("#club"); if(!fs||!cv) return;
+  if(fs.parentElement!==document.body) document.body.appendChild(fs);
   const cx=cv.getContext&&cv.getContext("2d");
   const DPR=Math.min(2,window.devicePixelRatio||1);
   const W=1920, H=1300, WALL=230;
@@ -2046,7 +2047,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const IX=[
     {id:"tv",   x:960, y:WALL+46, r:150, label:"THE BIG SCREEN",  prompt:"flip the channel"},
     {id:"case", x:1480,y:WALL+46, r:130, label:"TROPHY CASE",     prompt:"study the hardware"},
-    {id:"door", x:1800,y:WALL+40, r:110, label:"EXIT",            prompt:"leave the clubhouse"},
+    {id:"door", x:1800,y:WALL+40, r:88, label:"EXIT",            prompt:"leave the clubhouse"},
     {id:"bar",  x:250, y:640,     r:120, label:"THE BAR",         prompt:"order a round"},
     {id:"pool", x:TBL.x+TBL.w/2, y:TBL.y+TBL.h/2, r:210, label:"POOL TABLE", prompt:"break the rack"},
     {id:"poker",x:505, y:765,     r:140, label:"CARD TABLE",      prompt:"check the table stakes"},
@@ -2063,7 +2064,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   let player=null, NPCS=[];
   function buildCast(){
     const mt=meTeam();
-    player={t:mt||GUEST, x:1800,y:WALL+120, vx:0,vy:0, fx:0,fy:1, bob:0, tx:null,ty:null};
+    player={t:mt||GUEST, x:1660,y:WALL+200, vx:0,vy:0, fx:0,fy:1, bob:0, tx:null,ty:null};
     NPCS=TEAMS.filter(t=>!mt||t.slot!==mt.slot).map(spawn);
   }
   buildCast();

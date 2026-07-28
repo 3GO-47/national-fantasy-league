@@ -23,7 +23,7 @@ Built in the same spirit as its sibling projects — **[rainman](../rainman)** (
 | 🎯 **My Board** | Drag-and-drop personal big board with Board DNA, market-deviation chart, bye exposure, draft path |
 | 🧨 **Draft Room** | Live draft tracker + **AI mock drafts** — rivals pick by their actual 2025 tendencies — plus results of **20,000 pre-run Monte Carlo drafts** |
 | 🗄️ **Rosters '25** | Last season's final rosters, the keeper pool, confirmed vs projected keepers |
-| 🏛️ **Clubhouse** | Playable avatars (WASD), trash-talk feed, trophy shelf, party mode 🪩 |
+| 🏛️ **Clubhouse** | A fullscreen **free-roam lounge** — walk the floor 2K7-style, talk to your rivals, break the rack, flip the big screen, order a round, spin the jukebox 🪩 |
 | 🏆 **The Vault** | Champions wall, rafter banners, glass trophy cases, Tesla-coil arcs |
 | 🔒 **War Room** | PIN-locked commissioner intel: master board, edges vs ADP, SOS matrix, opponent dossiers, pick optimizer, the Player Universe |
 
