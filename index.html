@@ -2319,7 +2319,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 })();
 
 /* ═══ PHYSICS LAB EXTRAS ═══ */
-let labX=false;
+var labX=false;
 function startLabExtras(){
   if(labX||!MK) return; labX=true;
   const bodies = MK.players.filter(p=>!["K","DST"].includes(p.pos)&&mkYr(p)).slice(0,12)
