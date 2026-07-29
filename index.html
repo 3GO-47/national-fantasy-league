@@ -2782,7 +2782,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       pairs.push({a,b,ph:Math.random()*6.28,tp:0}); } }
   function size(){ cv.width=wrap.offsetWidth*2; cv.height=wrap.offsetHeight*2; seed(); }
   const orbits=CH.map((c,i)=>({c,ra:0,rb:0,an:Math.random()*6.28,sp:(.0016-(i*.00022))*(i%2?1:-1),trail:[]}));
-  function core(){ return {x:cv.width*.5, y:cv.height*.30, r:Math.min(cv.width,cv.height)*.05}; }
+  function core(){ return {x:cv.width*.5, y:cv.height*.135, r:Math.min(cv.width,cv.height)*.058}; }
   function step(){
     requestAnimationFrame(step);
     const view=$("#v-hist"); if(!view||!view.classList.contains("on")) return;
