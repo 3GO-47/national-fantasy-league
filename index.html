@@ -2327,7 +2327,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
    "Are you winning son?":{o:"Phillips",p:"bosnian", hs:.97, wf:1.28, skin:"#d9a06b", hair:"#3a2a18"},
    "Silence of the Lamb": {o:"Ferrand", p:"skeleton",hs:1.10, wf:.78,  skin:"#e6e0d2", hair:"#26221c"},
    "My Kupp Hurts":       {o:"Griff",   p:"grizzly", hs:1.13, wf:1.45, skin:"#c9a879", hair:"#4a3018"},
-   "Django Achaned":      {o:"Kenny",   p:"bowling", hs:.86,  wf:1.34, skin:"#c9a879", hair:"#1c1c1c"},
+   "Django Achaned":      {o:"Kenny",   p:"bowling", hs:.86,  wf:1.16, skin:"#c9a879", hair:"#1c1c1c"},
    "Suck my Footballz":   {o:"Jacob",   p:"beggar",  hs:1.10, wf:.76,  skin:"#cfa77c", hair:"#5a4a2f"},
    "DoughBoy$":           {o:"Jake",    p:"dadbod",  hs:.97,  wf:1.24, skin:"#d9b08c", hair:"#3a2a18"},
    "Sandusky Shower Buddy":{o:"Scott",  p:"ginger",  hs:.92,  wf:1.0,  skin:"#f0c8a8", hair:"#e2582b"},
@@ -2893,11 +2893,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.strokeStyle="rgba(255,255,255,.55)"; cx.lineWidth=3;
         cx.beginPath(); cx.arc(a.x-tw*.3,hy+th*.3,rr*.5,Math.PI*1.1,Math.PI*1.6); cx.stroke();
         cx.fillStyle="#0d0b08"; for(const [gx,gy] of [[-4,-3],[3,-4],[0,3]]){ cx.beginPath(); cx.arc(a.x+gx,hy+th*.36+gy,2,0,7); cx.fill(); } } break;
-      case "beggar": torso("#6b5a3f");
-        cx.fillStyle="#8a6d5c"; cx.fillRect(a.x-tw*.6,hy+6,7,7);
-        cx.fillStyle="#4a5a6b"; cx.fillRect(a.x+tw*.15,hy+16,8,8);
-        cx.fillStyle="#5c4a3a"; cx.fillRect(a.x-tw*.2,hy+24,7,6);
-        cx.strokeStyle="#3a2f1c"; cx.lineWidth=2.4; cx.beginPath(); cx.moveTo(a.x-tw,hy+th-8); cx.lineTo(a.x+tw,hy+th-8); cx.stroke();
+      case "beggar": torso("#9d2235");
+        cx.fillStyle="#f2e9d0"; cx.font="900 12px Georgia"; cx.textAlign="center"; cx.fillText("IU",a.x,hy+th*.55);
+        for(const [lx2,ph2] of [[a.x-9*tw/16,a.y+8+b*.3],[a.x+2*tw/16,a.y+8-b*.3]]){
+          cx.fillStyle="#9d2235"; cx.fillRect(lx2,ph2,7,17);
+          cx.fillStyle="#f2e9d0"; for(let sy2=2;sy2<16;sy2+=5) cx.fillRect(lx2,ph2+sy2,7,2.4); }
         cx.fillStyle="#a89f8a"; cx.beginPath(); cx.arc(a.x+tw+4,hy+th-4,4.5,0,7); cx.fill();
         cx.fillStyle="#f0c95c"; cx.fillRect(a.x+tw+2.5,hy+th-6,3,1.6); break;
       case "dadbod": torso("#2e5496");
@@ -2982,8 +2982,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.fillStyle="#8a6d5c"; cx.beginPath(); cx.arc(a.x-hr,headY-hr+2,1.5,0,7); cx.fill();
         cx.beginPath(); cx.arc(a.x+hr,headY-hr+2,1.5,0,7); cx.fill(); break;
       case "bowling": cx.fillStyle=o.hair; cx.beginPath(); cx.arc(a.x,headY-3,hr*.9,Math.PI*1.15,Math.PI*1.85); cx.fill(); break;
-      case "beggar": cx.fillStyle="#4a3a28"; cx.beginPath(); cx.arc(a.x,headY-2,hr+.6,Math.PI*.92,Math.PI*2.08); cx.fill();
-        cx.fillStyle=o.hair; cx.fillRect(a.x-hr,headY+2,2.6,5); cx.fillRect(a.x+hr-2.6,headY+2,2.6,5); break;
+      case "beggar": cx.fillStyle="#9d2235"; cx.beginPath(); cx.arc(a.x,headY-2,hr,Math.PI,0); cx.fill();
+        cx.fillStyle="#f2e9d0"; cx.font="900 6.5px Georgia"; cx.textAlign="center"; cx.fillText("IU",a.x,headY-5); break;
       case "dadbod": cx.fillStyle="#2e5496"; cx.beginPath(); cx.arc(a.x,headY-2,hr,Math.PI,0); cx.fill();
         cx.fillRect(a.x-hr,headY-4,4,3); /* backwards cap */ break;
       case "ginger": { cx.fillStyle=o.hair;
