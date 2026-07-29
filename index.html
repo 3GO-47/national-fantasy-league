@@ -178,6 +178,40 @@ h2 .lt{font:400 12px var(--body);color:var(--dim);letter-spacing:0}
 #actbtn{position:absolute;right:26px;bottom:140px;width:64px;height:64px;border-radius:50%;background:rgba(16,13,9,.85);border:2px solid #8a6d1c;color:#f0c95c;font:900 22px Georgia;z-index:6;display:none}
 #actbtn.hot{border-color:#f0c95c;box-shadow:0 0 18px rgba(240,201,92,.5)}
 #clubfs.tecmo #clubchat,#clubfs.tecmo #minimap,#clubfs.tecmo #sidepanel,#clubfs.tecmo .ptab,#clubfs.tecmo #clubdlg{display:none!important}
+/* DRAFT THEATRE */
+#theatre{position:fixed;inset:0;z-index:290;background:radial-gradient(1100px 500px at 50% -10%,rgba(212,175,55,.07),transparent 60%),rgba(7,5,3,.98);display:none;flex-direction:column}
+#theatre.on{display:flex;animation:fade .2s}
+.th-head{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1.5px solid #8a6d1c;flex-wrap:wrap;background:linear-gradient(180deg,#171310,#0b0a08)}
+.th-otc{min-width:240px}
+.th-otc b{font-family:var(--disp);font-size:19px;color:#f0c95c;display:block;letter-spacing:1px}
+.th-otc span{color:var(--dim);font-size:11.5px}
+#thq{flex:1;min-width:170px;background:var(--card);border:1px solid var(--line);color:var(--txt);padding:10px 14px;border-radius:10px;font:inherit;outline:none}
+#thq:focus{border-color:var(--acc)}
+.th-pos{display:flex;gap:5px;flex-wrap:wrap}
+.th-pos button{background:var(--card);border:1px solid var(--line);color:var(--dim);padding:8px 12px;border-radius:9px;cursor:pointer;font:700 12px var(--body)}
+.th-pos button.on{color:#181204;background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:var(--acc)}
+.th-x{background:rgba(16,13,9,.85);border:1px solid #3a341f;color:var(--txt);font:700 12px var(--body);padding:9px 14px;border-radius:10px;cursor:pointer}
+.th-x:hover{border-color:var(--red);color:var(--red)}
+.th-body{flex:1;display:grid;grid-template-columns:1fr 300px;min-height:0}
+.th-list{overflow-y:auto;padding:8px 14px}
+.th-row{display:flex;align-items:center;gap:9px;padding:6.5px 10px;border-bottom:1px solid rgba(58,52,31,.35);font-size:13px}
+.th-row:hover{background:rgba(212,175,55,.06)}
+.th-row .num{width:36px;color:var(--dim2);text-align:right;font-variant-numeric:tabular-nums;flex:none}
+.th-row .nm{font-weight:700;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.th-row .byec{color:var(--dim2);font-size:11px;flex:none}
+.th-row .p25c{width:52px;text-align:right;color:var(--dim);flex:none;margin-left:auto}
+.th-row .mkc{width:48px;text-align:right;color:#c9a0ff;font-weight:700;flex:none}
+.th-row .proj{width:56px;text-align:right;color:var(--acc);font-weight:800;flex:none}
+.th-draft{background:linear-gradient(135deg,var(--acc),var(--acc2));border:none;color:#181204;font:800 11px var(--body);padding:7px 13px;border-radius:8px;cursor:pointer;margin-left:6px;flex:none}
+.th-draft:hover{transform:translateY(-1px)}
+.th-side{border-left:1px solid #3a341f;padding:14px;overflow-y:auto;background:rgba(16,13,9,.6)}
+.th-side h4{font:800 11px var(--body);letter-spacing:1.5px;color:var(--gold);margin:0 0 8px}
+.needrow{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:3px 0;color:var(--dim)}
+.needrow b{color:var(--txt)}
+.needrow .ok{color:#8df08d}
+.needrow .warn{color:#c8102e;font-weight:700}
+@media(max-width:860px){.th-body{grid-template-columns:1fr}.th-side{display:none}.th-row .p25c,.th-row .byec{display:none}.th-otc b{font-size:15px}}
+
 @media(hover:none) and (pointer:coarse){#joy,#actbtn{display:block}
   #clubchat{width:calc(100vw - 24px);height:150px}
   .chud .cbtn{font-size:10.5px;padding:7px 8px}}
@@ -777,6 +811,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
       <button class="dbtn" id="undo">UNDO</button>
       <button class="dbtn" id="exp">EXPORT</button>
       <button class="dbtn warn" id="reset">RESET</button>
+      <button class="dbtn" id="thopen" style="border-color:var(--acc2);color:var(--acc2)">🎭 THEATRE</button>
     </div>
   </div>
   <div class="prog"><i id="prog" style="width:6%"></i></div>
@@ -1061,6 +1096,18 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
     <p>Personalizes your HQ — your color, your board, your picks, your show.</p>
     <div class="mteams" id="fteams"></div>
     <button class="mclose" id="fskip">Just browsing</button>
+  </div>
+</div>
+<div id="theatre">
+  <div class="th-head">
+    <div class="th-otc"><b id="thpick"></b><span id="thsub"></span></div>
+    <input id="thq" placeholder="Search player or team…" autocomplete="off">
+    <div class="th-pos" id="thpos"></div>
+    <button class="th-x" id="thclose">✕ CLOSE</button>
+  </div>
+  <div class="th-body">
+    <div class="th-list" id="thlist"></div>
+    <div class="th-side" id="thside"></div>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -1743,6 +1790,16 @@ function renderMk(){
 function rosterOf(team){ return Object.entries(picks).filter(([pk])=>pickTeam(+pk).slot===team.slot).map(([,yr])=>byYr[yr]); }
 function liveDrafted(){ return mockMode ? new Set(Object.values(keeperPicks)) : draftedYrs(); }   // war-room tools ignore mock noise
 function capsLeft(team,pos){ const r=rosterOf(team); return r.filter(x=>x.pos===pos).length < (CAPS[pos]||1); }
+function needMult(pos,c,rd,t){
+  switch(pos){
+    case "QB": return c===0?(rd<3?.45:rd<8?1:rd<11?1.9:2.8):c===1?.10:c===2?.02:0;
+    case "RB": return c===0?1.6:c===1?1.25:c===2?.7:c===3?.32:c===4?.10:0;
+    case "WR": return c===0?1.5:c===1?1.2:c===2?.75:c===3?.38:c===4?.14:c===5?.05:0;
+    case "TE": return c===0?(rd<4?.4:rd<9?1:rd<12?1.9:2.6):c===1?.08:c===2?.02:0;
+    case "K":  return rd>=Math.min((t&&t.firstK)||14,13)?(c===0?(rd>=15?9:1.5):.01):0;
+    case "DST":return rd>=Math.min((t&&t.firstD)||13,12)?(c===0?(rd>=14?9:1.5):.01):0;
+  } return 0;
+}
 function aiChoose(team){
   const np = nextPickForTeam(team); if(np==null) return null;
   const rd = Math.ceil(np/12);
@@ -1750,20 +1807,19 @@ function aiChoose(team){
   const drafted = draftedYrs();
   const roster = rosterOf(team);
   const cnt = p => roster.filter(x=>x.pos===p).length;
-  const need = {QB:cnt("QB")<CAPS.QB, RB:cnt("RB")<CAPS.RB, WR:cnt("WR")<CAPS.WR, TE:cnt("TE")<CAPS.TE,
-    K:cnt("K")<CAPS.K && rd>=Math.min(t.firstK||14,13), DST:cnt("DST")<CAPS.DST && rd>=Math.min(t.firstD||13,12)};
-  if(rd>=15){ if(!cnt("K")) need.K=true; if(!cnt("DST")) need.DST=true; }
   let dist = {...(rd<=3? t.early : rd<=8? t.mid : t.late)};
-  if(t.seq && t.seq[rd-1]) dist[t.seq[rd-1]] = (dist[t.seq[rd-1]]||0) + 0.6;
-  if(rd>=14){ if(need.K) dist.K=(dist.K||0)+1.2; if(need.DST) dist.DST=(dist.DST||0)+1.2; }
-  if(rd<Math.min(t.firstQB||99, 12) && cnt("QB")===0 && rd>=10) dist.QB=(dist.QB||0)+.5;
-  const ws = ["QB","RB","WR","TE","K","DST"].map(p=>[p, ((dist[p]||0.06) * (need[p]?1:0.02))]);
-  const tot = ws.reduce((s,[,w])=>s+w,0);
+  if(t.seq && t.seq[rd-1]) dist[t.seq[rd-1]] = (dist[t.seq[rd-1]]||0) + 0.5;
+  const bestAt={}; for(const p of P){ if(!drafted.has(p.yr)&&bestAt[p.pos]===undefined) bestAt[p.pos]=p.proj||60; }
+  const ws = ["QB","RB","WR","TE","K","DST"].map(pos=>{
+    const nm = needMult(pos,cnt(pos),rd,t);
+    const tw = .35 + (dist[pos]||0.06);
+    const val = Math.max(.5,Math.min(1.6,(bestAt[pos]||60)/200));
+    return [pos, nm*tw*val]; });
+  const tot = ws.reduce((s,[,w])=>s+w,0)||1;
   let r = Math.random()*tot, pos="RB";
   for(const [p,wgt] of ws){ r-=wgt; if(r<=0){ pos=p; break; } }
-  let cands = P.filter(p=>p.pos===pos && !drafted.has(p.yr) && capsLeft(team,p.pos)).slice(0,3);
-  if(!cands.length) cands = P.filter(p=>!drafted.has(p.yr) && need[p.pos] && capsLeft(team,p.pos)).slice(0,3);
-  if(!cands.length) cands = P.filter(p=>!drafted.has(p.yr) && capsLeft(team,p.pos)).slice(0,3);
+  let cands = P.filter(p=>p.pos===pos && !drafted.has(p.yr)).slice(0,3);
+  if(!cands.length) cands = P.filter(p=>!drafted.has(p.yr) && needMult(p.pos,cnt(p.pos),rd,t)>0).slice(0,3);
   if(!cands.length) cands = P.filter(p=>!drafted.has(p.yr)).slice(0,3);
   const roll = Math.random();
   return cands[roll<.62?0:roll<.9?1:2] || cands[0];
@@ -1774,7 +1830,7 @@ function simStep(loop){
   if(np==null){ clearInterval(simTimer); simTimer=null; renderAll(); toast("🏁 Mock complete"); return; }
   const t = pickTeam(np);
   if(t.slot===myTeam){ clearInterval(simTimer); simTimer=null; renderAll();
-    PH.burst(innerWidth/2, 140, "#d4af37", 24, 5); toast("⏱ YOU'RE ON THE CLOCK — pick "+np); return; }
+    PH.burst(innerWidth/2, 140, "#d4af37", 24, 5); toast("⏱ YOU'RE ON THE CLOCK — pick "+np); openTheatre(); return; }
   const p = aiChoose(t);
   if(!p){ clearInterval(simTimer); simTimer=null; return; }
   picks[np]=p.yr; undoStack.push(np); store.set("undo",undoStack); savePicks();
@@ -1784,12 +1840,16 @@ $("#simone").onclick=()=>{ const np=nextPick(); if(np&&pickTeam(np).slot===myTea
 function autoPickMine(np){
   const me=pickTeam(np); const drafted=draftedYrs(); const rd=Math.ceil(np/12);
   const r=rosterOf(me); const cnt=p=>r.filter(x=>x.pos===p).length;
-  // force K/DST if the clock is running out on them
   if(rd>=15&&cnt("K")<1){ const k=P.find(p=>p.pos==="K"&&!drafted.has(p.yr)); if(k) return k.yr; }
   if(rd>=14&&cnt("DST")<1){ const ds=P.find(p=>p.pos==="DST"&&!drafted.has(p.yr)); if(ds) return ds.yr; }
-  const yr=boardList().find(y=>{ const p=byYr[y]; return p&&!drafted.has(y)&&capsLeft(me,p.pos)
-    && !(rd<12&&(p.pos==="K"||p.pos==="DST")); });
-  return yr ?? P.find(p=>!drafted.has(p.yr)&&capsLeft(me,p.pos))?.yr ?? P.find(p=>!drafted.has(p.yr))?.yr;
+  let best=null,bs=-1,i=0;
+  for(const y of boardList()){ const p=byYr[y];
+    if(!p||drafted.has(y)) continue;
+    if(rd<12&&(p.pos==="K"||p.pos==="DST")) continue;
+    const s=(26-Math.min(i,24))*needMult(p.pos,cnt(p.pos),rd,{});
+    if(s>bs){ bs=s; best=y; }
+    if(++i>=26) break; }
+  return best ?? P.find(p=>!drafted.has(p.yr)&&needMult(p.pos,cnt(p.pos),rd,{})>0)?.yr ?? P.find(p=>!drafted.has(p.yr))?.yr;
 }
 $("#simend").onclick=()=>{ if(simTimer) return;
   mockMode=true; store.set("mock",true);
@@ -1816,6 +1876,50 @@ $("#dq").addEventListener("input", ()=>{
     $("#dq").value=""; box.style.display="none"; });
 });
 document.addEventListener("click",e=>{ if(!e.target.closest("#dq,#dqlist")) $("#dqlist").style.display="none"; });
+/* ═══ DRAFT THEATRE — fullscreen selection console ═══ */
+const TH={pos:"All",q:""};
+let __mkByYr=null;
+function mkRankOf(yr){ if(!MK||!MK.players) return null;
+  if(!__mkByYr){ __mkByYr={}; MK.players.forEach(p=>{ const y=mkYr(p); if(y) __mkByYr[y]=p.rk; }); }
+  return __mkByYr[yr]; }
+function openTheatre(){ if(nextPick()==null){ toast("Draft complete."); return; }
+  $("#theatre").classList.add("on"); document.body.style.overflow="hidden"; renderTheatre();
+  setTimeout(()=>{ try{$("#thq").focus();}catch(e){} },60); }
+function closeTheatre(){ $("#theatre").classList.remove("on"); document.body.style.overflow=""; }
+$("#thclose").onclick=closeTheatre;
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&$("#theatre").classList.contains("on")&&!$("#clubfs").classList.contains("on")) closeTheatre(); });
+$("#thq").addEventListener("input",()=>{ TH.q=$("#thq").value.trim().toLowerCase(); renderTheatre(); });
+function renderTheatre(){
+  const np=nextPick(); if(np==null){ closeTheatre(); return; }
+  const team=pickTeam(np), rd=Math.ceil(np/12), drafted=draftedYrs();
+  $("#thpick").textContent=`PICK ${np} · RD ${rd} — ${team.name.toUpperCase()}${myTeam===team.slot?"  (YOU)":""}`;
+  $("#thsub").textContent=`${team.mgr} on the clock · every available player · click DRAFT to lock it in`;
+  $("#thpos").innerHTML=["All","QB","RB","WR","TE","K","DST"].map(p=>`<button class="${TH.pos===p?'on':''}" data-p="${p}">${p}</button>`).join("");
+  $("#thpos").querySelectorAll("button").forEach(b=>b.onclick=()=>{ TH.pos=b.dataset.p; renderTheatre(); });
+  const avail=P.filter(p=>!drafted.has(p.yr)&&(TH.pos==="All"||p.pos===TH.pos)&&(!TH.q||(p.name+" "+p.tm).toLowerCase().includes(TH.q)));
+  $("#thlist").innerHTML=avail.map(p=>{ const tg=tag(p.yr), mk=mkRankOf(p.yr);
+    return `<div class="th-row"><span class="num">#${p.yr}</span>${posTag(p.pos)}
+      <b class="nm" onclick="openCard(${p.yr})">${esc(p.name)}</b>${p.rook?'<span class="rookie">R</span>':''}${nfl(p.tm)}
+      <span class="byec">bye ${p.bye||"—"}</span>
+      ${tg.s?"⭐":""}${tg.a?"🚫":""}
+      <span class="p25c">${p.p25?fmt(p.p25):"—"}</span>
+      ${mk?`<span class="mkc">MK ${mk}</span>`:""}
+      <span class="proj">${p.proj?fmt(p.proj):"—"}</span>
+      <button class="th-draft" data-thyr="${p.yr}">DRAFT</button></div>`; }).join("")
+    ||`<div style="padding:22px;color:var(--dim2)">Nobody matches that filter.</div>`;
+  $("#thlist").querySelectorAll("[data-thyr]").forEach(b=>b.onclick=()=>{
+    assign(+b.dataset.thyr, pickTeam(nextPick())); renderTheatre(); });
+  const r=rosterOf(team), cnt=p=>r.filter(x=>x.pos===p).length;
+  const REQ={QB:1,RB:2,WR:2,TE:1,K:1,DST:1};
+  $("#thside").innerHTML=`<h4>${esc(team.name)} — ROSTER SHAPE</h4>`+
+    ["QB","RB","WR","TE","K","DST"].map(p2=>{ const c=cnt(p2), q=REQ[p2];
+      return `<div class="needrow"><b>${p2}</b><span class="${c>=q?'ok':(rd>10?'warn':'')}">${c} / ${q}${(p2==="RB"||p2==="WR"||p2==="TE")?"+flex":""}</span></div>`; }).join("")
+    +`<h4 style="margin-top:14px">PICKS SO FAR</h4>`+
+    (Object.entries(picks).filter(([pk])=>pickTeam(+pk).slot===team.slot&&!(+pk in keeperPicks)).sort((a,b)=>a[0]-b[0])
+      .map(([pk,yr])=>`<div class="needrow"><b>Rd ${Math.ceil(pk/12)}</b><span>${esc(byYr[yr].name)}</span></div>`).join("")||'<div class="needrow"><span>none yet — make history</span></div>');
+}
+$("#thopen").onclick=openTheatre;
+
 /* Monte Carlo presentation */
 (function(){
   const MC=D.mc; if(!MC){ $("#mcwrap").parentElement.style.display="none"; return; }
