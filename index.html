@@ -2109,9 +2109,9 @@ $("#t-fr").innerHTML="<tr><th>#</th><th>Player</th><th>Team</th></tr>"+
   let cols=[], cw=16, dpr=Math.min(2,window.devicePixelRatio||1), on=false, W=0, H=0;
   function size(){ W=innerWidth; H=innerHeight; cv.width=W*dpr; cv.height=H*dpr;
     c.setTransform(dpr,0,0,dpr,0,0); c.font="600 15px 'Courier New',monospace"; c.textBaseline="top";
-    const n=Math.ceil(W/cw); cols=[];
-    for(let i=0;i<n;i++) cols.push({y:Math.random()*-H,v:1.1+Math.random()*3.4,len:8+Math.random()*26,
-      word:Math.random()<.12?NFLW[Math.floor(Math.random()*NFLW.length)]:null,wi:0}); }
+    const n=Math.ceil(W/cw), mk=()=>({y:Math.random()*(H+400)-200,v:1.1+Math.random()*3.4,len:8+Math.random()*26,
+      word:Math.random()<.12?NFLW[Math.floor(Math.random()*NFLW.length)]:null,wi:Math.floor(Math.random()*9)});
+    if(cols.length!==n){ const old=cols; cols=[]; for(let i=0;i<n;i++) cols.push(old[i]||mk()); } }
   addEventListener("resize",()=>{ if(on) size(); });
   function frame(){
     requestAnimationFrame(frame);
