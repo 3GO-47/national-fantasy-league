@@ -4235,7 +4235,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     rug(g,742,632,528,336,"#5a1620","#e6dcc0","#d4af37");        // lounge
     rug(g,372,676,272,186,"#123a22","#d9cfae","#8fbf6a");        // card room
     rug(g,74,398,168,520,"#3b1030","#d9c98e","#c98fd6");         // bar runner
-    rug(g,1352,880,300,200,"#1d2b52","#cfd8e8","#7ea6e8");       // reading nook
+    rug(g,254,486,300,180,"#1d2b52","#cfd8e8","#7ea6e8");        // reading rug, in front of the archive
 
     /* sandblasted zone labels */
     g.textAlign="center"; g.fillStyle="rgba(255,235,190,.055)";
@@ -4835,7 +4835,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   FURN.push(
     /* ═══ THE KINGS TABLE ═══ */
-    {base:1210, draw(){
+    {base:1046, draw(){
       const t=Date.now()/1000;
       const X=700,Y=1112,Wd=620,Ht=112;
       /* rug */
@@ -5084,7 +5084,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   SOLIDS.push(
     {x:700,y:1112,w:620,h:112,id:"kings"},
-    {x:600,y:1096,w:56,h:130, id:"throne"},
+    
     {x:SBX,y:300,w:SBW,h:210, id:"oddswall"},
     {x:SBX+70,y:690,w:160,h:110,id:"bj1"},
     {x:SBX+300,y:930,w:160,h:110,id:"bj2"},
@@ -6576,15 +6576,15 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       let k=0;
       for(const n of NPCS){
         if(n.soul||n.fixed||!n.t||!SEATMAP[n.t.name]) continue;
-        n.seat=SEATMAP[n.t.name]; n.sit=false; n.seatT=0; n.tx=n.seat.x; n.ty=n.seat.y; n.wt=99999; n.talk=0;
+        n.seat=SEATMAP[n.t.name]; n.sit=false; n.seatT=0; n.manual=0; n.tx=n.seat.x; n.ty=n.seat.y; n.wt=99999; n.talk=0;
         if(Math.random()<.55) setTimeout(()=>overhead(n,SEATLINES[(k)%SEATLINES.length]),500+k*420);
         k++; }
       const ms=meTeam(); if(ms&&SEATMAP[ms.name]){ player.seat=SEATMAP[ms.name]; player.sit=false;
-        player.tx=player.seat.x; player.ty=player.seat.y; marker={x:player.tx,y:player.ty,life:1}; }
+        player.seatT=0; player.manual=0; player.tx=player.seat.x; player.ty=player.seat.y; marker={x:player.tx,y:player.ty,life:1}; }
     } else {
       sysLog("🔔 Adjourned. The table breaks up.");
       for(const n of NPCS){ n.seat=null; n.sit=false; n.wt=40+Math.random()*160; n.tx=null; }
-      player.seat=null; player.sit=false; player.tx=null; }
+      player.seat=null; player.sit=false; player.seatT=0; player.manual=0; player.tx=null; }
   }
   /* route round the table rather than steering straight into it */
   function seatRoute(a,seat){
@@ -6605,13 +6605,15 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       const [rx,ry]=seatRoute(n,n.seat); n.tx=rx; n.ty=ry;
       /* nobody misses roll call: if the room won't let them through, they take their seat anyway */
       n.seatT=(n.seatT||0)+1;
-      if(n.seatT>900){ n.x=n.seat.x; n.y=n.seat.y; n.sit=true; n.vx=n.vy=0; n.tx=null;
+      if(n.seatT>420){ n.x=n.seat.x; n.y=n.seat.y; n.sit=true; n.vx=n.vy=0; n.tx=null;
         sparks.push({x:n.x,y:n.y-20,vx:0,vy:-1,c:"#f0c95c",life:1}); } }
     if(player.seat&&!player.sit){
       const d=Math.hypot(player.seat.x-player.x,player.seat.y-player.y);
-      if(d<20){ player.sit=true; player.x=player.seat.x; player.y=player.seat.y; player.vx=player.vy=0; player.tx=null;
+      player.seatT=(player.seatT||0)+1;
+      if(d<26||(player.seatT>420&&!player.manual)){ player.sit=true; player.x=player.seat.x; player.y=player.seat.y;
+        player.vx=player.vy=0; player.tx=null; marker=null;
         sysLog("🪑 You take the head of the table."); }
-      else { const [rx,ry]=seatRoute(player,player.seat); player.tx=rx; player.ty=ry; }
+      else if(!player.manual){ const [rx,ry]=seatRoute(player,player.seat); player.tx=rx; player.ty=ry; }
     }
   }
   /* seated pose: knees under the table, hands on the wood */
@@ -6776,6 +6778,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(Math.abs(cv.width-innerWidth*DPR)>4) sizeFS();
     if(MODE==="tecmo"){ tecmoStep(); return; }
     if(MODE==="pent"){ pentStep(); return; }
+    if(player.sit&&(keys["w"]||keys["a"]||keys["s"]||keys["d"]||keys["arrowup"]||keys["arrowdown"]||keys["arrowleft"]||keys["arrowright"])){
+      player.sit=false; player.manual=1; player.seat=null; player.tx=null; sysLog("🪑 You stand. The table waits."); }
     const F=.9*buffSpeed(), moving=!dlg&&!player.sit;
     const px0=player.x, py0=player.y;
     if(moving){
@@ -6783,7 +6787,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       if(keys["arrowup"]||keys["w"]) ay-=1; if(keys["arrowdown"]||keys["s"]) ay+=1;
       if(keys["arrowleft"]||keys["a"]) ax-=1; if(keys["arrowright"]||keys["d"]) ax+=1;
       if(joy.a){ ax+=joy.dx; ay+=joy.dy; }
-      if(ax||ay){ const m=Math.hypot(ax,ay); player.vx+=ax/m*F; player.vy+=ay/m*F; player.tx=null; }
+      if(ax||ay){ const m=Math.hypot(ax,ay); player.vx+=ax/m*F; player.vy+=ay/m*F; player.tx=null; player.manual=1; }
       if(player.tx!=null){ const dx=player.tx-player.x, dy=player.ty-player.y, d=Math.hypot(dx,dy);
         if(d<8){ player.tx=null; marker=null; } else { player.vx+=dx/d*F*.85; player.vy+=dy/d*F*.85; } }
     }
@@ -6822,10 +6826,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
           overhead(A,pair[0]); A.talk=180; B.talk=200;
           setTimeout(()=>overhead(B,pair[1]),1700);
           i=NPCS.length; break; } } }
-    const all=[player,...NPCS];
+    const all=[player,...NPCS].filter(a=>!a.sit&&!a.soul);
     for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
       const A=all[i],B=all[j],dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1;
-      if(d<44){ let f=(44-d)/d*.3;
+      if(d<34){ let f=(34-d)/d*.22;
         if((A.own&&A.own.quick)||(B.own&&B.own.quick)) f*=2.6;
         A.vx-=dx*f; A.vy-=dy*f; B.vx+=dx*f; B.vy+=dy*f; } }
     const felt={x:TBL.x+20,y:TBL.y+16,w:TBL.w-40,h:TBL.h-32};
