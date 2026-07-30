@@ -2783,6 +2783,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const CHN=["LEAGUE WIRE","TITLE ODDS","9·9·9 WATCH","PROJECTED WINS","STADIUM WATCH"];
   const STADW=["BREAKING: BEARS EYE DOMED STADIUM IN NORTHWEST INDIANA","SOUTH SHORE LINE PROMISES GAMEDAY EXPRESS","INDIANA OFFERS TAX PACKAGE; CHICAGO OFFERS FEELINGS","SOLDIER FIELD RESPONDS: 'THE LAKE ISN'T MOVING'","CRANE SPOTTED NEAR GARY. CRANE HAS NOT MOVED.","LEAGUE SOURCES: DOME WOULD HOST THE 9/9/9 FINALS"];
   function fireIx(ix){ if(ix.id==='bj1'){ openBJ(); award('card',10); return; }
+    if(ix.id==='book'||ix.id==='oddswall'){ openBook('board'); award('lore',6); return; }
+    if(ix.id==='count'||ix.id==='cage'){ openCount(); award('lore',6); return; }
     if(typeof XDLG!=='undefined'&&XDLG[ix.id]){ const q=XDLG[ix.id]; openDlg(q.n,q.c,q.l); award('lore',6); return; }
     if(ix.pet){ const pt=ix.pet; pt.heart=1; award("lore",4);
       for(let i=0;i<7;i++) confetti.push({x:pt.x+(Math.random()-.5)*30,y:pt.y-14,vx:(Math.random()-.5)*1.2,vy:-1-Math.random(),c:"#e2543b",r:3,life:.7});
@@ -3104,6 +3106,26 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     /* neon */
     cx.shadowColor="#d4af37"; cx.shadowBlur=16; cx.fillStyle="#f0c95c";
     cx.font="900 24px 'Archivo Black'"; cx.fillText("CAESARS PALACE — COMMISSIONER'S PENTHOUSE",550,32); cx.shadowBlur=0;
+    /* the hold, swept upstairs */
+    { const hold=LEDGER.house, t9=Date.now()/1000;
+      cx.fillStyle="#1a1409"; cx.beginPath(); cx.roundRect(760,470,300,150,10); cx.fill();
+      cx.strokeStyle="#8a6d1c"; cx.lineWidth=3; cx.stroke();
+      cx.fillStyle="#d4af37"; cx.font="800 11px 'Archivo Black'"; cx.textAlign="center";
+      cx.fillText("THE HOLD",910,494);
+      const stacks=Math.max(0,Math.min(28,Math.round(Math.abs(hold)/260)));
+      for(let i=0;i<stacks;i++){ const sx=782+(i%7)*40, sy=596-Math.floor(i/7)*26;
+        for(let L=0;L<5;L++){ cx.fillStyle=L%2?"#cbd6b8":"#b9c9a4"; cx.fillRect(sx,sy-L*2.6,32,9); }
+        cx.fillStyle="#c8102e"; cx.fillRect(sx,sy-4,32,3);
+        cx.fillStyle="rgba(0,0,0,.4)"; cx.fillRect(sx,sy+9,32,2); }
+      if(stacks===0){ cx.fillStyle="rgba(212,175,55,.4)"; cx.font="700 10px Sora";
+        cx.fillText("empty · the players are up on the house",910,556); }
+      cx.fillStyle=hold>=0?"#8df08d":"#ff8a8a"; cx.font="900 20px 'Archivo Black'";
+      cx.fillText(money(hold),910,640);
+      cx.fillStyle="rgba(212,175,55,.65)"; cx.font="700 8px Sora";
+      cx.fillText("SWEPT NIGHTLY FROM THE COUNT ROOM · "+BOOK.bets.filter(b=>b.st==="LIVE").length+" TICKETS OUTSTANDING",910,654);
+      const gl=cx.createRadialGradient(910,560,10,910,560,190);
+      gl.addColorStop(0,`rgba(240,201,92,${.10+Math.sin(t9*1.4)*.03})`); gl.addColorStop(1,"transparent");
+      cx.fillStyle=gl; cx.beginPath(); cx.arc(910,560,190,0,7); cx.fill(); }
     /* the man himself */
     drawAvatar({...player,x:PP.x,y:PP.y,bob:player.bob,emote:player.emote,t:player.t,own:player.own},true);
     stepDlg();
@@ -4850,7 +4872,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillText("THE CHAMPIONS COLONNADE",2339,1042);
       CHAMPS.forEach((ch,i)=>statue(2030+i*128,1186,ch,i));
       /* reserved plinths for the years to come */
-      for(let i=0;i<3;i++){ const px=2030+(4+i)*128;
+      for(let i=0;i<2;i++){ const px=2030+(4+i)*128;
         cx.fillStyle="#141109"; cx.beginPath(); cx.roundRect(px-34,1156,68,30,3); cx.fill();
         cx.fillStyle="#1c1810"; cx.fillRect(px-30,1122,60,28);
         cx.strokeStyle="rgba(212,175,55,.22)"; cx.setLineDash([4,4]); cx.lineWidth=1.4;
@@ -5423,18 +5445,18 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     else if(a==="deal"){
       if(BJ.bank<BJ.bet){ BJ.msg="Lloyd: so you're telling me there's a chance? No. You're out of rent money."; bjRender(); return; }
       BJ.hand=[bjDraw(),bjDraw()]; BJ.dealer=[bjDraw(),bjDraw()]; BJ.state="play"; BJ.msg=""; BJ.plays++;
-      if(bjTotal(BJ.hand)===21){ BJ.bank+=Math.round(BJ.bet*1.5); BJ.wins++; BJ.state="idle";
+      if(bjTotal(BJ.hand)===21){ BJ.bank+=Math.round(BJ.bet*1.5); ledgerTx(-Math.round(BJ.bet*1.5),"you","blackjack · natural"); BJ.wins++; BJ.state="idle";
         BJ.msg=`BLACKJACK. +$${Math.round(BJ.bet*1.5)}`; award("card",30); rentSave(); } }
     else if(a==="hit"){ BJ.hand.push(bjDraw());
-      if(bjTotal(BJ.hand)>21){ BJ.bank-=BJ.bet; BJ.state="idle"; BJ.msg=`BUST at ${bjTotal(BJ.hand)}. −$${BJ.bet}`; rentSave(); award("card",4); } }
+      if(bjTotal(BJ.hand)>21){ BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · bust"); BJ.state="idle"; BJ.msg=`BUST at ${bjTotal(BJ.hand)}. −$${BJ.bet}`; rentSave(); award("card",4); } }
     else if(a==="double"){ if(BJ.bank>=BJ.bet*2){ BJ.bet*=2; BJ.hand.push(bjDraw()); a="stand"; } else BJ.msg="Not enough in the bank to double."; }
     if(a==="stand"&&BJ.state==="play"){
       while(bjTotal(BJ.dealer)<17) BJ.dealer.push(bjDraw());
       const p=bjTotal(BJ.hand), d=bjTotal(BJ.dealer);
-      if(p>21){ BJ.bank-=BJ.bet; BJ.msg=`BUST. −$${BJ.bet}`; }
-      else if(d>21||p>d){ BJ.bank+=BJ.bet; BJ.wins++; BJ.msg=`YOU WIN ${p} to ${d>21?"BUST":d}. +$${BJ.bet}`; award("card",22); grant("chip"); }
+      if(p>21){ BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · bust"); BJ.msg=`BUST. −$${BJ.bet}`; }
+      else if(d>21||p>d){ BJ.bank+=BJ.bet; BJ.wins++; ledgerTx(-BJ.bet,"you","blackjack · player wins"); BJ.msg=`YOU WIN ${p} to ${d>21?"BUST":d}. +$${BJ.bet}`; award("card",22); grant("chip"); }
       else if(p===d){ BJ.msg=`PUSH at ${p}.`; award("card",6); }
-      else { BJ.bank-=BJ.bet; BJ.msg=`HOUSE TAKES IT ${d} to ${p}. −$${BJ.bet}`; award("card",4); }
+      else { BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · house wins"); BJ.msg=`HOUSE TAKES IT ${d} to ${p}. −$${BJ.bet}`; award("card",4); }
       BJ.state="idle"; BJ.bet=Math.max(25,Math.min(500,BJ.bet)); rentSave(); }
     bjRender();
   }
@@ -5512,6 +5534,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ═══ extra dialogue for the new rooms ═══ */
   Object.assign(XDLG,{
+    count:{n:"THE COUNT ROOM",c:"#d4af37",l:["Everything this floor takes lands on these tables."]},
+    book:{n:"THE BOOK",c:"#8df08d",l:["Season-long tickets. Graded after the championship."]},
     kings:{n:"THE KINGS TABLE",c:"#f0c95c",l:[
       "Twelve seats. One head. One foot. Everybody knows which is which.",
       "The head chair is bolted down. That was a commissioner decision and it stands.",
@@ -5789,6 +5813,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(Math.random()<.45) sysLog(`💵 ${(OWN[W2.name]||{o:W2.name}).o} takes ${rentFmt(stake)} off ${(OWN[L.name]||{o:L.name}).o} at ${game}. (${(OWN[W2.name]||{o:W2.name}).o} ${rentFmt(RENT.bal[W2.name])} · ${(OWN[L.name]||{o:L.name}).o} ${rentFmt(RENT.bal[L.name])})`);
     const wn=NPCS.find(x=>x.t&&x.t.name===W2.name);
     if(wn&&Math.random()<.6) overhead(wn,[`${rentFmt(stake)} off ${(OWN[L.name]||{o:L.name}).o} at ${game}.`,`Rent money is rent money.`,`Pay up.`][Math.floor(Math.random()*3)]);
+    const rake=Math.max(1,Math.round(stake*.05));
+    RENT.bal[L.name]=Math.max(0,RENT.bal[L.name]-rake);
+    LEDGER.handle+=stake; ledgerTx(rake,(OWN[L.name]||{o:L.name}).o,"floor rake · "+game);
     for(const t of [A,B]) if(RENT.bal[t.name]<=0) rentBust(t.name);
     rentSave(); }
   function drawBroke(a){
@@ -5978,7 +6005,299 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     ghostPlate(a,"EDMONDS","2018 — 2022 · unfinished business","#ff9a9a",a.gv);
   }
 
-  idleAccrue(); rentHud();
+  /* ═══════════════ v8 · THE BOOK, THE COUNT ROOM, THE HOLD ═══════════════ */
+  const SEASON_END=new Date("2026-12-29T00:00:00");
+  const LEDGER=store.get("ledger",null)||{house:0,handle:0,paid:0,liab:0,tx:[]};
+  function ledgerSave(){ if(LEDGER.tx.length>240) LEDGER.tx=LEDGER.tx.slice(-240); store.set("ledger",LEDGER); }
+  function ledgerTx(amt,who,why){
+    LEDGER.house+=amt;
+    if(amt<0) LEDGER.paid+=-amt;
+    LEDGER.tx.push({t:Date.now(),a:amt,w:who,y:why});
+    ledgerSave(); houseTote();
+  }
+  const money=n=>(n<0?"−$":"$")+Math.abs(Math.round(n)).toLocaleString("en-US");
+  function houseTote(){
+    let el=$("#housetote");
+    if(!el){ el=document.createElement("div"); el.id="housetote";
+      el.style.cssText="position:absolute;left:12px;top:64px;z-index:120;background:linear-gradient(135deg,rgba(10,20,14,.95),rgba(4,10,7,.95));border:1px solid #2e8b57;border-radius:10px;padding:7px 12px;font-family:Sora,system-ui,sans-serif;font-size:11px;letter-spacing:.6px;box-shadow:0 6px 22px rgba(0,0,0,.5);min-width:212px";
+      fs.appendChild(el); }
+    const net=LEDGER.house, live=BOOK.bets.filter(b=>b.st==="LIVE");
+    const liab=live.reduce((a,b)=>a+b.pay,0), stk=live.reduce((a,b)=>a+b.stk,0);
+    el.innerHTML=
+      `<div style="display:flex;justify-content:space-between;color:#7fae90;font-size:9px;letter-spacing:1.6px"><span>THE HOUSE</span><span>THE PLAYERS</span></div>
+       <div style="display:flex;justify-content:space-between;font-weight:900;font-size:14px">
+         <span style="color:${net>=0?"#8df08d":"#ff8a8a"}">${money(net)}</span>
+         <span style="color:${net<=0?"#8df08d":"#ff8a8a"}">${money(-net)}</span></div>
+       <div style="height:4px;border-radius:3px;background:#20301f;overflow:hidden;margin:4px 0">
+         <i style="display:block;height:100%;width:${Math.max(3,Math.min(97,50+net/40))}%;background:linear-gradient(90deg,#2e8b57,#8df08d)"></i></div>
+       <div style="color:#7fae90;font-size:9px">HANDLE ${money(LEDGER.handle)} · OPEN ${live.length} · LIABILITY ${money(liab)} · AT RISK ${money(stk)}</div>`;
+    return el; }
+
+  /* ── the book: markets priced off the 2026 projections ── */
+  const BOOK=store.get("book",null)||{bets:[],results:{}};
+  if(!BOOK.results) BOOK.results={};
+  function bookSave(){ store.set("book",BOOK); }
+  const SPLIT={
+    QB:{ptsK:6, rushYd:.55, passYd:11.5, td:.085},
+    RB:{ptsK:5, rushYd:2.55, recYd:.72, rec:.115, td:.042},
+    WR:{ptsK:5, recYd:3.05, rec:.29, td:.031},
+    TE:{ptsK:5, recYd:2.85, rec:.30, td:.030}
+  };
+  function fieldFor(pos,metric,n){
+    const pl=(D.pub||[]).filter(p=>p.pos===pos&&p.proj>0);
+    const sp=SPLIT[pos]||{};
+    const rows=pl.map(p=>({name:p.name,tm:p.tm,proj:p.proj,
+      val: metric==="pts"?p.proj : (p.proj*(sp[metric]||0))}))
+      .filter(r=>r.val>0).sort((a,b)=>b.val-a.val).slice(0,n);
+    return rows; }
+  function priceField(rows,k,hold){
+    const tot=rows.reduce((a,r)=>a+Math.pow(r.val,k),0);
+    return rows.map(r=>{ const p=Math.pow(r.val,k)/tot;
+      const dec=Math.max(1.08,(1/p)*(1-hold));
+      return {...r,p,dec,am:dec>=2?"+"+Math.round((dec-1)*100):"−"+Math.round(100/(dec-1))}; }); }
+  const MK=[
+    {id:"pts_qb", t:"MOST FANTASY POINTS · QB",   sub:"full season · league scoring", f:()=>priceField(fieldFor("QB","pts",7),6,.08), unit:"pts"},
+    {id:"pts_rb", t:"MOST FANTASY POINTS · RB",   sub:"full season · league scoring", f:()=>priceField(fieldFor("RB","pts",8),5,.08), unit:"pts"},
+    {id:"pts_wr", t:"MOST FANTASY POINTS · WR",   sub:"full season · league scoring", f:()=>priceField(fieldFor("WR","pts",8),5,.08), unit:"pts"},
+    {id:"pts_te", t:"MOST FANTASY POINTS · TE",   sub:"full season · league scoring", f:()=>priceField(fieldFor("TE","pts",6),5,.08), unit:"pts"},
+    {id:"rush",   t:"MOST RUSHING YARDS",         sub:"any position", f:()=>priceField(fieldFor("RB","rushYd",8),5,.09), unit:"yds"},
+    {id:"recyd",  t:"MOST RECEIVING YARDS",       sub:"WR field", f:()=>priceField(fieldFor("WR","recYd",8),5,.09), unit:"yds"},
+    {id:"recs",   t:"MOST RECEPTIONS",            sub:"WR field · full PPR", f:()=>priceField(fieldFor("WR","rec",8),4.5,.09), unit:"rec"},
+    {id:"tetds",  t:"MOST TOUCHDOWNS · TE",       sub:"receiving TDs", f:()=>priceField(fieldFor("TE","td",6),4.5,.10), unit:"td"},
+    {id:"rbtds",  t:"MOST TOUCHDOWNS · RB",       sub:"rush + receiving", f:()=>priceField(fieldFor("RB","td",8),4.5,.10), unit:"td"},
+    {id:"passyd", t:"MOST PASSING YARDS",         sub:"QB field", f:()=>priceField(fieldFor("QB","passYd",7),6,.08), unit:"yds"},
+    {id:"champ",  t:"LEAGUE CHAMPION 2026",       sub:"priced off 1,000,000 simulated seasons", f:()=>{
+        const e=Object.entries((D.mc&&D.mc.season)||{}).map(([nm,v])=>({name:nm,tm:INIT(nm),val:Math.max(.4,v.champ)}));
+        return priceField(e.sort((a,b)=>b.val-a.val),1,.06); }, unit:"%"},
+    {id:"last",   t:"LAST PLACE · EATS THE 9/9/9",sub:"nobody wants this ticket", f:()=>{
+        const e=Object.entries((D.mc&&D.mc.season)||{}).map(([nm,v])=>({name:nm,tm:INIT(nm),val:Math.max(.4,v.last)}));
+        return priceField(e.sort((a,b)=>b.val-a.val),1,.06); }, unit:"%"}
+  ];
+  let _mkCache={};
+  const mkRows=m=>(_mkCache[m.id]||(_mkCache[m.id]=m.f()));
+  const daysLeft=()=>Math.max(0,Math.ceil((SEASON_END-Date.now())/864e5));
+
+  function placeBet(mk,sel){
+    const stake=BOOK.stake||50;
+    if(RENT.me<stake){ BOOK.msg="Not enough rent money. See the cage."; return bookRender(); }
+    const pay=Math.round(stake*sel.dec);
+    RENT.me-=stake; rentSave(); rentHud();
+    const b={id:"B"+Date.now().toString(36).toUpperCase().slice(-6),mk:mk.id,mkt:mk.t,sel:sel.name,
+      tm:sel.tm||"",dec:+sel.dec.toFixed(2),am:sel.am,stk:stake,pay,st:"LIVE",at:Date.now()};
+    BOOK.bets.unshift(b); LEDGER.handle+=stake; bookSave();
+    ledgerTx(stake,"you","ticket "+b.id+" · "+mk.t);
+    sysLog(`🎟 TICKET ${b.id} — ${money(stake)} on ${sel.name} · ${mk.t} @ ${sel.am} (returns ${money(pay)})`);
+    toast("🎟 Ticket "+b.id+" is live");
+    BOOK.msg=`Ticket ${b.id} accepted. Settles after the championship — ${daysLeft()} days.`;
+    bookRender(); }
+  function settleMarket(mkId,winner){
+    const mk=MK.find(m=>m.id===mkId); if(!mk) return;
+    BOOK.results[mkId]={w:winner,at:Date.now()}; bookSave();
+    let paid=0,won=0,lost=0;
+    for(const b of BOOK.bets){
+      if(b.mk!==mkId||b.st!=="LIVE") continue;
+      if(b.sel===winner){ b.st="WON"; RENT.me+=b.pay; paid+=b.pay; won++;
+        ledgerTx(-b.pay,"you","paid ticket "+b.id); }
+      else { b.st="LOST"; lost++; } }
+    rentSave(); rentHud(); bookSave();
+    sysLog(`🏁 ${mk.t} settled — ${winner}. ${won} ticket(s) paid ${money(paid)}, ${lost} torn up.`);
+    toast("🏁 "+mk.t+" graded");
+    bookRender(); }
+
+  /* ── the ticket window ── */
+  let bookTab="board", bookMk=MK[0];
+  function bookUI(){
+    let el=$("#bookui");
+    if(!el){ el=document.createElement("div"); el.id="bookui";
+      el.style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:282;width:min(720px,96vw);max-height:88vh;overflow:auto;background:linear-gradient(160deg,#06120c,#03200e);border:2px solid #2e8b57;border-radius:16px;padding:16px 18px;box-shadow:0 26px 80px rgba(0,0,0,.75);font-family:Sora,system-ui,sans-serif;color:#e8f2ea;display:none";
+      fs.appendChild(el); }
+    return el; }
+  const BTN="background:linear-gradient(180deg,#2e8b57,#1d5c39);border:none;color:#eafff0;font-weight:800;letter-spacing:1px;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:11px;font-family:inherit";
+  function bookRender(){
+    const el=bookUI(); if(el.style.display==="none") return;
+    const live=BOOK.bets.filter(b=>b.st==="LIVE");
+    const tab=(id,lbl)=>`<button class="bkt" data-t="${id}" style="${BTN};opacity:${bookTab===id?1:.5}">${lbl}</button>`;
+    let body="";
+    if(bookTab==="board"){
+      body=`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">`+
+        MK.map(m=>`<button class="bkm" data-m="${m.id}" style="${BTN};font-size:10px;padding:6px 9px;opacity:${bookMk.id===m.id?1:.45}">${m.t.replace("MOST ","").replace(" · ","·")}</button>`).join("")+`</div>`;
+      const rows=mkRows(bookMk);
+      body+=`<div style="font-size:13px;font-weight:900;letter-spacing:1.4px;color:#8df08d">${bookMk.t}</div>
+        <div style="font-size:10px;color:#7fae90;margin-bottom:8px">${bookMk.sub} · settles after the championship · ${daysLeft()} days</div>`;
+      body+=rows.map((r,i)=>`
+        <div class="bkr" data-i="${i}" style="display:flex;align-items:center;gap:10px;padding:7px 10px;margin-bottom:4px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid ${i===0?"rgba(240,201,92,.35)":"rgba(46,139,87,.22)"};cursor:pointer">
+          <b style="width:16px;color:#5f8f72;font-size:11px">${i+1}</b>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.name}</div>
+            <div style="font-size:9px;color:#7fae90">${r.tm||""} · model ${bookMk.unit==="%"?r.val.toFixed(1)+"%":Math.round(r.val)+" "+bookMk.unit} · ${(r.p*100).toFixed(1)}% implied</div></div>
+          <b style="color:${i===0?"#f0c95c":"#8df08d"};font-size:14px;min-width:52px;text-align:right">${r.am}</b>
+        </div>`).join("");
+      body+=`<div style="display:flex;gap:6px;align-items:center;margin-top:10px;flex-wrap:wrap">
+        <span style="font-size:10px;color:#7fae90;letter-spacing:1px">STAKE</span>
+        ${[25,50,100,250].map(v=>`<button class="bks" data-v="${v}" style="${BTN};padding:6px 10px;opacity:${(BOOK.stake||50)===v?1:.45}">$${v}</button>`).join("")}
+        <span style="font-size:10px;color:#5f8f72">click a runner to place the ticket</span></div>`;
+    } else if(bookTab==="mine"){
+      body=`<div style="font-size:12px;font-weight:900;letter-spacing:1.4px;color:#8df08d;margin-bottom:2px">MY TICKETS</div>
+        <div style="font-size:10px;color:#7fae90;margin-bottom:10px">${live.length} live · ${money(live.reduce((a,b)=>a+b.stk,0))} at risk · ${money(live.reduce((a,b)=>a+b.pay,0))} to collect if they all land</div>`;
+      body+= BOOK.bets.length? BOOK.bets.slice(0,40).map(b=>`
+        <div style="padding:8px 10px;margin-bottom:5px;border-radius:8px;background:rgba(0,0,0,.3);border-left:3px solid ${b.st==="WON"?"#8df08d":b.st==="LOST"?"#8a3a3a":"#f0c95c"}">
+          <div style="display:flex;justify-content:space-between;font-size:11px">
+            <b>${b.sel}</b><b style="color:${b.st==="WON"?"#8df08d":b.st==="LOST"?"#ff8a8a":"#f0c95c"}">${b.st}</b></div>
+          <div style="font-size:9px;color:#7fae90">${b.mkt} · ${b.am} · ${money(b.stk)} to win ${money(b.pay-b.stk)}</div>
+          <div style="font-size:8px;color:#4f7a60">${b.id} · placed ${new Date(b.at).toLocaleDateString()}</div>
+        </div>`).join("") : `<div style="font-size:11px;color:#5f8f72">No tickets yet. The board is open.</div>`;
+    } else {
+      const isComm=(meTeam()||{}).name==="Flacc Shots";
+      body=`<div style="font-size:12px;font-weight:900;letter-spacing:1.4px;color:#f0c95c;margin-bottom:2px">GRADING WINDOW</div>
+        <div style="font-size:10px;color:#7fae90;margin-bottom:10px">${isComm?"Commissioner access. Enter the real result once the season is final — every live ticket on that market grades instantly and the money moves through the count room.":"Commissioner only. Claim Flacc Shots to grade markets."}</div>`;
+      if(isComm) body+=MK.map(m=>{
+        const res=BOOK.results[m.id], open=BOOK.bets.filter(b=>b.mk===m.id&&b.st==="LIVE").length;
+        return `<div style="padding:8px 10px;margin-bottom:5px;border-radius:8px;background:rgba(0,0,0,.3)">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <div style="font-size:11px;font-weight:800">${m.t}<div style="font-size:9px;color:#7fae90;font-weight:400">${open} live ticket(s)${res?" · graded "+res.w:""}</div></div>
+            ${res?"":`<select class="bkg" data-m="${m.id}" style="background:#04180c;color:#cfe8d4;border:1px solid #2e8b57;border-radius:6px;padding:5px;font-size:10px;font-family:inherit;max-width:190px">
+              <option value="">— winner —</option>${mkRows(m).map(r=>`<option>${r.name}</option>`).join("")}</select>`}
+          </div></div>`; }).join("");
+    }
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap">
+        <b style="letter-spacing:2px;color:#8df08d;font-size:13px">🎟 THE BOOK · SEASON-LONG</b>
+        <div style="display:flex;gap:6px">${tab("board","BOARD")}${tab("mine","MY TICKETS")}${tab("grade","GRADE")}
+          <button id="bkx" style="background:none;border:1px solid #2e8b57;color:#8df08d;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:11px">✕</button></div></div>
+      <div style="display:flex;gap:8px;font-size:10px;color:#7fae90;margin-bottom:10px;flex-wrap:wrap">
+        <span>💵 YOUR RENT ${money(RENT.me)}</span><span>·</span><span>HOUSE ${money(LEDGER.house)}</span>
+        <span>·</span><span>HANDLE ${money(LEDGER.handle)}</span><span>·</span><span>${live.length} OPEN TICKETS</span></div>
+      <div style="min-height:16px;font-size:11px;color:#f0c95c;margin-bottom:8px">${BOOK.msg||""}</div>
+      ${body}
+      <div style="margin-top:10px;font-size:9px;color:#4f7a60;line-height:1.5">
+        Prices are modelled from the league's 2026 projections and 1,000,000 simulated seasons, with an 6–10% hold.
+        Tickets stay live all season and are graded by the commissioner once the championship is decided.</div>`;
+    el.querySelectorAll(".bkt").forEach(b=>b.onclick=()=>{ bookTab=b.dataset.t; BOOK.msg=""; bookRender(); });
+    el.querySelectorAll(".bkm").forEach(b=>b.onclick=()=>{ bookMk=MK.find(m=>m.id===b.dataset.m); bookRender(); });
+    el.querySelectorAll(".bks").forEach(b=>b.onclick=()=>{ BOOK.stake=+b.dataset.v; bookSave(); bookRender(); });
+    el.querySelectorAll(".bkr").forEach(b=>b.onclick=()=>{ placeBet(bookMk,mkRows(bookMk)[+b.dataset.i]); });
+    el.querySelectorAll(".bkg").forEach(sl=>sl.onchange=()=>{ if(sl.value) settleMarket(sl.dataset.m,sl.value); });
+    const x=$("#bkx"); if(x) x.onclick=()=>{ el.style.display="none"; };
+  }
+  function openBook(tab){ bookTab=tab||"board"; BOOK.msg=BOOK.msg||"Everything on this board settles after the championship."; bookUI().style.display="block"; bookRender(); houseTote(); }
+
+  /* ── the count room ── */
+  function countUI(){
+    let el=$("#countui");
+    if(!el){ el=document.createElement("div"); el.id="countui";
+      el.style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:282;width:min(640px,96vw);max-height:86vh;overflow:auto;background:linear-gradient(160deg,#100d06,#1c1608);border:2px solid #8a6d1c;border-radius:16px;padding:16px 18px;box-shadow:0 26px 80px rgba(0,0,0,.75);font-family:Sora,system-ui,sans-serif;color:#f2e9d0;display:none";
+      fs.appendChild(el); }
+    return el; }
+  function countRender(){
+    const el=countUI(); if(el.style.display==="none") return;
+    const live=BOOK.bets.filter(b=>b.st==="LIVE");
+    const liab=live.reduce((a,b)=>a+b.pay,0);
+    const cell=(l,v,c)=>`<div style="background:rgba(0,0,0,.32);border-radius:9px;padding:9px 11px">
+      <div style="font-size:9px;letter-spacing:1.6px;color:#a89f8a">${l}</div>
+      <div style="font-size:18px;font-weight:900;color:${c||"#f0c95c"}">${v}</div></div>`;
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <b style="letter-spacing:2px;color:#d4af37;font-size:13px">🏦 THE COUNT ROOM</b>
+        <button id="ctx" style="background:none;border:1px solid #8a6d1c;color:#d4af37;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:11px">✕</button></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:7px;margin-bottom:12px">
+        ${cell("HOUSE HOLD",money(LEDGER.house),LEDGER.house>=0?"#8df08d":"#ff8a8a")}
+        ${cell("PLAYERS NET",money(-LEDGER.house),LEDGER.house<=0?"#8df08d":"#ff8a8a")}
+        ${cell("TOTAL HANDLE",money(LEDGER.handle))}
+        ${cell("PAID OUT",money(LEDGER.paid))}
+        ${cell("OPEN LIABILITY",money(liab),"#ffb02a")}
+        ${cell("YOUR RENT",money(RENT.me),"#8df08d")}</div>
+      <div style="font-size:10px;letter-spacing:1.6px;color:#a89f8a;margin-bottom:6px">THE DROP — every dollar in or out of this building</div>
+      <div style="max-height:270px;overflow:auto;border-radius:9px;background:rgba(0,0,0,.26);padding:6px">
+        ${LEDGER.tx.slice().reverse().slice(0,80).map(t=>`
+          <div style="display:flex;justify-content:space-between;gap:8px;padding:5px 7px;border-bottom:1px solid rgba(138,109,28,.14);font-size:10px">
+            <span style="color:#8a8378;min-width:52px">${new Date(t.t).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</span>
+            <span style="flex:1;color:#cfc6b4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.y}</span>
+            <b style="color:${t.a>=0?"#8df08d":"#ff8a8a"};min-width:64px;text-align:right">${money(t.a)}</b>
+          </div>`).join("")||'<div style="font-size:10px;color:#8a8378;padding:8px">No movement yet. The trays are empty.</div>'}
+      </div>
+      <div style="margin-top:10px;font-size:9px;color:#8a8378;line-height:1.5">
+        Every hand of blackjack, every ticket written, every side bet the owners make on this floor lands in this room.
+        The hold is swept nightly to the commissioner's penthouse.</div>`;
+    const x=$("#ctx"); if(x) x.onclick=()=>{ el.style.display="none"; };
+  }
+  function openCount(){ countUI().style.display="block"; countRender(); }
+
+  /* ── the count room, physically ── */
+  const CTX0=SBX-20, CTY0=1268;
+  FURN.push(
+    {base:1560, draw(){
+      const t=Date.now()/1000;
+      /* tiled cage floor */
+      cx.fillStyle="#151109"; cx.fillRect(CTX0,CTY0,SBW+40,300);
+      cx.strokeStyle="rgba(212,175,55,.12)"; cx.lineWidth=1;
+      for(let gx=CTX0;gx<CTX0+SBW+40;gx+=40){ cx.beginPath(); cx.moveTo(gx,CTY0); cx.lineTo(gx,CTY0+300); cx.stroke(); }
+      for(let gy=CTY0;gy<CTY0+300;gy+=40){ cx.beginPath(); cx.moveTo(CTX0,gy); cx.lineTo(CTX0+SBW+40,gy); cx.stroke(); }
+      /* bars across the front */
+      cx.fillStyle="#2b2418"; cx.fillRect(CTX0,CTY0-8,SBW+40,10);
+      cx.strokeStyle="#8a6d1c"; cx.lineWidth=3;
+      for(let bx=CTX0+14;bx<CTX0+SBW+30;bx+=26){
+        if(bx>CTX0+230&&bx<CTX0+320) continue;                       // the doorway
+        cx.beginPath(); cx.moveTo(bx,CTY0-8); cx.lineTo(bx,CTY0+54); cx.stroke(); }
+      cx.fillStyle="#d4af37"; cx.font="800 12px 'Archivo Black'"; cx.textAlign="center";
+      cx.fillText("THE COUNT ROOM",CTX0+(SBW+40)/2,CTY0-16);
+      cx.fillStyle="rgba(212,175,55,.5)"; cx.font="700 8px Sora";
+      cx.fillText("AUTHORISED PERSONNEL · CAMERAS RUNNING",CTX0+(SBW+40)/2,CTY0+72);
+      /* counting tables with banded straps */
+      for(let k=0;k<2;k++){ const tx2=CTX0+56+k*250, ty2=CTY0+108;
+        cx.fillStyle="#3a2417"; cx.beginPath(); cx.roundRect(tx2,ty2,190,64,6); cx.fill();
+        cx.fillStyle="#4a2f1c"; cx.fillRect(tx2+4,ty2+4,182,10);
+        const stacks=Math.min(9,2+Math.floor(Math.abs(LEDGER.house)/900));
+        for(let i=0;i<stacks;i++){ const sx=tx2+12+(i%5)*34, sy=ty2+22+Math.floor(i/5)*22;
+          for(let L=0;L<4;L++){ cx.fillStyle=L%2?"#cbd6b8":"#b9c9a4";
+            cx.fillRect(sx,sy-L*2.2,26,7); }
+          cx.fillStyle="#c8102e"; cx.fillRect(sx,sy-3.2,26,2.6);
+          cx.fillStyle="rgba(0,0,0,.35)"; cx.fillRect(sx,sy+7,26,1.6); } }
+      /* the counting machine */
+      cx.fillStyle="#20242a"; cx.beginPath(); cx.roundRect(CTX0+360,CTY0+96,74,54,6); cx.fill();
+      cx.fillStyle="#0d1014"; cx.fillRect(CTX0+368,CTY0+104,58,20);
+      cx.fillStyle="#8df08d"; cx.font="700 10px 'Courier New',monospace"; cx.textAlign="right";
+      cx.fillText(String(Math.abs(Math.round(LEDGER.handle))).padStart(6,"0"),CTX0+422,CTY0+118);
+      cx.fillStyle=Math.sin(t*8)>0?"#8df08d":"#1d3a24";
+      cx.beginPath(); cx.arc(CTX0+372,CTY0+140,3,0,7); cx.fill();
+      cx.fillStyle="#a89f8a"; cx.font="700 7px Sora"; cx.textAlign="center";
+      cx.fillText("HANDLE",CTX0+397,CTY0+160);
+      /* the scale */
+      cx.fillStyle="#2b2418"; cx.beginPath(); cx.roundRect(CTX0+456,CTY0+112,58,34,5); cx.fill();
+      cx.fillStyle="#c9cfd6"; cx.fillRect(CTX0+462,CTY0+106,46,8);
+      /* the whiteboard — live house vs players */
+      cx.fillStyle="#f2efe4"; cx.beginPath(); cx.roundRect(CTX0+44,CTY0+192,470,86,5); cx.fill();
+      cx.strokeStyle="#8a6d1c"; cx.lineWidth=3; cx.stroke();
+      cx.textAlign="left"; cx.fillStyle="#2a2118"; cx.font="800 11px Sora";
+      cx.fillText("HOUSE",CTX0+62,CTY0+216); cx.fillText("PLAYERS",CTX0+300,CTY0+216);
+      cx.font="900 22px 'Archivo Black'";
+      cx.fillStyle=LEDGER.house>=0?"#1d6b45":"#8f1d2c"; cx.fillText(money(LEDGER.house),CTX0+62,CTY0+244);
+      cx.fillStyle=LEDGER.house<=0?"#1d6b45":"#8f1d2c"; cx.fillText(money(-LEDGER.house),CTX0+300,CTY0+244);
+      cx.font="700 9px Sora"; cx.fillStyle="#6b5a3f";
+      cx.fillText(`handle ${money(LEDGER.handle)} · paid ${money(LEDGER.paid)} · ${BOOK.bets.filter(b=>b.st==="LIVE").length} tickets live`,CTX0+62,CTY0+266);
+      /* the cart, always moving something out */
+      const cw=CTX0+120+((t*22)%360);
+      cx.fillStyle="#2a2a2e"; cx.beginPath(); cx.roundRect(cw,CTY0+62,52,26,4); cx.fill();
+      cx.fillStyle="#cbd6b8"; cx.fillRect(cw+6,CTY0+56,40,10);
+      cx.fillStyle="#c8102e"; cx.fillRect(cw+6,CTY0+59,40,2.4);
+      cx.fillStyle="#14100c"; cx.beginPath(); cx.arc(cw+10,CTY0+90,4.4,0,7); cx.fill();
+      cx.beginPath(); cx.arc(cw+42,CTY0+90,4.4,0,7); cx.fill();
+      cx.fillStyle="rgba(212,175,55,.4)"; cx.font="700 7px Sora"; cx.textAlign="center";
+      cx.fillText("TO THE PENTHOUSE ▸",cw+26,CTY0+50); }}
+  );
+  SOLIDS.push(
+    {x:CTX0+56, y:CTY0+108,w:190,h:64, id:"cnt1"},
+    {x:CTX0+306,y:CTY0+108,w:190,h:64, id:"cnt2"},
+    {x:CTX0+44, y:CTY0+192,w:470,h:86, id:"cboard"}
+  );
+  IX.push(
+    {id:"count", x:CTX0+270,y:CTY0+92, r:170, label:"THE COUNT ROOM", prompt:"open the ledger"},
+    {id:"book",  x:SBX+SBW/2,y:560,    r:140, label:"THE BOOK",       prompt:"write a season-long ticket"}
+  );
+  function stepBookHud(){ if(!fs.classList.contains("on")) return;
+    if(!$("#housetote")) houseTote();
+    if((stepBookHud.t=(stepBookHud.t||0)+1)%90===0) houseTote(); }
+
+  idleAccrue(); rentHud(); houseTote();
 
   function step(){
     requestAnimationFrame(step);
@@ -6157,7 +6476,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(let i=confetti.length-1;i>=0;i--){ const p=confetti[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life-=.004;
       if(p.life<=0||p.y>H){confetti.splice(i,1);continue;}
       cx.globalAlpha=Math.min(1,p.life*2); cx.fillStyle=p.c; cx.fillRect(p.x,p.y,p.r,p.r*.6); cx.globalAlpha=1; }
-    stepProps(); stepSouls(); stepBuffs(); stepRent(); stepAmb(); drawAmb(); drawCeiling();
+    stepProps(); stepSouls(); stepBuffs(); stepRent(); stepBookHud(); stepAmb(); drawAmb(); drawCeiling();
     if(party&&Math.random()<.3) confetti.push({x:Math.random()*W,y:WALL,vx:(Math.random()-.5)*1.4,vy:1+Math.random()*2,c:["#d4af37","#c8102e","#4d9fff","#2e8b57","#c959ff"][Math.floor(Math.random()*5)],r:3+Math.random()*4,life:1});
     cx.setTransform(DPR,0,0,DPR,0,0);
     const vg=cx.createRadialGradient(innerWidth/2,innerHeight/2,Math.min(innerWidth,innerHeight)*.42,innerWidth/2,innerHeight/2,Math.max(innerWidth,innerHeight)*.75);
