@@ -895,6 +895,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
     <button class="cbtn" id="clubexit">✕ LEAVE</button>
     <div id="clubhint"></div>
     <button class="cbtn seatb" id="seatbtn" title="Call the table to order — everyone to their seat (T)">🪑 CALL TO ORDER</button>
+    <button class="cbtn" id="netbtn" title="Play live with the other owners">🌐 LIVE</button>
     <button class="cbtn ptab" data-p="inv">🎒 INV</button>
     <button class="cbtn ptab" data-p="skills">📊 SKILLS</button>
     <button class="cbtn ptab" data-p="fit">🕴 FIT</button>
@@ -2641,7 +2642,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
    {n:"",      k:"cat",  sc:1.5, c1:"#b9bec8",c2:"#f2efe4",eye:"#8fd8b4",fluff:1,halo:1,epitaph:"no name · no collar",x:2250,y:780,vx:0,vy:0,tx:null,ty:null,wt:140,ph:Math.random()*7,heart:0},
    {n:"Ego",   k:"cat",  sc:1.35,c1:"#e2793b",c2:"#b8451c",eye:"#2e8b57",x:995, y:575,lounge:1,ph:Math.random()*7,heart:0},
    {n:"Nebula",k:"cat",  sc:0.72,c1:"#6b4226",c2:"#1c1410",eye:"#8df08d",tortie:1,x:900, y:900,vx:0,vy:0,play:1,ph:Math.random()*7,heart:0},
-   {n:"Leo",   k:"cat",  sc:0.95,c1:"#141414",c2:"#141414",eye:"#f0c95c",halo:1,epitaph:"♡ July 4, 2026",x:960, y:930,vx:0,vy:0,play:2,lanky:1,ph:Math.random()*7,heart:0}];
+   {n:"Leo",   k:"cat",  sc:0.95,c1:"#141414",c2:"#141414",eye:"#f0c95c",x:960, y:930,vx:0,vy:0,play:2,lanky:1,ph:Math.random()*7,heart:0}];
   function updatePets(){
     const neb=PETS[3];
     for(const pt of PETS){
@@ -2698,7 +2699,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
    Ego:"Ego opens one eye, decides you are beneath him, purrs anyway.",
    Nebula:"Nebula bats at your shoelace and wins the exchange.",
    Leo:"Leo stretches to twice his length, then folds back into shadow."};
-  window.__club={go:(x,y)=>{player.x=x;player.y=y;},state:()=>({x:Math.round(player.x),y:Math.round(player.y),mode:MODE,seated:NPCS.filter(n=>n.sit).length,meSit:!!player.sit})};
+  window.__club={go:(x,y)=>{player.x=x;player.y=y;}, net:()=>NET, send:o=>netSend(o), openBJ:()=>openBJ(), openBook:()=>openBook(), openNet:()=>openNet(), book:()=>BOOK, ledger:()=>LEDGER, rent:()=>RENT,state:()=>({x:Math.round(player.x),y:Math.round(player.y),mode:MODE,seated:NPCS.filter(n=>n.sit).length,meSit:!!player.sit,live:NET.on,peers:NET.rem.size})};
 
   /* ── chat / overhead / fx ── */
   const overs=[]; const sparks=[]; const confetti=[]; let marker=null;
@@ -2713,6 +2714,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   function overhead(a,txt,me){ overs.push({a,txt:String(txt).slice(0,80),life:1,me:!!me});
     const mine=overs.filter(o=>o.a===a); if(mine.length>1) overs.splice(overs.indexOf(mine[0]),1); }
   function sendChat(){ const v=$("#chatin").value.trim(); if(!v) return;
+    if(NET.on) netSend({t:"say",x:v});
     const meN=(meTeam()||GUEST).name;
     chat.push({w:meN,x:v}); if(chat.length>140) chat=chat.slice(-140);
     store.set("chat",chat); $("#chatin").value=""; renderChat();
@@ -2728,7 +2730,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(document.activeElement===$("#chatin")) return;
     if(e.key==="t"||e.key==="T"){ e.preventDefault(); callToOrder(); } });
   $("#chathead").onclick=()=>$("#clubchat").classList.toggle("min");
-  { const sb=$("#seatbtn"); if(sb) sb.onclick=()=>callToOrder(); }
+  { const sb=$("#seatbtn"); if(sb) sb.onclick=()=>callToOrder();
+    const nb=$("#netbtn"); if(nb) nb.onclick=()=>openNet(); }
 
   /* ── panels ── */
   let panelMode=null;
@@ -2965,6 +2968,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── emotes ── */
   function doEmote(a,type,me){ a.emote={e:type,life:1};
+    if(me&&NET.on) netSend({t:"emote",e:type});
     const em={wave:"👋",dance:"🕺",flex:"💪",rage:"😤"}[type];
     overhead(a,em,me);
     if(type==="dance") for(let i=0;i<10;i++) confetti.push({x:a.x+(Math.random()-.5)*60,y:a.y-30,vx:(Math.random()-.5)*2,vy:-1-Math.random()*1.5,c:["#c959ff","#4d9fff","#f0c95c"][i%3],r:3,life:.8}); }
@@ -5442,6 +5446,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     return el; }
   function bjRender(){
     const el=bjUI(); if(el.style.display==="none") return;
+    if(NET.on) return bjLive(el);
     const card=c=>`<span style="display:inline-block;min-width:32px;text-align:center;background:#f4f1e8;color:${c.s===1||c.s===2?"#c8102e":"#14100c"};border-radius:4px;padding:5px 4px;margin:2px;font-weight:800;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.4)">${RANK[c.r]}${SUIT[c.s]}</span>`;
     const back=`<span style="display:inline-block;min-width:32px;text-align:center;background:linear-gradient(135deg,#8f1d2c,#4a0d16);color:#d4af37;border-radius:4px;padding:5px 4px;margin:2px;font-weight:800;font-size:14px">★</span>`;
     const tc=bjTrue(), pen=((BJ.seen/(BJ.DECKS*52))*100).toFixed(0);
@@ -5495,6 +5500,55 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       else { BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · house wins"); BJ.msg=`HOUSE TAKES IT ${d} to ${p}. −$${BJ.bet}`; award("card",4); }
       BJ.state="idle"; BJ.bet=Math.max(25,Math.min(500,BJ.bet)); rentSave(); }
     bjRender();
+  }
+  function bjLive(el){
+    const B=NET.sbj;
+    if(!B){ el.innerHTML='<div style="color:#8df08d">Waiting for the house…</div>'; return; }
+    const me=NET.id, seat=B.seats[me], mine=seat&&B.turn===me;
+    const card=c=>c&&c.h
+      ? `<span style="display:inline-block;min-width:30px;text-align:center;background:linear-gradient(135deg,#8f1d2c,#4a0d16);color:#d4af37;border-radius:4px;padding:5px 4px;margin:2px;font-weight:800;font-size:13px">★</span>`
+      : `<span style="display:inline-block;min-width:30px;text-align:center;background:#f4f1e8;color:${c.s===1||c.s===2?"#c8102e":"#14100c"};border-radius:4px;padding:5px 4px;margin:2px;font-weight:800;font-size:13px">${RANK[c.r]}${SUIT[c.s]}</span>`;
+    const remain=Math.max(1,(B.decks*52-B.seen)/52), tc=B.run/remain;
+    const rows=Object.entries(B.seats).map(([id,s])=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 9px;margin-bottom:4px;border-radius:8px;
+        background:${id===me?"rgba(240,201,92,.10)":"rgba(0,0,0,.28)"};border:1px solid ${B.turn===id?"#f0c95c":"rgba(46,139,87,.22)"}">
+        <b style="min-width:96px;font-size:11px;color:${id===me?"#f0c95c":"#cfe8d4"}">${s.owner}${id===me?" (you)":""}</b>
+        <div style="flex:1">${s.hand.map(card).join("")||'<span style="color:#5f8f72;font-size:11px">—</span>'}</div>
+        <b style="font-size:12px;color:#8df08d">${s.hand.length?s.total:""}</b>
+        <span style="font-size:10px;min-width:64px;text-align:right;color:${s.res==="WON"||s.res==="BLACKJACK"?"#8df08d":s.res==="BUST"||s.res==="LOST"?"#ff8a8a":"#a89f8a"}">${s.res||(B.turn===id?"thinking…":"")}</span>
+        <span style="font-size:10px;color:#e0c98a;min-width:44px;text-align:right">$${s.bet}</span></div>`).join("");
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <b style="letter-spacing:2px;color:#8df08d;font-size:13px">🃏 THE HOUSE TABLE · LIVE</b>
+        <button id="bjx" style="background:none;border:1px solid #2e8b57;color:#8df08d;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:11px">CLOSE ✕</button></div>
+      <div style="background:rgba(0,0,0,.32);border-radius:10px;padding:9px 11px;margin-bottom:8px">
+        <div style="font-size:10px;letter-spacing:2px;color:#7fbf95">THE HOUSE SHOWS</div>
+        <div>${(B.dealer||[]).map(card).join("")} <b style="color:#cfe8d4;font-size:12px">${B.dealerTotal??""}</b></div></div>
+      ${rows||'<div style="font-size:11px;color:#5f8f72;padding:6px">No one is seated. Take a seat and the house will deal.</div>'}
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0;font-size:10px;text-align:center">
+        <div style="background:rgba(46,139,87,.14);border-radius:7px;padding:6px"><div style="color:#7fbf95">RUNNING</div><b style="font-size:15px;color:${B.run>0?"#8df08d":B.run<0?"#ff8a8a":"#e8f2ea"}">${B.run>0?"+":""}${B.run}</b></div>
+        <div style="background:rgba(46,139,87,.14);border-radius:7px;padding:6px"><div style="color:#7fbf95">TRUE</div><b style="font-size:15px;color:${tc>=2?"#f0c95c":"#e8f2ea"}">${tc>0?"+":""}${tc.toFixed(1)}</b></div>
+        <div style="background:rgba(46,139,87,.14);border-radius:7px;padding:6px"><div style="color:#7fbf95">SHOE</div><b style="font-size:15px">${((B.seen/(B.decks*52))*100).toFixed(0)}%</b></div>
+        <div style="background:rgba(240,201,92,.14);border-radius:7px;padding:6px"><div style="color:#e0c98a">RENT $</div><b style="font-size:15px;color:#f0c95c">${money(RENT.me)}</b></div></div>
+      <div style="min-height:16px;font-size:11px;color:#f0c95c;margin-bottom:8px">${NET.err||(mine?"Your call.":B.turn?"Waiting on "+(B.seats[B.turn]||{}).owner+"…":"")}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${seat
+          ? (mine ? `<button class="bjb" data-a="hit">HIT</button><button class="bjb" data-a="stand">STAND</button><button class="bjb" data-a="double">DOUBLE</button>`
+                  : (B.phase==="play" ? `<button class="bjb" data-a="wait" disabled style="opacity:.4">WAITING</button>`
+                                      : `<button class="bjb" data-a="deal">DEAL</button><button class="bjb" data-a="up">LEAVE SEAT</button>`))
+          : `<button class="bjb" data-a="sit25">SIT · $25</button><button class="bjb" data-a="sit50">SIT · $50</button><button class="bjb" data-a="sit100">SIT · $100</button>`}
+      </div>
+      <div style="margin-top:8px;font-size:10px;color:#5f8f72">one shoe, one dealer, everyone at the table — the count is shared</div>`;
+    el.querySelectorAll(".bjb").forEach(b=>{
+      b.style.cssText="flex:1;min-width:86px;background:linear-gradient(180deg,#2e8b57,#1d5c39);border:none;color:#eafff0;font-weight:800;letter-spacing:1px;border-radius:8px;padding:9px 6px;cursor:pointer;font-size:11px;font-family:inherit";
+      b.onclick=()=>{ const a=b.dataset.a; NET.err="";
+        if(a.startsWith("sit")) netSend({t:"bjsit",bet:+a.slice(3)});
+        else if(a==="deal") netSend({t:"bjdeal"});
+        else if(a==="up") netSend({t:"bjup"});
+        else if(a==="hit") netSend({t:"bjhit"});
+        else if(a==="stand") netSend({t:"bjstand"});
+        else if(a==="double") netSend({t:"bjdouble"}); }; });
+    const x=$("#bjx"); if(x) x.onclick=()=>{ el.style.display="none"; };
   }
   function openBJ(){ const el=bjUI(); el.style.display="block"; BJ.msg=BJ.msg||"Seat's yours. The count carries between hands."; bjRender(); }
   /* table art used by the sportsbook furniture */
@@ -6116,6 +6170,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   function placeBet(mk,sel){
     const stake=BOOK.stake||50;
     if(RENT.me<stake){ BOOK.msg="Not enough rent money. See the cage."; return bookRender(); }
+    if(NET.on){ netSend({t:"bet",mk:mk.id,mkt:mk.t,sel:sel.name,dec:sel.dec,am:sel.am,stk:stake});
+      BOOK.msg=`Ticket sent to the house — ${money(stake)} on ${sel.name}.`; return bookRender(); }
     const pay=Math.round(stake*sel.dec);
     RENT.me-=stake; rentSave(); rentHud();
     const b={id:"B"+Date.now().toString(36).toUpperCase().slice(-6),mk:mk.id,mkt:mk.t,sel:sel.name,
@@ -6128,6 +6184,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     bookRender(); }
   function settleMarket(mkId,winner){
     const mk=MK.find(m=>m.id===mkId); if(!mk) return;
+    if(NET.on){ netSend({t:"grade",mk:mkId,mkt:mk.t,winner}); BOOK.msg=`Sent to the house for grading.`; return bookRender(); }
     BOOK.results[mkId]={w:winner,at:Date.now()}; bookSave();
     let paid=0,won=0,lost=0;
     for(const b of BOOK.bets){
@@ -6560,7 +6617,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     m[LASTP]={x:KT.X+KT.W+52,y:KT.Y+KT.H/2,f:-1,side:0,shame:1};
     return m; }
   const SEATMAP=seatMap();
-  let SEATED=false;
+  let SEATED=false, SEATED_REMOTE=false;
   const SEATLINES=["Order. Somebody actually said order.","This better be about the keeper deadline.",
     "I move that we table this. Literally.","Twelve chairs and I still get the drafty one.",
     "Point of order: Ferrand is already talking.","I second whatever gets us back to the bar.",
@@ -6572,6 +6629,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     const btn=$("#seatbtn"); if(btn){ btn.classList.toggle("on",SEATED); btn.textContent=SEATED?"🪑 DISMISS":"🪑 SEATS"; }
     if(SEATED){
       sysLog("🔔 THE COMMISSIONER CALLS THE TABLE TO ORDER. Everyone to their seat.");
+      if(NET.on&&!SEATED_REMOTE) netSend({t:"seats",on:true});
       toast("🔔 Call to order");
       let k=0;
       for(const n of NPCS){
@@ -6583,6 +6641,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         player.seatT=0; player.manual=0; player.tx=player.seat.x; player.ty=player.seat.y; marker={x:player.tx,y:player.ty,life:1}; }
     } else {
       sysLog("🔔 Adjourned. The table breaks up.");
+      if(NET.on&&!SEATED_REMOTE) netSend({t:"seats",on:false});
       for(const n of NPCS){ n.seat=null; n.sit=false; n.wt=40+Math.random()*160; n.tx=null; }
       player.seat=null; player.sit=false; player.seatT=0; player.manual=0; player.tx=null; }
   }
@@ -6758,6 +6817,175 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       if(!hitSolid(px,py,20)&&px>80&&px<W-80&&py>WALL+50&&py<H-60){ n.x=px; n.y=py; n.flash=1; return; } }
     n.x=kenny.x+48; n.y=kenny.y; n.flash=1; }
 
+  /* ═══════════════ v11 · THE WIRE — live clubhouse ═══════════════ */
+  const NET={ url:store.get("netURL",""), ws:null, id:null, on:false, tries:0,
+              rem:new Map(), lastPos:0, banner:"", sbj:null, err:"" };
+  const netTeam = ()=> (meTeam()||{}).name || "Guest";
+  const netOwner= ()=> ((meTeam()&&OWN[meTeam().name])||{o:"Guest"}).o;
+
+  function netConnect(url){
+    if(url!==undefined){ NET.url=String(url||"").trim(); store.set("netURL",NET.url); }
+    netClose();
+    if(!NET.url){ NET.banner=""; netHud(); return; }
+    let u=NET.url.replace(/^http/,"ws").replace(/\/+$/,"");
+    if(!/\/ws$/.test(u)) u+="/ws";
+    u+=`?room=main&team=${encodeURIComponent(netTeam())}&owner=${encodeURIComponent(netOwner())}`;
+    NET.err="";
+    try{ NET.ws=new WebSocket(u); }catch(e){ NET.err="bad URL"; netHud(); return; }
+    NET.banner="connecting…"; netHud();
+    NET.ws.onopen=()=>{ NET.on=true; NET.tries=0; NET.banner="LIVE"; netHud();
+      sysLog("🌐 Connected to the clubhouse server. Other owners will show up as they arrive."); toast("🌐 LIVE"); };
+    NET.ws.onclose=()=>{ const was=NET.on; NET.on=false; NET.id=null; NET.rem.clear(); NET.sbj=null;
+      unhideNPCs(); NET.banner=NET.url?"offline":""; netHud();
+      if(was) sysLog("🌐 Disconnected. Back to a private clubhouse.");
+      if(NET.url&&NET.tries<8){ NET.tries++; setTimeout(()=>netConnect(),Math.min(20000,2000*NET.tries)); } };
+    NET.ws.onerror=()=>{ NET.err="cannot reach server"; };
+    NET.ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(x){ return; } netMsg(m); };
+  }
+  function netClose(){ if(NET.ws){ try{ NET.ws.onclose=null; NET.ws.close(); }catch(e){} NET.ws=null; } NET.on=false; }
+  function netSend(o){ if(NET.on&&NET.ws&&NET.ws.readyState===1){ try{ NET.ws.send(JSON.stringify(o)); }catch(e){} } }
+
+  function hideClaimed(){
+    const claimed=new Set([...NET.rem.values()].map(r=>r.meta.team));
+    for(const n of NPCS) if(n.t&&claimed.has(n.t.name)) n.hidden=1; else if(n.t) n.hidden=0;
+  }
+  function unhideNPCs(){ for(const n of NPCS) n.hidden=0; }
+
+  function netMsg(m){
+    switch(m.t){
+      case "welcome":
+        NET.id=m.id;
+        for(const p of m.players) NET.rem.set(p.id, mkRemote(p.id,p.meta));
+        hideClaimed(); netApplyState(m);
+        for(const l of (m.chat||[]).slice(-12)) netLogLine(l,true);
+        netHud(); break;
+      case "join": NET.rem.set(m.id, mkRemote(m.id,m.meta)); hideClaimed(); netHud(); break;
+      case "leave": NET.rem.delete(m.id); hideClaimed(); netHud(); break;
+      case "pos": { const r=NET.rem.get(m.id); if(!r) return;
+        r.tx=m.x; r.ty=m.y; r.vx=m.vx; r.vy=m.vy; r.sit=m.sit; r.mode=m.mode; r.seen=Date.now(); break; }
+      case "say": { const r=NET.rem.get(m.id); if(r){ r.talk=200; overhead(r,m.x); } netLogLine(m.line); break; }
+      case "emote": { const r=NET.rem.get(m.id); if(r) doEmote(r,m.e); break; }
+      case "log": netLogLine(m.line); break;
+      case "seats": if(m.on!==SEATED){ SEATED_REMOTE=true; callToOrder(m.on); SEATED_REMOTE=false;
+        sysLog(`🔔 ${m.by} ${m.on?"called the table to order":"adjourned"}.`); } break;
+      case "rent": netRent(m.rent); break;
+      case "ledger": Object.assign(LEDGER,m.ledger); houseTote(); if($("#countui")&&$("#countui").style.display!=="none") countRender(); break;
+      case "bet": BOOK.bets.unshift(m.bet); bookSave(); if(bookOpen()) bookRender(); break;
+      case "graded": BOOK.bets=m.bets; BOOK.results=m.results; bookSave(); if(bookOpen()) bookRender(); break;
+      case "bj": NET.sbj=m.bj; if(bjOpenNow()) bjRender(); break;
+      case "err": NET.err=m.x; toast("⚠ "+m.x); if(bookOpen()) bookRender(); if(bjOpenNow()) bjRender(); break;
+      case "bumped": sysLog("🌐 Another device claimed this franchise. Disconnected."); NET.url=NET.url; netClose(); NET.banner="bumped"; netHud(); break;
+    }
+  }
+  const bookOpen=()=>{ const e=$("#bookui"); return e&&e.style.display!=="none"; };
+  const bjOpenNow=()=>{ const e=$("#bjui"); return e&&e.style.display!=="none"; };
+  function mkRemote(id,meta){
+    const team=TEAMS.find(t=>t.name===meta.team);
+    return {id, meta, t:team||{name:meta.team,c:"#8df08d",slot:-99},
+      own:OWN[meta.team]||GUESTOWN, x:meta.x||1660, y:meta.y||430, tx:meta.x||1660, ty:meta.y||430,
+      vx:0, vy:0, bob:Math.random()*7, talk:0, emote:null, sit:false, live:1, seen:Date.now()};
+  }
+  function netApplyState(m){
+    if(m.rent) netRent(m.rent);
+    if(m.ledger){ Object.assign(LEDGER,m.ledger); houseTote(); }
+    if(m.bets){ BOOK.bets=m.bets; BOOK.results=m.results||{}; bookSave(); }
+    if(m.bj) NET.sbj=m.bj;
+  }
+  function netRent(r){
+    Object.assign(RENT.bal,r);
+    const mine=netTeam();
+    if(r[mine]!=null){ RENT.me=r[mine]; }
+    for(const k of Object.keys(RENT.bal)) if(RENT.bal[k]>0) RENT.broke[k]=0;
+    rentSave(); rentHud(); houseTote();
+  }
+  function netLogLine(l,quiet){
+    if(!l) return;
+    const txt = l.k==="chat" ? `${l.who}: ${l.x}` : l.x;
+    chat.push({s:l.k!=="chat"?1:0, w:l.k==="chat"?l.team:undefined, x:l.k==="chat"?l.x:txt});
+    if(chat.length>140) chat=chat.slice(-140);
+    if(!quiet) store.set("chat",chat);
+    renderChat();
+  }
+  function stepNet(){
+    if(!NET.on) return;
+    const t=Date.now();
+    if(t-NET.lastPos>100){ NET.lastPos=t;
+      netSend({t:"pos",x:Math.round(player.x),y:Math.round(player.y),
+        vx:+player.vx.toFixed(2),vy:+player.vy.toFixed(2),sit:!!player.sit,mode:MODE}); }
+    for(const [id,r] of NET.rem){
+      r.x+=(r.tx-r.x)*.28; r.y+=(r.ty-r.y)*.28;
+      r.bob+=(Math.abs(r.tx-r.x)+Math.abs(r.ty-r.y)>0.6?.34:.07);
+      if(r.talk>0) r.talk--;
+      if(t-r.seen>45000){ NET.rem.delete(id); hideClaimed(); }
+    }
+  }
+  function drawLive(r){
+    drawAvatar(r,false);
+    const t=Date.now()/1000;
+    cx.save(); cx.globalAlpha=.75+Math.sin(t*3)*.2;
+    cx.fillStyle="#8df08d"; cx.font="800 7px Sora"; cx.textAlign="center";
+    cx.fillText("● LIVE",r.x,r.y+70); cx.restore();
+  }
+  /* ── the wire panel ── */
+  function netHud(){
+    let el=$("#nethud");
+    if(!el){ el=document.createElement("div"); el.id="nethud";
+      el.style.cssText="position:absolute;right:12px;top:12px;z-index:130;font-family:Sora,system-ui,sans-serif;font-size:11px;text-align:right";
+      fs.appendChild(el); }
+    const n=NET.rem.size+(NET.on?1:0);
+    el.innerHTML = NET.on
+      ? `<div style="background:rgba(8,20,12,.92);border:1px solid #2e8b57;border-radius:9px;padding:6px 10px;color:#8df08d;font-weight:800;letter-spacing:1px">
+           ● LIVE · ${n} in the room</div>
+         <div style="color:#5f8f72;font-size:9px;margin-top:3px">${[...NET.rem.values()].map(r=>r.own.o).join(" · ")||"just you so far"}</div>`
+      : NET.url
+        ? `<div style="background:rgba(24,12,8,.9);border:1px solid #7a3a2a;border-radius:9px;padding:6px 10px;color:#e0a08a">○ ${NET.banner||"offline"}${NET.err?" — "+NET.err:""}</div>`
+        : "";
+    return el;
+  }
+  function netUI(){
+    let el=$("#netui");
+    if(!el){ el=document.createElement("div"); el.id="netui";
+      el.style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:284;width:min(520px,94vw);background:linear-gradient(160deg,#07120c,#04180e);border:2px solid #2e8b57;border-radius:16px;padding:16px 18px;box-shadow:0 26px 80px rgba(0,0,0,.75);font-family:Sora,system-ui,sans-serif;color:#e8f2ea;display:none";
+      fs.appendChild(el); }
+    return el; }
+  function netRender(){
+    const el=netUI(); if(el.style.display==="none") return;
+    const people=[...NET.rem.values()];
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <b style="letter-spacing:2px;color:#8df08d;font-size:13px">🌐 LIVE CLUBHOUSE</b>
+        <button id="ntx" style="background:none;border:1px solid #2e8b57;color:#8df08d;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:11px">✕</button></div>
+      <div style="font-size:11px;color:#9fd8b4;line-height:1.6;margin-bottom:10px">
+        Point every owner at the same server address and the clubhouse becomes one shared room —
+        you'll see each other move, chat, sit at the table, and the rent money, the book and the
+        blackjack shoe all run off the house server instead of your own browser.</div>
+      <div style="font-size:9px;letter-spacing:1.6px;color:#5f8f72;margin-bottom:4px">SERVER ADDRESS</div>
+      <input id="neturl" value="${(NET.url||"").replace(/"/g,"&quot;")}" placeholder="wss://nfl-clubhouse.your-name.workers.dev"
+        style="width:100%;background:#04180c;color:#cfe8d4;border:1px solid #2e8b57;border-radius:8px;padding:9px 10px;font-size:12px;font-family:inherit;box-sizing:border-box">
+      <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
+        <button class="ntb" data-a="go" style="${BTN}">${NET.on?"RECONNECT":"CONNECT"}</button>
+        <button class="ntb" data-a="off" style="${BTN};opacity:.6">GO PRIVATE</button>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(46,139,87,.25)">
+        <div style="font-size:9px;letter-spacing:1.6px;color:#5f8f72;margin-bottom:6px">IN THE ROOM</div>
+        ${NET.on
+          ? `<div style="font-size:12px"><b style="color:#f0c95c">${netOwner()} — ${netTeam()}</b> <span style="color:#5f8f72">(you)</span></div>`
+            + (people.map(r=>`<div style="font-size:12px;color:#cfe8d4">${r.own.o} — ${r.meta.team}</div>`).join("")
+               || `<div style="font-size:11px;color:#5f8f72">nobody else yet</div>`)
+          : `<div style="font-size:11px;color:#5f8f72">${NET.err||NET.banner||"not connected"}</div>`}
+      </div>
+      <div style="margin-top:10px;font-size:9px;color:#4f7a60;line-height:1.5">
+        The server lives in <b>clubhouse-server/</b> in your league folder — one command to deploy,
+        works on Cloudflare Workers or any Node host. Until it's up, everything here runs privately, exactly as before.</div>`;
+    el.querySelectorAll(".ntb").forEach(b=>b.onclick=()=>{
+      if(b.dataset.a==="go") netConnect($("#neturl").value);
+      else { NET.url=""; store.set("netURL",""); netClose(); NET.banner=""; netHud(); }
+      netRender(); });
+    $("#ntx").onclick=()=>{ el.style.display="none"; };
+  }
+  function openNet(){ netUI().style.display="block"; netRender(); }
+  if(NET.url) setTimeout(()=>netConnect(),600);
+
   /* the villa strip and everything south of the old deck line drops together — after every module has registered */
   (function shiftSouth(){
     /* the balustrade is drawn inside the villa block, so its colliders must travel with it */
@@ -6770,7 +6998,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(const _p of PETS)   if(_p.y>=1240) _p.y+=DY;
     for(const _n of NPCS)   if(_n.y>=1240){ _n.y+=DY; if(_n.station&&_n.station.y>=1240) _n.station.y+=DY; }
   })();
-  idleAccrue(); rentHud(); houseTote();
+  idleAccrue(); rentHud(); houseTote(); netHud();
 
   function step(){
     requestAnimationFrame(step);
@@ -6795,6 +7023,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     player.dist=(player.dist||0)+Math.hypot(player.x-px0,player.y-py0);
     if(player.dist>400){ player.dist-=400; award("roam",5); }
     for(const n of NPCS){
+      if(n.hidden){ n.vx=n.vy=0; continue; }
       if(n.sit){ n.vx=n.vy=0; n.x=n.seat.x; n.y=n.seat.y; if(n.talk>0) n.talk--;
         if(Math.random()<.0016) overhead(n,SEATLINES[Math.floor(Math.random()*SEATLINES.length)]);
         continue; }
@@ -6826,7 +7055,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
           overhead(A,pair[0]); A.talk=180; B.talk=200;
           setTimeout(()=>overhead(B,pair[1]),1700);
           i=NPCS.length; break; } } }
-    const all=[player,...NPCS].filter(a=>!a.sit&&!a.soul);
+    const all=[player,...NPCS,...NET.rem.values()].filter(a=>!a.sit&&!a.soul&&!a.hidden);
     for(let i=0;i<all.length;i++)for(let j=i+1;j<all.length;j++){
       const A=all[i],B=all[j],dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1;
       if(d<34){ let f=(34-d)/d*.22;
@@ -6935,7 +7164,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     drawSeatBadges();
     drawContactShadows();
     const draws=[...FURN.map(f=>((f.base>=1240&&!f.noShift)?{y:f.base+DY,fn:()=>{cx.save();cx.translate(0,DY);f.draw();cx.restore();}}:{y:f.base,fn:f.draw})),
-      ...NPCS.map(n=>({y:n.y+26,fn:()=>{drawSeatedCue(n); drawAvatar(n,false); drawBroke(n);}})),
+      ...NPCS.filter(n=>!n.hidden).map(n=>({y:n.y+26,fn:()=>{drawSeatedCue(n); drawAvatar(n,false); drawBroke(n);}})),
+      ...[...NET.rem.values()].map(r=>({y:r.y+26,fn:()=>{drawSeatedCue(r); drawLive(r);}})),
       ...PETS.map(pt=>({y:pt.y+10,fn:()=>{drawPet(pt); petHalo(pt);}})),
       {y:player.y+26,fn:()=>{drawSeatedCue(player); drawAvatar(player,true);}}];
     draws.sort((a,b)=>a.y-b.y).forEach(d=>d.fn());
@@ -6960,7 +7190,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(let i=confetti.length-1;i>=0;i--){ const p=confetti[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life-=.004;
       if(p.life<=0||p.y>H){confetti.splice(i,1);continue;}
       cx.globalAlpha=Math.min(1,p.life*2); cx.fillStyle=p.c; cx.fillRect(p.x,p.y,p.r,p.r*.6); cx.globalAlpha=1; }
-    stepProps(); stepSouls(); stepBuffs(); stepRent(); stepBookHud(); stepSeats(); stepAmb(); drawAmb(); drawCeiling();
+    stepProps(); stepSouls(); stepBuffs(); if(!NET.on) stepRent(); stepNet(); stepBookHud(); stepSeats(); stepAmb(); drawAmb(); drawCeiling();
     if(party&&Math.random()<.3) confetti.push({x:Math.random()*W,y:WALL,vx:(Math.random()-.5)*1.4,vy:1+Math.random()*2,c:["#d4af37","#c8102e","#4d9fff","#2e8b57","#c959ff"][Math.floor(Math.random()*5)],r:3+Math.random()*4,life:1});
     cx.setTransform(DPR,0,0,DPR,0,0);
     const vg=cx.createRadialGradient(innerWidth/2,innerHeight/2,Math.min(innerWidth,innerHeight)*.42,innerWidth/2,innerHeight/2,Math.max(innerWidth,innerHeight)*.75);
