@@ -2524,7 +2524,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const IX=[
     {id:"tv",   x:960, y:WALL+46, r:150, label:"THE BIG SCREEN",  prompt:"flip the channel"},
     {id:"tank", x:1450,y:500, r:110, label:"THE TANK",         prompt:"watch the fish"},
-    {id:"clock",x:1639,y:520, r:100, label:"SEASON CLOCK",     prompt:"check the time"},
+    {id:"clock",x:1273,y:530, r:100, label:"SEASON CLOCK",     prompt:"check the time"},
     {id:"champ",x:355, y:660, r:95,  label:"CHAMPAGNE TOWER",  prompt:"pour a glass"},
     {id:"ice",  x:1742,y:1120,r:100, label:"ICE SCULPTURE",    prompt:"admire the ice"},
     {id:"archive",x:1502,y:850,r:130,label:"THE ARCHIVE",      prompt:"open a volume"},
@@ -4338,7 +4338,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillStyle="#d4af37"; cx.font="700 9px Sora"; cx.textAlign="center"; cx.fillText("THE TANK",1450,548); }},
 
     /* ── GRANDFATHER CLOCK (live time) ── */
-    {base:640, draw(){
+    {base:640, draw(){ cx.save(); cx.translate(-366,0);
       const d=new Date(), sec=d.getSeconds(), min=d.getMinutes(), hr=d.getHours()%12;
       woodRect(1596,392,86,248,"#4a2d14","#241608");
       cx.fillStyle="#1c1207"; cx.fillRect(1596,392,86,14);
@@ -4349,7 +4349,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.strokeStyle="#8a6d1c"; cx.lineWidth=3; cx.stroke();
       cx.fillStyle="#2a2118"; cx.font="700 7px Sora"; cx.textAlign="center";
       for(let i=0;i<12;i++){ const a=i/12*6.283-1.5708;
-        cx.fillText(String(i===0?12:i),1639+Math.cos(a)*23,1642-1618+Math.sin(a)*23+2.5); }
+        cx.fillText(String(i===0?12:i),1639+Math.cos(a)*23,442+Math.sin(a)*23+2.6); }
       const hand=(a,len,w,c)=>{ cx.strokeStyle=c; cx.lineWidth=w; cx.lineCap="round";
         cx.beginPath(); cx.moveTo(1639,442); cx.lineTo(1639+Math.cos(a-1.5708)*len,442+Math.sin(a-1.5708)*len); cx.stroke(); };
       hand((hr+min/60)/12*6.283,13,3.4,"#2a2118");
@@ -4359,12 +4359,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       /* pendulum window */
       cx.fillStyle="#120c06"; cx.fillRect(1610,484,58,140);
       cx.globalAlpha=.2; cx.fillStyle="#8fb8ff"; cx.fillRect(1610,484,58,140); cx.globalAlpha=1;
-      const sw=Math.sin(Date.now()/700)*.42;
+      const sw=Math.sin(Date.now()/700)*.30;
       cx.strokeStyle="#c9a227"; cx.lineWidth=2;
       cx.beginPath(); cx.moveTo(1639,490); cx.lineTo(1639+Math.sin(sw)*88,490+Math.cos(sw)*88); cx.stroke();
       cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(1639+Math.sin(sw)*88,490+Math.cos(sw)*88,11,0,7); cx.fill();
       cx.strokeStyle="#8a6d1c"; cx.lineWidth=3; cx.strokeRect(1610,484,58,140);
-      cx.fillStyle="#d4af37"; cx.font="700 8px Sora"; cx.fillText("SEASON CLOCK",1639,636); }},
+      cx.fillStyle="#d4af37"; cx.font="700 8px Sora"; cx.fillText("SEASON CLOCK",1639,636); cx.restore(); }},
 
     /* ── CHAMPAGNE TOWER ── */
     {base:706, draw(){
@@ -4573,7 +4573,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   SOLIDS.push(
     {x:1344,y:436,w:212,h:118,id:"tank"},
-    {x:1596,y:392,w:86,h:248,id:"clock"},
+    {x:1230,y:392,w:86,h:248,id:"clock"},
     {x:300,y:656,w:110,h:50,id:"champ"},
     {x:1690,y:1080,w:104,h:108,id:"ice"},
     {x:1352,y:760,w:300,h:170,id:"archive"},
