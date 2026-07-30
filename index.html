@@ -3692,7 +3692,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(535,780,7,0,7); cx.fill();
       cx.beginPath(); cx.arc(544,774,7,0,7); cx.fill();
       cx.fillStyle="#a89f8a"; cx.font="600 9px Sora"; cx.fillText("$1,200 POT",505,802); }},
-    {base:TBL.y+TBL.h, draw(){ cx.fillStyle="rgba(0,0,0,.4)"; cx.beginPath(); cx.ellipse(TBL.x+TBL.w/2,TBL.y+TBL.h+8,TBL.w/2,14,0,0,7); cx.fill();
+    {base:TBL.y+TBL.h, noShift:1, draw(){ cx.fillStyle="rgba(0,0,0,.4)"; cx.beginPath(); cx.ellipse(TBL.x+TBL.w/2,TBL.y+TBL.h+8,TBL.w/2,14,0,0,7); cx.fill();
       woodRect(TBL.x,TBL.y,TBL.w,TBL.h,"#43301c","#2a1a0c");
       cx.beginPath(); cx.roundRect(TBL.x,TBL.y,TBL.w,TBL.h,18); cx.strokeStyle="#1c1207"; cx.lineWidth=3; cx.stroke();
       cx.fillStyle="#14532d"; cx.beginPath(); cx.roundRect(TBL.x+20,TBL.y+16,TBL.w-40,TBL.h-32,9); cx.fill();
@@ -5045,7 +5045,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillText("THE GROTTO",360,1560); }},
 
     /* ═══ THE SHIRT — hung from the rafters ═══ */
-    {base:9999, draw(){
+    {base:9999, noShift:1, draw(){
       const t=Date.now()/1000, sw=Math.sin(t*.9)*.07;
       cx.save(); cx.translate(1100,WALL+16); cx.rotate(sw);
       cx.strokeStyle="rgba(180,170,150,.6)"; cx.lineWidth=1.4;
@@ -6758,8 +6758,13 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* the villa strip and everything south of the old deck line drops together — after every module has registered */
   (function shiftSouth(){
-    for(const _s of SOLIDS) if(_s.y>=1240) _s.y+=DY;
-    for(const _i of IX)     if(_i.y>=1240) _i.y+=DY;
+    /* the balustrade is drawn inside the villa block, so its colliders must travel with it */
+    const FORCE=new Set(["bal1","bal2","bal3"]);
+    /* the pool table sits on the main floor now — its art, physics and collider must all stay put */
+    const SKIP=new Set(["pool"]);
+    const go=o=>!SKIP.has(o.id)&&(FORCE.has(o.id)||o.y>=1240);
+    for(const _s of SOLIDS) if(go(_s)) _s.y+=DY;
+    for(const _i of IX)     if(go(_i)) _i.y+=DY;
     for(const _p of PETS)   if(_p.y>=1240) _p.y+=DY;
     for(const _n of NPCS)   if(_n.y>=1240){ _n.y+=DY; if(_n.station&&_n.station.y>=1240) _n.station.y+=DY; }
   })();
@@ -6925,7 +6930,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.beginPath(); cx.arc(marker.x,marker.y,14+(1-marker.life)*10,0,7); cx.stroke(); cx.globalAlpha=1; } }
     drawSeatBadges();
     drawContactShadows();
-    const draws=[...FURN.map(f=>(f.base>=1240?{y:f.base+DY,fn:()=>{cx.save();cx.translate(0,DY);f.draw();cx.restore();}}:{y:f.base,fn:f.draw})),
+    const draws=[...FURN.map(f=>((f.base>=1240&&!f.noShift)?{y:f.base+DY,fn:()=>{cx.save();cx.translate(0,DY);f.draw();cx.restore();}}:{y:f.base,fn:f.draw})),
       ...NPCS.map(n=>({y:n.y+26,fn:()=>{drawSeatedCue(n); drawAvatar(n,false); drawBroke(n);}})),
       ...PETS.map(pt=>({y:pt.y+10,fn:()=>{drawPet(pt); petHalo(pt);}})),
       {y:player.y+26,fn:()=>{drawSeatedCue(player); drawAvatar(player,true);}}];
