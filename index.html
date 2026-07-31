@@ -2759,7 +2759,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(e.key==="t"||e.key==="T"){ e.preventDefault(); callToOrder(); } });
   $("#chathead").onclick=()=>$("#clubchat").classList.toggle("min");
   if(innerWidth<=760||TOUCH) $("#clubchat").classList.add("min");
-  { const sb=$("#seatbtn"); if(sb) sb.onclick=()=>callToOrder();
+  { const sb=$("#seatbtn");
+    if(sb){ sb.onclick=()=>callToOrder();
+      const gavel=()=>{ const mine=amCommish(); sb.style.display=mine?"":"none";
+        sb.title=mine?"Call the table to order — everyone to their seat (T)":""; };
+      gavel(); setInterval(gavel,1500); }
     const nb=$("#netbtn"); if(nb) nb.onclick=()=>openNet(); }
 
   /* ── panels ── */
@@ -5173,10 +5177,14 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillStyle="#9fd8f0"; cx.font="800 11px 'Archivo Black'"; cx.textAlign="center";
       cx.fillText("THE GROTTO",360,1560); }},
 
-    /* ═══ THE SHIRT — hung from the rafters ═══ */
-    {base:1150, noShift:1, draw(){
+    /* ═══ THE SHIRT — hung from the rafters over the west bay, beside its own frame ═══ */
+    {base:1214, noShift:1, draw(){
       const t=Date.now()/1000, sw=Math.sin(t*.9)*.07;
-      cx.save(); cx.translate(942,KT.Y+56); cx.scale(.74,.74); cx.rotate(sw);
+      const SHX=336, SHY=1096;                       /* the open floor left of the commissioner's banner */
+      /* the rope it hangs from, running up into the dark */
+      cx.save(); cx.strokeStyle="rgba(120,108,86,.55)"; cx.lineWidth=2;
+      cx.beginPath(); cx.moveTo(SHX,SHY-190); cx.lineTo(SHX,SHY); cx.stroke(); cx.restore();
+      cx.save(); cx.translate(SHX,SHY); cx.scale(.9,.9); cx.rotate(sw);
       cx.strokeStyle="rgba(180,170,150,.6)"; cx.lineWidth=1.4;
       cx.beginPath(); cx.moveTo(-40,0); cx.lineTo(0,26); cx.lineTo(40,0); cx.stroke();
       cx.strokeStyle="#8a8378"; cx.lineWidth=2.4;
@@ -5192,12 +5200,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillStyle="#2a2118"; cx.font="700 7px Sora"; cx.fillText("PROPERTY OF THE LEAGUE",0,120);
       cx.restore();
       /* spotlight from above */
-      const sg=cx.createLinearGradient(942,KT.Y+30,942,KT.Y+150);
-      sg.addColorStop(0,"rgba(255,240,210,.16)"); sg.addColorStop(1,"transparent");
-      cx.fillStyle=sg; cx.beginPath(); cx.moveTo(918,KT.Y+30); cx.lineTo(966,KT.Y+30);
-      cx.lineTo(992,KT.Y+150); cx.lineTo(892,KT.Y+150); cx.closePath(); cx.fill();
-      cx.fillStyle="rgba(143,29,44,.9)"; cx.font="800 7.5px Sora"; cx.textAlign="center";
-      cx.fillText("WORN BY "+LASTP.toUpperCase(),942,KT.Y+150); }},
+      const sg=cx.createLinearGradient(SHX,SHY-30,SHX,SHY+140);
+      sg.addColorStop(0,"rgba(255,240,210,.18)"); sg.addColorStop(1,"transparent");
+      cx.fillStyle=sg; cx.beginPath(); cx.moveTo(SHX-30,SHY-30); cx.lineTo(SHX+30,SHY-30);
+      cx.lineTo(SHX+62,SHY+140); cx.lineTo(SHX-62,SHY+140); cx.closePath(); cx.fill();
+      cx.fillStyle="rgba(143,29,44,.9)"; cx.font="800 8px Sora"; cx.textAlign="center";
+      cx.fillText("WORN BY "+LASTP.toUpperCase(),SHX,SHY+146); }},
 
     /* ═══ LEAGUE HISTORY PLAQUES ═══ */
     {base:1330, draw(){
@@ -5237,7 +5245,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     {id:"prize",  x:ARX+190,y:1120,r:120, label:"PRIZE COUNTER",  prompt:"cash in tickets"},
     {id:"colonnade",x:2339,y:452, r:190, label:"CHAMPIONS COLONNADE",prompt:"walk the bronze"},
     {id:"grotto", x:360, y:1480, r:170,  label:"THE GROTTO",      prompt:"step into the water"},
-    {id:"shirt2", x:942, y:1168,     r:90, label:"THE I CAME LAST SHIRT",prompt:"read the shirt"}
+    {id:"shirt2", x:336, y:1190,     r:95, label:"THE I CAME LAST SHIRT",prompt:"read the shirt"}
   );
 
   /* ═══════════════ v6 · SOULS — the fallen, the bartender, the Dude ═══════════════ */
@@ -6770,9 +6778,17 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     "If this is about my trade again —","Somebody bring the shirt out. Let him see it.",
     "The commissioner has the floor. Briefly, hopefully.","I'm only here for the candles.",
     "Do we have quorum? Do we ever?","Fine. Sitting. Sat."];
+  const COMMISH="Flacc Shots";
+  const amCommish=()=>((meTeam()||{}).name===COMMISH);
   function callToOrder(on){
+    /* only the commissioner holds the gavel — but always honour the server relaying his call */
+    if(!SEATED_REMOTE && !amCommish()){
+      toast("🔒 Only the commissioner calls the table.");
+      sysLog("🔒 Only the commissioner can call the table to order.");
+      return; }
     SEATED=(on===undefined)?!SEATED:!!on;
-    const btn=$("#seatbtn"); if(btn){ btn.classList.toggle("on",SEATED); btn.textContent=SEATED?"🪑 DISMISS":"🪑 SEATS"; }
+    const btn=$("#seatbtn"); if(btn){ btn.classList.toggle("on",SEATED);
+      btn.innerHTML=SEATED?'🪑<span class="lbl"> DISMISS</span>':'🪑<span class="lbl"> CALL TO ORDER</span>'; }
     if(SEATED){
       sysLog("🔔 THE COMMISSIONER CALLS THE TABLE TO ORDER. Everyone to their seat.");
       if(NET.on&&!SEATED_REMOTE) netSend({t:"seats",on:true});
@@ -8060,15 +8076,15 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   function netHud(){
     let el=$("#nethud");
     if(!el){ el=document.createElement("div"); el.id="nethud";
-      el.style.cssText="position:absolute;right:12px;top:12px;z-index:130;font-family:Sora,system-ui,sans-serif;font-size:11px;text-align:right";
+      el.style.cssText="position:absolute;right:12px;top:58px;z-index:130;font-family:Sora,system-ui,sans-serif;font-size:11px;text-align:right;pointer-events:none";
       el.classList.add("nethud");
       fs.appendChild(el); }
     const n=NET.rem.size+(NET.on?1:0);
-    if(MOB()){ el.style.top="46px"; el.style.fontSize="10px";
+    if(MOB()){ el.style.top="52px"; el.style.fontSize="10px";
       el.innerHTML = NET.on
         ? `<div style="background:rgba(8,20,12,.92);border:1px solid #2e8b57;border-radius:8px;padding:3px 7px;color:#8df08d;font-weight:800">● ${n}</div>`
         : ""; return el; }
-    el.style.top="12px"; el.style.fontSize="11px";
+    el.style.top="58px"; el.style.fontSize="11px";
     el.innerHTML = NET.on
       ? `<div style="background:rgba(8,20,12,.92);border:1px solid #2e8b57;border-radius:9px;padding:6px 10px;color:#8df08d;font-weight:800;letter-spacing:1px">
            ● LIVE · ${n} in the room</div>

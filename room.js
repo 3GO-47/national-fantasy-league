@@ -92,7 +92,10 @@ export class Room {
         this.dirty=true; this.bcast({t:"say", id, x:text, line});
         break; }
       case "emote": this.bcast({t:"emote", id, e:String(msg.e||"").slice(0,12)}, id); break;
-      case "seats": this.bcast({t:"seats", on:!!msg.on, by:c.meta.owner||c.meta.team}); break;
+      /* the gavel is the commissioner's alone */
+      case "seats":
+        if(c.meta.team !== "Flacc Shots") return this.to(id,{t:"err",x:"Only the commissioner calls the table."});
+        this.bcast({t:"seats", on:!!msg.on, by:c.meta.owner||c.meta.team}); break;
       case "fit":   Object.assign(c.meta, {fit:msg.fit}); this.bcast({t:"fit", id, fit:msg.fit}, id); break;
 
       /* ── the book ── */
