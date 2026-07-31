@@ -8515,6 +8515,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillText("▾",near.x,(near.npc?near.y-84:near.y-24)+Math.sin(t)*3); }
     /* ═══ speech — a real bubble with a tail, so a thing somebody SAID can
            never be mistaken for the furniture bolted to their nameplate ═══ */
+    const BUBS=[];
     for(let i=overs.length-1;i>=0;i--){ const o=overs[i]; o.life-=.0032;
       if(o.life<=0){overs.splice(i,1);continue;}
       cx.globalAlpha=Math.min(1,o.life*4);
@@ -8526,18 +8527,27 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       let wmax=0; for(const ln of lines) wmax=Math.max(wmax,cx.measureText(ln).width);
       const bw=wmax+PADX*2, bh=lines.length*LH+PADY*2;
       const tipY=o.a.y-56;                      /* just clear of the head */
-      const by=tipY-9-bh, bx=o.a.x-bw/2;
+      let by=tipY-9-bh; const bx=o.a.x-bw/2;
+      /* two owners talking at once used to print straight through each other —
+         stack the later bubble above the one already holding that space */
+      for(let guard=0;guard<6;guard++){
+        const clash=BUBS.find(r=>bx<r.x+r.w+4&&bx+bw+4>r.x&&by<r.y+r.h+4&&by+bh+4>r.y);
+        if(!clash) break;
+        by=clash.y-bh-7;
+      }
+      BUBS.push({x:bx,y:by,w:bw,h:bh});
       /* body */
       cx.beginPath(); cx.roundRect(bx,by,bw,bh,9);
       cx.fillStyle="rgba(12,10,8,.93)"; cx.fill();
       cx.strokeStyle=col; cx.lineWidth=1.6; cx.stroke();
       /* tail, drawn as part of the same silhouette */
-      cx.beginPath(); cx.moveTo(o.a.x-8,by+bh-1); cx.lineTo(o.a.x,tipY); cx.lineTo(o.a.x+8,by+bh-1);
+      const tailW=Math.min(8,Math.max(4,bw/10));
+      cx.beginPath(); cx.moveTo(o.a.x-tailW,by+bh-1); cx.lineTo(o.a.x,tipY); cx.lineTo(o.a.x+tailW,by+bh-1);
       cx.fillStyle="rgba(12,10,8,.93)"; cx.fill();
-      cx.beginPath(); cx.moveTo(o.a.x-8,by+bh); cx.lineTo(o.a.x,tipY); cx.lineTo(o.a.x+8,by+bh);
+      cx.beginPath(); cx.moveTo(o.a.x-tailW,by+bh); cx.lineTo(o.a.x,tipY); cx.lineTo(o.a.x+tailW,by+bh);
       cx.strokeStyle=col; cx.lineWidth=1.6; cx.stroke();
       /* wipe the seam the tail leaves across the bubble's bottom edge */
-      cx.beginPath(); cx.moveTo(o.a.x-7,by+bh); cx.lineTo(o.a.x+7,by+bh);
+      cx.beginPath(); cx.moveTo(o.a.x-tailW+1,by+bh); cx.lineTo(o.a.x+tailW-1,by+bh);
       cx.strokeStyle="rgba(12,10,8,.93)"; cx.lineWidth=2.4; cx.stroke();
       cx.fillStyle="#f2efe4"; cx.textAlign="center"; cx.textBaseline="middle";
       cx.font=`600 ${FS}px Sora`;
