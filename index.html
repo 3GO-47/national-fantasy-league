@@ -2726,7 +2726,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
    Ego:"Ego opens one eye, decides you are beneath him, purrs anyway.",
    Nebula:"Nebula bats at your shoelace and wins the exchange.",
    Leo:"Leo stretches to twice his length, then folds back into shadow."};
-  window.__club={go:(x,y)=>{player.x=x;player.y=y;}, openIns:t=>openInsights(t), net:()=>NET, send:o=>netSend(o), openBJ:()=>openBJ(), openBook:()=>openBook(), openNet:()=>openNet(), book:()=>BOOK, ledger:()=>LEDGER, rent:()=>RENT,npcs:()=>NPCS,state:()=>({x:Math.round(player.x),y:Math.round(player.y),mode:MODE,seated:NPCS.filter(n=>n.sit).length,meSit:!!player.sit,live:NET.on,peers:NET.rem.size,
+  /* the gavel belongs to one franchise — declared as a hoisted function so no
+     caller anywhere in the file can trip over the order it was defined in */
+  function amCommish(){ return (meTeam()||{}).name==="Flacc Shots"; }
+  window.__club={go:(x,y)=>{player.x=x;player.y=y;}, commish:()=>amCommish(), openIns:t=>openInsights(t), net:()=>NET, send:o=>netSend(o), openBJ:()=>openBJ(), openBook:()=>openBook(), openNet:()=>openNet(), book:()=>BOOK, ledger:()=>LEDGER, rent:()=>RENT,npcs:()=>NPCS,state:()=>({x:Math.round(player.x),y:Math.round(player.y),mode:MODE,seated:NPCS.filter(n=>n.sit).length,meSit:!!player.sit,live:NET.on,peers:NET.rem.size,
     doubles:[...NET.rem.values()].filter(r=>NPCS.some(n=>n.t&&n.t.name===r.meta.team&&!n.hidden)).map(r=>r.meta.team)})};
 
   /* ── chat / overhead / fx ── */
@@ -6778,8 +6781,6 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     "If this is about my trade again —","Somebody bring the shirt out. Let him see it.",
     "The commissioner has the floor. Briefly, hopefully.","I'm only here for the candles.",
     "Do we have quorum? Do we ever?","Fine. Sitting. Sat."];
-  const COMMISH="Flacc Shots";
-  const amCommish=()=>((meTeam()||{}).name===COMMISH);
   function callToOrder(on){
     /* only the commissioner holds the gavel — but always honour the server relaying his call */
     if(!SEATED_REMOTE && !amCommish()){
