@@ -2654,7 +2654,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     NPCS.push(celebNPC(SUN,8,2620,1120));
     const hm=celebNPC(HOMER,9,300,690); hm.station={x:300,y:690,r:70}; NPCS.push(hm);
     NPCS.push(celebNPC(RANDY,10,1400,760));
-    try{ addSouls(); }catch(e){} }
+    try{ addSouls(); }catch(e){}
+    /* a fresh cast has no idea who is already live on the server — hide their doubles again */
+    try{ hideClaimed(); }catch(e){} }
   buildCast();
   /* ── pets of the league ── */
   const PETS=[
@@ -7952,7 +7954,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     NET.err="";
     try{ NET.ws=new WebSocket(u); }catch(e){ NET.err="bad URL"; netHud(); return; }
     NET.banner="connecting…"; netHud();
-    NET.ws.onopen=()=>{ NET.on=true; NET.tries=0; NET.banner="LIVE"; netHud();
+    NET.ws.onopen=()=>{ NET.on=true; NET.tries=0; NET.banner="LIVE"; NET.who=netTeam()+"|"+netOwner(); netHud();
       sysLog("🌐 Connected to the clubhouse server. Other owners will show up as they arrive."); toast("🌐 LIVE"); };
     NET.ws.onclose=()=>{ const was=NET.on; NET.on=false; NET.id=null; NET.rem.clear(); NET.sbj=null;
       unhideNPCs(); NET.banner=NET.url?"offline":""; netHud();
@@ -7979,9 +7981,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         hideClaimed(); netApplyState(m);
         for(const l of (m.chat||[]).slice(-12)) netLogLine(l,true);
         netHud(); break;
-      case "join": NET.rem.set(m.id, mkRemote(m.id,m.meta)); hideClaimed(); netHud(); break;
+      case "join": { const r=mkRemote(m.id,m.meta); r.fresh=1; NET.rem.set(m.id,r);
+        hideClaimed(); netHud(); sysLog(`🌐 ${r.own.o||m.meta.owner} is in the clubhouse with you.`); break; }
       case "leave": NET.rem.delete(m.id); hideClaimed(); netHud(); break;
       case "pos": { const r=NET.rem.get(m.id); if(!r) return;
+        if(r.fresh){ r.fresh=0; r.x=m.x; r.y=m.y; }   /* land them where they really are, no slide across the floor */
         r.tx=m.x; r.ty=m.y; r.vx=m.vx; r.vy=m.vy; r.sit=m.sit; r.mode=m.mode; r.seen=Date.now(); break; }
       case "say": { const r=NET.rem.get(m.id); if(r){ r.talk=200; overhead(r,m.x); } netLogLine(m.line); break; }
       case "emote": { const r=NET.rem.get(m.id); if(r) doEmote(r,m.e); break; }
@@ -8029,6 +8033,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   function stepNet(){
     if(!NET.on) return;
     const t=Date.now();
+    if(((NET.hcT=(NET.hcT||0)+1)%30)===0) hideClaimed();
+    /* picked your franchise after the socket opened? reconnect as yourself, not as Guest */
+    if(t-(NET.idChk||0)>2000){ NET.idChk=t;
+      if(NET.who && NET.who!==netTeam()+"|"+netOwner()){ NET.tries=0; netConnect(); } }
     if(t-NET.lastPos>100){ NET.lastPos=t;
       netSend({t:"pos",x:Math.round(player.x),y:Math.round(player.y),
         vx:+player.vx.toFixed(2),vy:+player.vy.toFixed(2),sit:!!player.sit,mode:MODE}); }
