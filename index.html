@@ -6816,8 +6816,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(SERVER.phase==="out"){
       w.tx=player.x+22; w.ty=player.y+14;
       const dx=w.tx-w.x, dy=w.ty-w.y, d=Math.hypot(dx,dy);
-      w.vx+=dx/(d||1)*.5; w.vy+=dy/(d||1)*.5;
-      if(d<34||++SERVER.t>420){ SERVER.phase="give"; SERVER.t=0;
+      w.vx+=dx/(d||1)*.95; w.vy+=dy/(d||1)*.95;
+      if(d<48||++SERVER.t>240){ SERVER.phase="give"; SERVER.t=0;
         sysLog(`🍺 ${w.own.o} hands you a cold one.`);
         toast("🍺 Beer from "+w.own.o);
         overhead(player,"Appreciate it.",true);
@@ -6827,8 +6827,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     } else {
       w.tx=SERVER.home.x; w.ty=SERVER.home.y;
       const dx=w.tx-w.x, dy=w.ty-w.y, d=Math.hypot(dx,dy);
-      w.vx+=dx/(d||1)*.5; w.vy+=dy/(d||1)*.5;
-      if(d<10||++SERVER.t>420){ w.x=SERVER.home.x; w.y=SERVER.home.y; w.vx=w.vy=0; w.fixed=1; w.tx=null; SERVER=null; }
+      w.vx+=dx/(d||1)*.95; w.vy+=dy/(d||1)*.95;
+      if(d<12||++SERVER.t>300){ w.x=SERVER.home.x; w.y=SERVER.home.y; w.vx=w.vy=0; w.fixed=1; w.tx=null; SERVER=null; }
     }
   }
   function stepSeats(){
