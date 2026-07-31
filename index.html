@@ -2444,7 +2444,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const OWN={
    "Are you winning son?":{o:"Phillips",p:"bosnian",  hs:.97, wf:1.16, skin:"#d9a06b", hair:"#3a2a18"},
    "Silence of the Lamb": {o:"Ferrand",   p:"colts-skel",hs:1.10,wf:.74,  skin:"#e6e0d2", hair:"#26221c", loud:1},
-   "My Kupp Hurts":       {o:"Griff",   p:"pnw",      hs:1.13, wf:1.22, skin:"#d9b08c", hair:"#4a3018"},
+   "My Kupp Hurts":       {o:"Griff",   p:"pnw",      hs:1.13, wf:1.06, skin:"#d9b08c", hair:"#4a3018"},
    "Django Achaned":      {o:"Kenny",   p:"pads",     hs:.86,  wf:1.02, skin:"#c9a879", hair:"#1c1c1c", quick:1},
    "Suck my Footballz":   {o:"Jacob",   p:"iu",       hs:1.10, wf:.72,  skin:"#cfa77c", hair:"#5a4a2f"},
    "DoughBoy$":           {o:"Jake",    p:"dadbod",   hs:1.0,  wf:.90, skin:"#d9b08c", hair:"#3a2a18", chn:1, loud:1, shady:1},
@@ -3355,7 +3355,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(o.p==="dadbod") shoeC="#f2efe4";
     if(o.p==="gatsby"){ legC="#e8e0cc"; shoeC="#f2efe4"; }
     if(o.p==="pnw") legC="#3a4a5c";
-    if(o.p==="bears"){ legC="#c83803"; shoeC="#0b162a"; }
+    if(o.p==="bears"){ legC="#8d9198"; shoeC="#0b162a"; }
     if(o.p==="buckeye") legC="#4a4a52";
     cx.fillStyle=legC; cx.fillRect(a.x-9*wf,a.y+8+b*.3,7,17); cx.fillRect(a.x+2*wf,a.y+8-b*.3,7,17);
     cx.fillStyle="rgba(255,255,255,.16)"; cx.fillRect(a.x-9*wf,a.y+8+b*.3,2,17); cx.fillRect(a.x+2*wf,a.y+8-b*.3,2,17);
@@ -3374,6 +3374,25 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     /* torso */
     const suitCol={classic:"#15130d",pinstripe:"#191712",tux:"#0c0b09",velvet:"#241031"}[f.suit];
     function torso(fill){ cx.fillStyle=fill; cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*2,th,10*wf); cx.fill(); }
+    /* arms — drawn before the shirt so the shoulders overlap them, outlined so they separate */
+    { const SLV={bosnian:"#f2efe4","colts-skel":"#002c5f",pnw:"#7a1f1f",pads:"#101010",iu:"#9d2235",
+        dadbod:"#0d0d0f",bears:"#0b162a",pizza:"#c8102e",jester:"#c9d6df",buckeye:"#bb0000",
+        nb:"#003a70",gatsby:"#141414"};
+      const sl=SLV[o.p]||"#2a2a30", sw=6.6, ax=tw+1.5;
+      cx.fillStyle=sl;
+      cx.beginPath(); cx.roundRect(a.x-ax-sw,hy+3,sw,th*.62,sw/2); cx.fill();
+      cx.beginPath(); cx.roundRect(a.x+ax,hy+3,sw,th*.62,sw/2); cx.fill();
+      cx.strokeStyle="rgba(0,0,0,.55)"; cx.lineWidth=1;
+      cx.beginPath(); cx.roundRect(a.x-ax-sw,hy+3,sw,th*.62,sw/2); cx.stroke();
+      cx.beginPath(); cx.roundRect(a.x+ax,hy+3,sw,th*.62,sw/2); cx.stroke();
+      cx.fillStyle="rgba(255,255,255,.13)";
+      cx.fillRect(a.x-ax-sw+1,hy+4,1.8,th*.6);
+      cx.fillStyle=o.skin;
+      cx.beginPath(); cx.arc(a.x-ax-sw/2,hy+th*.66+3,3.9,0,7); cx.fill();
+      cx.beginPath(); cx.arc(a.x+ax+sw/2,hy+th*.66+3,3.9,0,7); cx.fill();
+      cx.strokeStyle="rgba(0,0,0,.45)"; cx.lineWidth=.9;
+      cx.beginPath(); cx.arc(a.x-ax-sw/2,hy+th*.66+3,3.9,0,7); cx.stroke();
+      cx.beginPath(); cx.arc(a.x+ax+sw/2,hy+th*.66+3,3.9,0,7); cx.stroke(); }
     if(isMe&&f.suit!=="signature"&&suitCol){ torso(suitCol);
       if(f.suit==="pinstripe"){ cx.strokeStyle="rgba(212,175,55,.28)"; cx.lineWidth=1;
         for(let sx=-tw+4;sx<=tw-4;sx+=5){ cx.beginPath(); cx.moveTo(a.x+sx,hy+2); cx.lineTo(a.x+sx,hy+th-2); cx.stroke(); } } }
@@ -3396,7 +3415,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.strokeStyle="#f2efe4"; cx.lineWidth=3;                          // horseshoe
         cx.beginPath(); cx.arc(a.x,hy+th*.44,5.4,Math.PI*1.1,Math.PI*1.9); cx.stroke();
         cx.fillStyle="#f2efe4"; cx.font="900 9px 'Archivo Black'"; cx.textAlign="center";
-        cx.fillText("12",a.x,hy+th*.78);
+        cx.fillText("18",a.x,hy+th*.78);
         cx.fillStyle="#a2aaad"; cx.fillRect(a.x-tw,hy+th-6,tw*2,3); break;
       case "pnw": /* Griff — flannel under a Seahawks Kupp jersey */
         cx.fillStyle="#7a1f1f";
@@ -3455,30 +3474,43 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.fillText("PIZZA",a.x,hy+th*.46);
         cx.fillText("BOY",a.x,hy+th*.68);
         cx.fillStyle="#8a0d22"; cx.fillRect(a.x-tw,hy+th*.24,tw*2,1.6); break;
-      case "jester": { /* Sam — Alaskan ghillie suit, ice camo */
-        torso("#c9d6df");
-        const ice=["#eef4f8","#b9c9d6","#8fa8bb","#dfe9f0"];
-        for(let i=0;i<26;i++){ const px=a.x-tw+((i*11)%(tw*2)), py=hy+((i*7)%th);
-          cx.fillStyle=ice[i%4]; cx.globalAlpha=.85;
-          cx.beginPath(); cx.ellipse(px,py,3.2,1.6,(i%5)*.6,0,7); cx.fill(); }
-        cx.globalAlpha=1;
-        cx.strokeStyle="#9fb4c4"; cx.lineWidth=1.2;                       // hanging strands
-        for(let i=0;i<9;i++){ const px=a.x-tw+2+i*(tw*2-4)/8;
-          cx.beginPath(); cx.moveTo(px,hy+th-2); cx.lineTo(px+((i%2)?2:-2),hy+th+5); cx.stroke(); }
-        cx.strokeStyle="#7f97a8"; cx.lineWidth=1;
-        cx.beginPath(); cx.moveTo(a.x-tw,hy+th*.62); cx.lineTo(a.x+tw,hy+th*.62); cx.stroke(); break; }
-      case "buckeye": /* Alex — shirt two sizes too small, arms enormous */
-        cx.fillStyle=o.skin;
-        cx.beginPath(); cx.arc(a.x-tw-3,hy+9,5.6,0,7); cx.fill();
-        cx.beginPath(); cx.arc(a.x+tw+3,hy+9,5.6,0,7); cx.fill();
-        cx.beginPath(); cx.arc(a.x-tw-4,hy+19,4.4,0,7); cx.fill();
-        cx.beginPath(); cx.arc(a.x+tw+4,hy+19,4.4,0,7); cx.fill();
-        torso("#f2efe4");
-        cx.strokeStyle="#c9cfe4"; cx.lineWidth=1;
-        cx.beginPath(); cx.moveTo(a.x-tw*.5,hy+4); cx.lineTo(a.x-tw*.4,hy+th-4); cx.stroke();
-        cx.beginPath(); cx.moveTo(a.x+tw*.5,hy+4); cx.lineTo(a.x+tw*.4,hy+th-4); cx.stroke();
-        cx.fillStyle="#bb0000"; cx.font="900 8px Georgia"; cx.textAlign="center"; cx.fillText("O-H",a.x,hy+th*.4);
-        cx.fillStyle="#666"; cx.font="600 4.6px Sora"; cx.fillText("THE",a.x,hy+th*.2); break;
+      case "jester": { /* Sam — Alaskan ghillie, shaggy and layered */
+        const ice=["#e9f1f6","#c3d2dd","#9aaebd","#7f95a6","#dbe6ee"];
+        torso("#8fa3b2");
+        for(let row=0;row<7;row++){                       // overlapping fringe, like real burlap strips
+          const yy=hy+2+row*(th-4)/7;
+          for(let c2=0;c2<7;c2++){
+            const xx=a.x-tw+1+c2*(tw*2-2)/7 + ((row%2)?2.5:0);
+            cx.fillStyle=ice[(row*3+c2)%5];
+            cx.beginPath();
+            cx.moveTo(xx,yy);
+            cx.quadraticCurveTo(xx+2.4,yy+4.5,xx+1.2,yy+8.5);
+            cx.quadraticCurveTo(xx+4.2,yy+5.5,xx+5.2,yy);
+            cx.closePath(); cx.fill(); } }
+        cx.strokeStyle="rgba(60,80,95,.5)"; cx.lineWidth=.9;
+        for(let row=1;row<7;row++){ const yy=hy+2+row*(th-4)/7;
+          cx.beginPath(); cx.moveTo(a.x-tw,yy); cx.lineTo(a.x+tw,yy); cx.stroke(); }
+        cx.strokeStyle="#8fa3b2"; cx.lineWidth=1.4;       // strands hanging past the hem
+        for(let i2=0;i2<11;i2++){ const px=a.x-tw+1+i2*(tw*2-2)/10;
+          cx.beginPath(); cx.moveTo(px,hy+th-1);
+          cx.quadraticCurveTo(px+((i2%2)?2:-2),hy+th+4,px+((i2%2)?1:-1),hy+th+8); cx.stroke(); }
+        break; }
+      case "buckeye": /* Alex — long sleeves, seams losing the fight */
+        torso("#bb0000");
+        cx.fillStyle="#bb0000";                                        // biceps straining the sleeve
+        cx.beginPath(); cx.arc(a.x-tw-4.6,hy+10,7.2,0,7); cx.fill();
+        cx.beginPath(); cx.arc(a.x+tw+4.6,hy+10,7.2,0,7); cx.fill();
+        cx.strokeStyle="rgba(0,0,0,.45)"; cx.lineWidth=1;
+        cx.beginPath(); cx.arc(a.x-tw-4.6,hy+10,7.2,0,7); cx.stroke();
+        cx.beginPath(); cx.arc(a.x+tw+4.6,hy+10,7.2,0,7); cx.stroke();
+        cx.fillStyle="rgba(255,255,255,.14)";
+        cx.beginPath(); cx.arc(a.x-tw-6,hy+8,3,0,7); cx.fill();
+        cx.beginPath(); cx.arc(a.x+tw+3,hy+8,3,0,7); cx.fill();
+        cx.strokeStyle="rgba(255,255,255,.4)"; cx.lineWidth=1;         // popping seams
+        for(let i2=0;i2<3;i2++){ cx.beginPath(); cx.moveTo(a.x-tw+1,hy+9+i2*7); cx.lineTo(a.x-tw+6,hy+12+i2*7); cx.stroke();
+          cx.beginPath(); cx.moveTo(a.x+tw-1,hy+9+i2*7); cx.lineTo(a.x+tw-6,hy+12+i2*7); cx.stroke(); }
+        cx.fillStyle="#f2efe4"; cx.font="900 9px Georgia"; cx.textAlign="center";
+        cx.fillText("O-H",a.x,hy+th*.52); break;
       case "nb": /* Tylor — Colts jersey under a white vest */
         torso("#003a70");
         cx.strokeStyle="#f2efe4"; cx.lineWidth=2.4;                       // horseshoe on the chest
@@ -3489,20 +3521,20 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.beginPath(); cx.moveTo(a.x-tw*.62,hy+6); cx.lineTo(a.x-tw*.62,hy+th-6); cx.stroke();
         cx.beginPath(); cx.moveTo(a.x+tw*.62,hy+6); cx.lineTo(a.x+tw*.62,hy+th-6); cx.stroke();
         cx.fillStyle="#8a8378"; cx.fillRect(a.x-1,hy+2,2,th-4); break;
-      case "gatsby": /* Josh — old sport */
-        torso("#f2ecd9");
-        cx.strokeStyle="#d9cfb6"; cx.lineWidth=1;
-        cx.beginPath(); cx.moveTo(a.x-7,hy); cx.lineTo(a.x-2,hy+13); cx.stroke();
-        cx.beginPath(); cx.moveTo(a.x+7,hy); cx.lineTo(a.x+2,hy+13); cx.stroke();
-        cx.fillStyle="#fff"; cx.beginPath();
-        cx.moveTo(a.x-5,hy); cx.lineTo(a.x,hy+9); cx.lineTo(a.x+5,hy); cx.closePath(); cx.fill();
-        cx.fillStyle="#171310"; cx.fillRect(a.x-4.5,hy+1,9,3.6);
-        cx.strokeStyle="#d4af37"; cx.lineWidth=1.2;
-        cx.beginPath(); cx.arc(a.x+tw*.55,hy+th*.6,4,Math.PI*1.1,Math.PI*1.9); cx.stroke();
-        cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(a.x+tw*.75,hy+th*.5,2,0,7); cx.fill();
-        cx.fillStyle="#f0e8c8"; cx.fillRect(a.x+tw+3,hy-6,3,12);
-        cx.fillStyle="#f5d061"; cx.fillRect(a.x+tw+1.6,hy-9,5.8,4); break;
-      /* ── celebrities ── */
+      case "gatsby": /* Josh — black suit, white shirt, cigarette */
+        torso("#141414");
+        cx.fillStyle="#1e1e22";                                        // lapels
+        cx.beginPath(); cx.moveTo(a.x-5,hy); cx.lineTo(a.x-tw+1,hy+3); cx.lineTo(a.x-3,hy+th*.62); cx.closePath(); cx.fill();
+        cx.beginPath(); cx.moveTo(a.x+5,hy); cx.lineTo(a.x+tw-1,hy+3); cx.lineTo(a.x+3,hy+th*.62); cx.closePath(); cx.fill();
+        cx.fillStyle="#f7f4ec";                                        // shirt
+        cx.beginPath(); cx.moveTo(a.x-4.4,hy); cx.lineTo(a.x+4.4,hy);
+        cx.lineTo(a.x+3.2,hy+th*.6); cx.lineTo(a.x-3.2,hy+th*.6); cx.closePath(); cx.fill();
+        cx.fillStyle="#0c0c0e";                                        // black tie
+        cx.beginPath(); cx.moveTo(a.x-2.4,hy+2); cx.lineTo(a.x+2.4,hy+2);
+        cx.lineTo(a.x+1.6,hy+th*.58); cx.lineTo(a.x-1.6,hy+th*.58); cx.closePath(); cx.fill();
+        cx.fillStyle="#d4af37";                                        // pocket square
+        cx.beginPath(); cx.moveTo(a.x-tw+4,hy+13); cx.lineTo(a.x-tw+10,hy+10); cx.lineTo(a.x-tw+9,hy+15); cx.closePath(); cx.fill();
+        cx.fillStyle="#0a0a0c"; cx.fillRect(a.x-tw,hy+th-5,tw*2,5); break;
       case "peyton": torso("#003a70");
         cx.fillStyle="#fff"; cx.font="900 11px 'Archivo Black'"; cx.textAlign="center"; cx.fillText("18",a.x,hy+th*.55);
         cx.font="600 4.6px Sora"; cx.fillText("MANNING",a.x,hy+th*.2); break;
@@ -3571,8 +3603,6 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(o.p==="colts-skel"){ cx.fillStyle="rgba(90,80,70,.5)";
       cx.beginPath(); cx.ellipse(a.x-4,headY+2,2,3.4,0,0,7); cx.fill();
       cx.beginPath(); cx.ellipse(a.x+4,headY+2,2,3.4,0,0,7); cx.fill(); }
-    if(o.p==="bears"||o.p==="ginger"){ cx.fillStyle="rgba(200,120,60,.7)";
-      for(const [fx3,fy3] of [[-3,1],[0,2.6],[3,1],[-1.6,-.6],[1.8,-.4]]) cx.fillRect(a.x+fx3,headY+fy3,1.3,1.3); }
     if(o.p==="pnw"||o.p==="bosnian"||o.p==="gillis"){ cx.fillStyle=o.hair;
       cx.beginPath(); cx.ellipse(a.x,headY+5,hr*.8,5,0,0,7); cx.fill(); }
     if(o.p==="buckeye"){ cx.fillStyle="#4d9fff"; cx.fillRect(a.x-3.6,headY-1.4,2.4,2.4); cx.fillRect(a.x+1.4,headY-1.4,2.4,2.4); }
@@ -3617,19 +3647,37 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       case "dadbod": cx.fillStyle="#0d0d0f"; cx.beginPath(); cx.arc(a.x,headY-2,hr,Math.PI,0); cx.fill();
         cx.fillStyle="#17171b"; cx.fillRect(a.x-hr,headY-4,hr*2,3);
         cx.fillRect(a.x-hr,headY-4,4,3); break;
-      case "bears": { cx.fillStyle="#e2582b";
-        for(let i=-3;i<=3;i++){ const flick=Math.sin(a.bob*1.6+i)*1.6;
-          cx.beginPath(); cx.moveTo(a.x+i*3-1.6,headY-hr+3);
-          cx.lineTo(a.x+i*3,headY-hr-5-Math.abs(i)%2*2+flick);
-          cx.lineTo(a.x+i*3+1.6,headY-hr+3); cx.closePath(); cx.fill(); } } break;
+      case "bears": {                                        // Scott — the hair is a bonfire
+        const t9=Date.now()/1000;
+        cx.fillStyle="#c2410c"; cx.beginPath(); cx.arc(a.x,headY-1,hr+.8,Math.PI,0); cx.fill();
+        for(let i2=0;i2<7;i2++){ const fx=a.x-hr*.94+i2*(hr*1.88/6);
+          const h1=10+Math.sin(t9*5+i2)*4, h2=16+Math.sin(t9*4+i2*1.7)*5;
+          cx.fillStyle="#e2582b";
+          cx.beginPath(); cx.moveTo(fx-2.6,headY-hr*.5);
+          cx.quadraticCurveTo(fx+Math.sin(t9*3+i2)*3,headY-hr-h1*.6,fx+Math.sin(t9*3+i2)*1.6,headY-hr-h1);
+          cx.lineTo(fx+2.6,headY-hr*.5); cx.closePath(); cx.fill();
+          cx.fillStyle="#f0a437";
+          cx.beginPath(); cx.moveTo(fx-1.4,headY-hr*.4);
+          cx.quadraticCurveTo(fx+Math.sin(t9*4+i2)*2,headY-hr-h2*.5,fx+Math.sin(t9*4+i2)*1,headY-hr-h2*.72);
+          cx.lineTo(fx+1.4,headY-hr*.4); cx.closePath(); cx.fill(); }
+        cx.fillStyle="#ffd77a"; cx.globalAlpha=.6;
+        for(let i2=0;i2<4;i2++){ const ey=headY-hr-14-((t9*26+i2*9)%16);
+          cx.beginPath(); cx.arc(a.x-6+((i2*7)%13),ey,1.4,0,7); cx.fill(); }
+        cx.globalAlpha=1; break; }
       case "pizza": cx.fillStyle="#c8102e"; cx.beginPath(); cx.arc(a.x,headY-2,hr,Math.PI,0); cx.fill();
         cx.fillStyle="#8a0d22"; cx.fillRect(a.x-hr*1.4,headY-3,hr*.8,3); break;
-      case "jester": {                                        // ghillie hood
-        cx.fillStyle="#c9d6df"; cx.beginPath(); cx.arc(a.x,headY-1,hr+2.4,Math.PI,0); cx.fill();
-        cx.fillRect(a.x-hr-2.4,headY-2,hr*2+4.8,4);
-        const ice2=["#eef4f8","#b9c9d6","#8fa8bb"];
-        for(let i=0;i<10;i++){ cx.fillStyle=ice2[i%3];
-          cx.beginPath(); cx.ellipse(a.x-hr+i*(hr*2/9),headY-hr*.7-((i*3)%5),2.6,1.4,(i%4)*.7,0,7); cx.fill(); }
+      case "jester": {                                        // ghillie hood, shaggy
+        const ice2=["#e9f1f6","#c3d2dd","#9aaebd","#7f95a6"];
+        cx.fillStyle="#8fa3b2"; cx.beginPath(); cx.arc(a.x,headY-1,hr+3,Math.PI,0); cx.fill();
+        cx.fillRect(a.x-hr-3,headY-2.5,hr*2+6,5);
+        for(let i2=0;i2<12;i2++){
+          const an=Math.PI+ (i2/11)*Math.PI, px=a.x+Math.cos(an)*(hr+1.5), py=headY-1+Math.sin(an)*(hr+1.5);
+          cx.fillStyle=ice2[i2%4];
+          cx.beginPath();
+          cx.moveTo(px,py);
+          cx.quadraticCurveTo(px+2.2,py+3.4,px+1,py+6.4);
+          cx.quadraticCurveTo(px+3.8,py+3.8,px+4.6,py);
+          cx.closePath(); cx.fill(); }
         break; }
       case "buckeye": cx.fillStyle=o.hair; cx.beginPath(); cx.arc(a.x,headY-2,hr,Math.PI,0); cx.fill();
         cx.beginPath(); cx.moveTo(a.x-hr,headY-4); cx.quadraticCurveTo(a.x-2,headY-hr-4,a.x+hr-1,headY-6); cx.lineTo(a.x+hr-1,headY-3); cx.closePath(); cx.fill(); break;
@@ -5419,6 +5467,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
           n.vx+=(Math.random()-.5)*1.4; n.vy+=(Math.random()-.5)*1.4;
           if(Math.random()<.006){ overhead(n,["SINGLE LEG!","GET DOWN, KENNY!","THIS IS FOLKSTYLE, BABY","STOP SQUIRMING"][Math.floor(Math.random()*4)]);
             setTimeout(()=>overhead(kenny,["GET OFF ME","every single week with this","I'm in FULL PADS, man","HELP"][Math.floor(Math.random()*4)]),1200); } } }
+      /* Ferrand attaches himself to the Mannings */
+      if(n.own&&n.own.o==="Ferrand"){
+        const mann=NPCS.find(m=>m.t&&/Manning/.test(m.t.name));
+        if(mann&&!n.sit){ n.tx=mann.x+34; n.ty=mann.y+16; n.wt=400;
+          if(Math.random()<.0016) overhead(n,["Peyton. PEYTON. One question.","Eli, back me up here.",
+            "Omaha means nothing and you know it.","Two rings. I've done the math on both."][Math.floor(Math.random()*4)]); } }
       /* Higgi grumbles at whoever is closest */
       if(n.nm==="Higgi"&&Math.random()<.004){
         let near2=null,bd=1e9;
@@ -6010,9 +6064,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle="#0a2343"; cx.beginPath(); cx.ellipse(a.x-2,hy2-8.6,15,3.6,-.08,Math.PI*1.02,Math.PI*1.98); cx.fill();
     cx.fillStyle="#fb4f14"; cx.font="800 6px Sora"; cx.textAlign="center"; cx.fillText("DEN",a.x,hy2-11);
     cx.font="800 10px Sora"; cx.lineWidth=3; cx.lineJoin="round"; cx.strokeStyle="rgba(0,0,0,.8)";
-    cx.strokeText("HOMER SIMPSON",a.x,a.y+44); cx.fillStyle="#ffd90f"; cx.fillText("HOMER SIMPSON",a.x,a.y+44);
-    cx.font="700 8px Sora"; cx.strokeText("owner · Denver Broncos",a.x,a.y+56);
-    cx.fillStyle="#e0c98a"; cx.fillText("owner · Denver Broncos",a.x,a.y+56);
+    cx.strokeText("HOMER",a.x,a.y+44); cx.fillStyle="#ffd90f"; cx.fillText("HOMER",a.x,a.y+44);
   }
   /* ── LLOYD CHRISTMAS & HARRY DUNNE, tending bar ── */
   function dumbBar(a,orange){
@@ -6071,7 +6123,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillRect(a.x-7.4,hy2-25,14.8,13);
     cx.beginPath(); cx.ellipse(a.x,hy2-25,7.4,2.6,0,0,7); cx.fill();
     cx.fillStyle=suit2; cx.fillRect(a.x-7.4,hy2-16,14.8,3.4);
-    const nm=orange?"LLOYD CHRISTMAS":"HARRY DUNNE";
+    const nm=orange?"LLOYD":"HARRY";
     cx.font="800 10px Sora"; cx.textAlign="center"; cx.lineWidth=3; cx.lineJoin="round";
     cx.strokeStyle="rgba(0,0,0,.8)"; cx.strokeText(nm,a.x,a.y+44);
     cx.fillStyle=orange?"#f5a councils":"#cfe0f5"; cx.fillStyle=orange?"#f0a34a":"#cfe0f5"; cx.fillText(nm,a.x,a.y+44);
@@ -6530,8 +6582,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.moveTo(a.x-30,a.y-30+b); cx.lineTo(a.x-6,a.y-26+b); cx.lineTo(a.x-30,a.y-22+b); cx.closePath(); cx.fill();
     cx.fillStyle="#0a2343"; cx.font="800 5px Sora"; cx.textAlign="left"; cx.fillText("DENVER",a.x-28,a.y-24.6+b);
     cx.font="800 10px Sora"; cx.textAlign="center"; cx.lineWidth=3; cx.lineJoin="round";
-    cx.strokeStyle="rgba(0,0,0,.82)"; cx.strokeText("HOMER SIMPSON",a.x,a.y+46);
-    cx.fillStyle="#ffd90f"; cx.fillText("HOMER SIMPSON",a.x,a.y+46);
+    cx.strokeStyle="rgba(0,0,0,.82)"; cx.strokeText("HOMER",a.x,a.y+46);
+    cx.fillStyle="#ffd90f"; cx.fillText("HOMER",a.x,a.y+46);
     cx.font="700 8px Sora"; cx.strokeText("owner · Denver Broncos",a.x,a.y+58);
     cx.fillStyle="#e0c98a"; cx.fillText("owner · Denver Broncos",a.x,a.y+58);
   }
@@ -6640,7 +6692,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle=C2; cx.fillRect(-7.6,-4.4,15.2,3.4);
     cx.fillStyle=C3; cx.fillRect(-6.6,-13,2.4,9);
     cx.restore();
-    const nm=orange?"LLOYD CHRISTMAS":"HARRY DUNNE";
+    const nm=orange?"LLOYD":"HARRY";
     cx.font="800 10px Sora"; cx.textAlign="center"; cx.lineWidth=3; cx.lineJoin="round";
     cx.strokeStyle="rgba(0,0,0,.82)"; cx.strokeText(nm,a.x,a.y+46);
     cx.fillStyle=orange?"#ffb162":"#cfe0f5"; cx.fillText(nm,a.x,a.y+46);
@@ -7475,10 +7527,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle="#fb4f14"; cx.beginPath();
     cx.moveTo(a.x-28,a.y-26+b); cx.lineTo(a.x-9,a.y-23+b); cx.lineTo(a.x-28,a.y-20+b); cx.closePath(); cx.fill();
     cx.font="800 10px Sora"; cx.textAlign="center"; cx.lineWidth=3; cx.lineJoin="round";
-    cx.strokeStyle="rgba(0,0,0,.82)"; cx.strokeText("HOMER SIMPSON",a.x,a.y+44);
-    cx.fillStyle="#ffd90f"; cx.fillText("HOMER SIMPSON",a.x,a.y+44);
-    cx.font="700 8px Sora"; cx.strokeText("owner · Denver Broncos",a.x,a.y+56);
-    cx.fillStyle="#e0c98a"; cx.fillText("owner · Denver Broncos",a.x,a.y+56);
+    cx.strokeStyle="rgba(0,0,0,.82)"; cx.strokeText("HOMER",a.x,a.y+44);
+    cx.fillStyle="#ffd90f"; cx.fillText("HOMER",a.x,a.y+44);
   }
 
   /* ── LLOYD & HARRY — same blocky build as the Dude ── */
@@ -7526,12 +7576,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.beginPath(); cx.ellipse(a.x-hr*1.16,hy+hr*.06,hr*.34,hr*.62,0,0,7); cx.fill();
     cx.beginPath(); cx.ellipse(a.x+hr*1.16,hy+hr*.06,hr*.34,hr*.62,0,0,7); cx.fill();
     cx.fillStyle="rgba(0,0,0,.2)"; cx.fillRect(a.x-hr*1.24,hy+hr*.14,hr*2.48,1.6);
-    const nm=orange?"LLOYD CHRISTMAS":"HARRY DUNNE";
+    const nm=orange?"LLOYD":"HARRY";
     cx.font="800 10px Sora"; cx.textAlign="center"; cx.lineWidth=3; cx.lineJoin="round";
     cx.strokeStyle="rgba(0,0,0,.82)"; cx.strokeText(nm,a.x,a.y+44);
     cx.fillStyle=orange?"#ffb162":"#cfe0f5"; cx.fillText(nm,a.x,a.y+44);
-    cx.font="700 8px Sora"; cx.strokeText("bartender",a.x,a.y+56);
-    cx.fillStyle="rgba(214,204,184,.85)"; cx.fillText("bartender",a.x,a.y+56);
   }
 
   /* ── EDMONDS — one of the fallen, in a singlet and headgear ── */
