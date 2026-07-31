@@ -3903,7 +3903,13 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.font="800 10.5px Sora"; const nw=cx.measureText(nm).width;
     const bl=BESTLINE[a.t.name];
     let bw=0; if(bl){ cx.font="800 8.5px Sora"; bw=cx.measureText(bl[0]).width+16; }
-    const pw=Math.max(nw,60,bw-14)+14, px=a.x-pw/2, py=a.y+32, ph=38;
+    /* the money rides on the franchise line — a third line made the plate tall
+       enough to sit on whoever is standing in the row behind */
+    const net=ownerNet(a.t.name);
+    const sub=a.t.name+(net!=null?"  ·  "+((net>0?"+$":net<0?"−$":"$")+Math.abs(net).toLocaleString()):"");
+    cx.font="600 8px Sora"; const sw2=cx.measureText(sub).width;
+    cx.font="800 10.5px Sora";
+    const pw=Math.max(nw,sw2,60,bw-14)+14, px=a.x-pw/2, py=a.y+32, ph=28;
 
     /* the badge, fused to the top edge of the plate */
     if(bl){
@@ -3921,14 +3927,23 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.strokeStyle=isMe?"#d4af37":"#332d1e"; cx.lineWidth=1; cx.stroke();
     cx.textBaseline="middle";
     cx.fillStyle=isMe?"#f0c95c":"#e8e4d8"; cx.textAlign="center";
-    cx.font="800 10.5px Sora"; cx.fillText(nm,a.x,py+10);
-    cx.font="600 8px Sora"; cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,py+21);
-    /* career net — what this chair has actually cost or made */
-    const net=ownerNet(a.t.name);
-    if(net!=null){ cx.font="800 8.5px Sora";
+    cx.font="800 10.5px Sora"; cx.fillText(nm,a.x,py+9);
+    /* franchise on the left of the centre line, career net on the right, in the
+       colour of the damage — green if this chair has made money, red if not */
+    cx.font="600 8px Sora";
+    if(net==null){ cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,py+20); }
+    else {
+      const cash=(net>0?"+$":net<0?"−$":"$")+Math.abs(net).toLocaleString();
+      const tw2=cx.measureText(a.t.name).width, gw=cx.measureText("  ·  ").width;
+      const cw=cx.measureText(cash).width, tot=tw2+gw+cw, x0=a.x-tot/2;
+      cx.textAlign="left";
+      cx.fillStyle=a.t.c;  cx.fillText(a.t.name,x0,py+20);
+      cx.fillStyle="#5a5348"; cx.fillText("  ·  ",x0+tw2,py+20);
       cx.fillStyle=net>0?"#8df08d":net<0?"#e0776a":"#a89f8a";
-      cx.fillText((net>0?"+$":net<0?"−$":"$")+Math.abs(net).toLocaleString()+" career",a.x,py+32); }
-    if(a.t.name===LASTP){ cx.fillStyle="#c8102e"; cx.font="600 8.5px Sora"; cx.fillText("shirt candidate",a.x,py+44); }
+      cx.font="800 8px Sora"; cx.fillText(cash,x0+tw2+gw,py+20);
+      cx.textAlign="center";
+    }
+    if(a.t.name===LASTP){ cx.fillStyle="#c8102e"; cx.font="600 8.5px Sora"; cx.fillText("shirt candidate",a.x,py+37); }
     cx.textBaseline="alphabetic";
   }
 
