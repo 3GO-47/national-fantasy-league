@@ -18,6 +18,8 @@ const http = createServer((req,res)=>{
 const wss = new WebSocketServer({server:http, path:"/ws"});
 
 wss.on("connection", (ws, req) => {
+  ws.isAlive = true;
+  ws.on("pong", () => { ws.isAlive = true; });
   const url  = new URL(req.url, "http://x");
   const room = getRoom(url.searchParams.get("room") || "main");
   const cid  = Math.random().toString(36).slice(2,10);
@@ -36,5 +38,15 @@ setInterval(() => {
   const main = rooms.get("main");
   if(main && main.dirty){ try{ writeFileSync(FILE, JSON.stringify(main.persist())); }catch(e){} }
 }, 5000);
+
+/* keep sockets warm — idle proxies hang up on quiet connections, and a browser
+   tab in the background stops its animation loop entirely */
+setInterval(() => {
+  for(const ws of wss.clients){
+    if(ws.isAlive === false){ ws.terminate(); continue; }
+    ws.isAlive = false;
+    try{ ws.ping(); }catch(e){}
+  }
+}, 25000);
 
 http.listen(PORT, () => console.log("clubhouse listening on :"+PORT+"/ws"));

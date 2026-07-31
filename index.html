@@ -8111,6 +8111,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     $("#ntx").onclick=()=>{ el.style.display="none"; };
   }
   function openNet(){ netUI().style.display="block"; netRender(); }
+  /* setInterval still fires in a background tab (clamped, not killed) — rAF does not.
+     Without this the socket goes quiet the moment you switch tabs and the host drops it. */
+  setInterval(()=>{ if(NET.on&&NET.ws&&NET.ws.readyState===1) netSend({t:"ping",at:Date.now()}); }, 20000);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden&&NET.url&&!NET.on&&(!NET.ws||NET.ws.readyState>1)){ NET.tries=0; netConnect(); } });
   if(NET.url) setTimeout(()=>netConnect(),600);
 
   /* the villa strip and everything south of the old deck line drops together — after every module has registered */
