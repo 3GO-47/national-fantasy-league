@@ -1,0 +1,9 @@
+{
+  "name": "nfl-clubhouse-server",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": { "start": "node server.js", "deploy": "wrangler deploy" },
+  "dependencies": { "ws": "^8.18.0" },
+  "devDependencies": { "wrangler": "^3.90.0" }
+}

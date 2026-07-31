@@ -5171,9 +5171,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillText("THE GROTTO",360,1560); }},
 
     /* ═══ THE SHIRT — hung from the rafters ═══ */
-    {base:9999, noShift:1, draw(){
+    {base:1150, noShift:1, draw(){
       const t=Date.now()/1000, sw=Math.sin(t*.9)*.07;
-      cx.save(); cx.translate(1010,KT.Y-116); cx.rotate(sw);
+      cx.save(); cx.translate(942,KT.Y+56); cx.scale(.74,.74); cx.rotate(sw);
       cx.strokeStyle="rgba(180,170,150,.6)"; cx.lineWidth=1.4;
       cx.beginPath(); cx.moveTo(-40,0); cx.lineTo(0,26); cx.lineTo(40,0); cx.stroke();
       cx.strokeStyle="#8a8378"; cx.lineWidth=2.4;
@@ -5189,12 +5189,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillStyle="#2a2118"; cx.font="700 7px Sora"; cx.fillText("PROPERTY OF THE LEAGUE",0,120);
       cx.restore();
       /* spotlight from above */
-      const sg=cx.createLinearGradient(1010,KT.Y-140,1010,KT.Y+40);
-      sg.addColorStop(0,"rgba(255,240,210,.20)"); sg.addColorStop(1,"transparent");
-      cx.fillStyle=sg; cx.beginPath(); cx.moveTo(966,KT.Y-140); cx.lineTo(1054,KT.Y-140);
-      cx.lineTo(1104,KT.Y+40); cx.lineTo(916,KT.Y+40); cx.closePath(); cx.fill();
-      cx.fillStyle="rgba(143,29,44,.9)"; cx.font="800 9px Sora"; cx.textAlign="center";
-      cx.fillText("WORN BY "+LASTP.toUpperCase(),1010,KT.Y+22); }},
+      const sg=cx.createLinearGradient(942,KT.Y+30,942,KT.Y+150);
+      sg.addColorStop(0,"rgba(255,240,210,.16)"); sg.addColorStop(1,"transparent");
+      cx.fillStyle=sg; cx.beginPath(); cx.moveTo(918,KT.Y+30); cx.lineTo(966,KT.Y+30);
+      cx.lineTo(992,KT.Y+150); cx.lineTo(892,KT.Y+150); cx.closePath(); cx.fill();
+      cx.fillStyle="rgba(143,29,44,.9)"; cx.font="800 7.5px Sora"; cx.textAlign="center";
+      cx.fillText("WORN BY "+LASTP.toUpperCase(),942,KT.Y+150); }},
 
     /* ═══ LEAGUE HISTORY PLAQUES ═══ */
     {base:1330, draw(){
@@ -5234,7 +5234,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     {id:"prize",  x:ARX+190,y:1120,r:120, label:"PRIZE COUNTER",  prompt:"cash in tickets"},
     {id:"colonnade",x:2339,y:452, r:190, label:"CHAMPIONS COLONNADE",prompt:"walk the bronze"},
     {id:"grotto", x:360, y:1480, r:170,  label:"THE GROTTO",      prompt:"step into the water"},
-    {id:"shirt2", x:1010,y:1046,     r:96, label:"THE I CAME LAST SHIRT",prompt:"look up"}
+    {id:"shirt2", x:942, y:1168,     r:90, label:"THE I CAME LAST SHIRT",prompt:"read the shirt"}
   );
 
   /* ═══════════════ v6 · SOULS — the fallen, the bartender, the Dude ═══════════════ */
@@ -8288,7 +8288,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     const draws=[...FURN.map(f=>((f.base>=1240&&!f.noShift)?{y:f.base+DY,fn:()=>{cx.save();cx.translate(0,DY);f.draw();cx.restore();}}:{y:f.base,fn:f.draw})),
       ...NPCS.filter(n=>!n.hidden).map(n=>({y:n.y+26,fn:()=>{drawSeatedCue(n); drawAvatar(n,false); drawBroke(n);}})),
       ...[...NET.rem.values()].map(r=>({y:r.y+26,fn:()=>{drawSeatedCue(r); drawLive(r);}})),
-      ...PETS.map(pt=>({y:pt.y+10+(pt.n==="Leo"?-16:0),fn:()=>{drawPet(pt); petHalo(pt);}})),
+      ...PETS.map(pt=>({y:pt.y+10,fn:()=>{drawPet(pt); petHalo(pt);}})),
       {y:player.y+26,fn:()=>{drawSeatedCue(player); drawAvatar(player,true);}}];
     draws.sort((a,b)=>a.y-b.y).forEach(d=>d.fn());
     if(near&&!dlg){ const t=Date.now()/300;
