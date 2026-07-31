@@ -513,6 +513,23 @@ tr.avoided td:nth-child(3){text-decoration:line-through;text-decoration-color:va
   background:linear-gradient(90deg,rgba(212,175,55,.12),#f0c95c,rgba(212,175,55,.12));background-size:200% 100%;animation:wireflow 2.6s linear infinite}
 @keyframes wireflow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media(max-width:640px){.lin-ring{width:34px;height:34px;font-size:12px}.lin-node{min-width:52px}.lin-node i{display:none}.lin-node.ghost i{display:block}}
+/* THE MONEY */
+#t-money{width:100%;border-collapse:separate;border-spacing:3px;min-width:660px}
+#t-money th{font-size:10px;letter-spacing:1.2px;color:var(--gold);border:none;padding:4px 8px;text-align:right;white-space:nowrap}
+#t-money th:nth-child(1),#t-money th:nth-child(2){text-align:left}
+#t-money td{background:rgba(255,255,255,.02);border:1px solid #221d12;padding:7px 9px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#t-money td:nth-child(1){text-align:center;width:34px;color:var(--dim2);font-family:var(--disp);font-size:13px}
+#t-money td:nth-child(2){text-align:left;min-width:190px;background:rgba(212,175,55,.04)}
+#t-money td:nth-child(2) small{display:block;color:var(--dim2);font-size:9.5px;margin-top:2px}
+#t-money tr.myrow td{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold) 55%,transparent)}
+#t-money tr.gone td:nth-child(2) b{color:#c9a0ff}
+#t-money .mnet{font-weight:900;font-size:14px}
+#t-money .up{color:#8df08d}#t-money .dn{color:#e0776a}#t-money .ev{color:var(--dim)}
+#t-money .mtin{color:var(--dim2)}
+#t-money .mtr{font-size:11px;letter-spacing:.5px}
+.moneyfoot{margin-top:10px;font-size:10.5px;color:var(--dim2);line-height:1.6}
+.moneybars{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.moneybars i{display:block;height:7px;border-radius:4px;min-width:2px}
 /* DYNASTY LEDGER */
 .ledcard{margin-bottom:14px;border-width:1.5px;border-color:color-mix(in srgb,var(--gold) 45%,var(--line))}
 .ledwrap{overflow-x:auto}
@@ -984,6 +1001,11 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
     <h3 style="color:var(--gold)">📜 THE DYNASTY LEDGER <span style="letter-spacing:0;text-transform:none;color:var(--dim2)">— five years of receipts, ranked by legacy</span></h3>
     <div class="ledwrap"><table id="t-ledger"></table></div>
     <div class="lednote"><span class="lfin f1">1st</span> champion · <span class="lfin f2">2nd</span> runner-up · <span class="lfin f3">3rd</span> podium · <span class="lfin f12">12th</span> the shirt · 2022 picks &amp; keepers lost to the void · <b style="color:#c9a0ff">purple owners</b> rest in the Founders' Wing</div>
+  </div>
+  <div class="card ledcard">
+    <h3 style="color:var(--gold)">💰 THE MONEY <span style="letter-spacing:0;text-transform:none;color:var(--dim2)">— career net, every dollar in and out since 2022</span></h3>
+    <div class="ledwrap"><table id="t-money"></table></div>
+    <div class="moneyfoot" id="moneyfoot"></div>
   </div>
   <div class="histcols">
     <div class="card" style="border-color:#6b21a866">
@@ -2069,6 +2091,99 @@ $("#t-fr").innerHTML="<tr><th>#</th><th>Player</th><th>Team</th></tr>"+
  FR25.map((r,i)=>{ const tt=teamBy(r[1]); return `<tr><td class="num">${i+1}</td><td>${esc(r[0])}</td><td><span class="frdot" style="background:${tt.c}"></span><span style="color:var(--dim)">${esc(r[1])}</span></td></tr>`; }).join("");
 
 
+/* ══════════════════════════════════════════════════════════════════
+   THE MONEY — every dollar in and out of this league since 2022.
+   $100 a season from each owner · $1,000 to the champion · $200 to
+   the runner-up. Twelve owners, $1,200 a year, paid straight back out.
+   ══════════════════════════════════════════════════════════════════ */
+window.MONEY=(function(){
+  const BUYIN=100, PRIZE={1:1000,2:200}, YRS=["2022","2023","2024","2025"];
+  /* final standings by franchise, 2022 → 2025 */
+  const FIN={
+    "Suck my Footballz":     [1,11, 4, 8],
+    "Sandusky Shower Buddy": [2, 4, 8, 6],
+    "Blitz":                 [3, 6, 3, 2],
+    "My Kupp Hurts":         [4, 3,12, 1],
+    "DoughBoy$":             [5, 5, 2,11],
+    "Django Achaned":        [6,10, 7, 7],
+    "Kill Bill":             [7,12,11,12],
+    "Team Martens":          [8, 1, 5,10],
+    "Flacc Shots":           [9, 9, 1, 5],
+    "Silence of the Lamb":   [10,7, 6, 4],
+    "Are you winning son?":  [11,8,10, 3],
+    "Tig Bits":              [12,2, 9, 9]};
+  /* who actually sat in each chair, and which seasons they paid for.
+     Betty and Edmonds were lost after 2022; Ferrand and Alex took the
+     franchises over in '23 and have carried them since. */
+  const SEATS=[
+    ["Josh",    "Flacc Shots",           [0,1,2,3]],
+    ["Griff",   "My Kupp Hurts",         [0,1,2,3]],
+    ["Tylor",   "Team Martens",          [0,1,2,3]],
+    ["Jacob",   "Suck my Footballz",     [0,1,2,3]],
+    ["Jake",    "DoughBoy$",             [0,1,2,3]],
+    ["Scott",   "Sandusky Shower Buddy", [0,1,2,3]],
+    ["Sam",     "Tig Bits",              [0,1,2,3]],
+    ["Kenny",   "Django Achaned",        [0,1,2,3]],
+    ["Phillips","Are you winning son?",  [0,1,2,3]],
+    ["Garrett", "Kill Bill",             [0,1,2,3]],
+    ["Alex",    "Blitz",                 [1,2,3]],
+    ["Ferrand", "Silence of the Lamb",   [1,2,3]],
+    ["Edmonds", "Blitz",                 [0], 1],
+    ["Betty",   "Silence of the Lamb",   [0], 1]];
+
+  const rows=SEATS.map(([own,team,ix,fallen])=>{
+    const fins=ix.map(i=>FIN[team][i]);
+    const won=fins.reduce((a,f)=>a+(PRIZE[f]||0),0);
+    const paid=ix.length*BUYIN;
+    return {own, team, fallen:!!fallen,
+      years:ix.map(i=>YRS[i]), seasons:ix.length, fins,
+      titles:fins.filter(f=>f===1).length,
+      seconds:fins.filter(f=>f===2).length,
+      best:Math.min(...fins), paid, won, net:won-paid};
+  }).sort((a,b)=>b.net-a.net || a.own.localeCompare(b.own));
+
+  const totalIn=rows.reduce((a,r)=>a+r.paid,0);
+  const totalOut=rows.reduce((a,r)=>a+r.won,0);
+  const byOwner={}; rows.forEach(r=>byOwner[r.own]=r);
+  const byTeam={};  rows.forEach(r=>{ if(!byTeam[r.team]||!r.fallen) byTeam[r.team]=r; });
+  return {rows, byOwner, byTeam, totalIn, totalOut, BUYIN, PRIZE, YRS, FIN,
+          balanced:totalIn===totalOut};
+})();
+
+
+/* ══ THE MONEY — career net winnings ══ */
+(function(){
+  const el=document.querySelector("#t-money"); if(!el||!window.MONEY) return;
+  const M=window.MONEY;
+  const money=v=>(v<0?"-$":"$")+Math.abs(v).toLocaleString();
+  const signed=v=>(v>0?"+$":v<0?"-$":"$")+Math.abs(v).toLocaleString();
+  const mx=Math.max(...M.rows.map(r=>Math.abs(r.net)))||1;
+  el.innerHTML="<tr><th></th><th>OWNER · FRANCHISE</th><th>SZN</th><th>HARDWARE</th><th>PAID IN</th><th>COLLECTED</th><th>NET</th></tr>"+
+   M.rows.map((r,i)=>{
+    const t=(typeof teamBy==="function"&&teamBy(r.team))||{c:"#8a8378",slot:-1};
+    const cls=r.net>0?"up":r.net<0?"dn":"ev";
+    const hw=(r.titles?'\u{1f3c6}'.repeat(r.titles):"")+(r.seconds?'\u{1f948}'.repeat(r.seconds):"")||'<span style="color:var(--dim2)">—</span>';
+    const w=Math.max(2,Math.abs(r.net)/mx*70);
+    return `<tr class="${(typeof myTeam!=="undefined"&&myTeam===t.slot&&!r.fallen)?"myrow":""} ${r.fallen?"gone":""}">
+      <td>${i+1}</td>
+      <td><span class="frdot" style="background:${t.c}"></span><b>${r.own}</b>${r.fallen?' <span style="color:#c9a0ff;font-size:9px">\u{1f56f}</span>':""}
+        <small>${r.team} · ${r.years[0]}${r.years.length>1?"–"+r.years[r.years.length-1]:" only"}</small></td>
+      <td class="mtin">${r.seasons}</td>
+      <td class="mtr">${hw}</td>
+      <td class="mtin">${money(-r.paid)}</td>
+      <td class="mtin">${r.won?money(r.won):"—"}</td>
+      <td><div class="moneybars"><i style="width:${w}px;background:${r.net>0?"#2e8b57":r.net<0?"#7a2a22":"#3a341f"}"></i>
+        <span class="mnet ${cls}">${signed(r.net)}</span></div></td></tr>`;
+   }).join("");
+  const win=M.rows.filter(r=>r.net>0).length;
+  document.querySelector("#moneyfoot").innerHTML=
+    `$${M.BUYIN} a season from every owner · $${M.PRIZE[1].toLocaleString()} to the champion · $${M.PRIZE[2]} to the runner-up.
+     Four recorded seasons, ${M.YRS[0]}–${M.YRS[M.YRS.length-1]} — $${M.totalIn.toLocaleString()} in, $${M.totalOut.toLocaleString()} out, the house keeps nothing.
+     <b style="color:var(--gold)">${win} of ${M.rows.length} owners are up.</b>
+     <span style="color:#c9a0ff">\u{1f56f} Betty and Edmonds</span> are charged for ${M.YRS[0]} only; Ferrand and Alex took the wheel in ${M.YRS[1]}.
+     The Lost Era (2018–2021) has no surviving standings, so it is not counted.`;
+})();
+
 /* THE DYNASTY LEDGER — transcribed from the commissioner's tracker */
 (function(){
   const el=$("#t-ledger"); if(!el) return;
@@ -2620,7 +2735,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cart:["🕹","TECMO RUSH Cart","Blow on it first. BO KNOWS."],
     coin:["🪙","Fountain Denarius","One wish, non-roster. Caesar is watching."],
     pen:["🖊","Mystery Pen","Strictly for note-taking. Sunshine\u2019s finest."],
-    key:["🗝","Members' Key","Opens nothing. Means everything."]};
+    key:["🗝","Members' Key","Opens nothing. Means everything."],
+    chip:["🎰","House Chip","Walked off the blackjack table. Worth $25 at the cage."]};
   let inv=store.get("rsInv",null); if(!inv){ inv={key:1}; store.set("rsInv",inv); }
   function grant(id,qty){ qty=qty||1; const had=inv[id];
     inv[id]=(inv[id]||0)+qty; store.set("rsInv",inv);
@@ -2778,7 +2894,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   function renderPanel(){
     const el=$("#panelbody"); const title=$("#paneltitle");
     if(panelMode==="inv"){ title.textContent="🎒 INVENTORY";
-      const ids=Object.keys(inv).filter(k=>inv[k]>0);
+      /* an id with no item card used to throw here and leave whatever panel
+         was open before sitting under the INVENTORY heading — skip and purge it */
+      const ids=Object.keys(inv).filter(k=>inv[k]>0&&ITEMS[k]);
+      const orphan=Object.keys(inv).filter(k=>!ITEMS[k]);
+      if(orphan.length){ orphan.forEach(k=>delete inv[k]); store.set("rsInv",inv); }
       el.innerHTML='<div class="invgrid">'+ids.map(id=>`<div class="islot" data-i="${id}" title="${esc(ITEMS[id][1])}">${ITEMS[id][0]}${inv[id]>1?`<span class="iqty">${inv[id]}</span>`:""}</div>`).join("")
         + Array(Math.max(0,16-ids.length)).fill('<div class="islot empty"></div>').join("")+'</div>'
         + '<div class="pnote">click to USE — beer and glizzies buff your stride, cue and cards buff your game, chips cash to the blackjack bank</div>';
@@ -3766,23 +3886,52 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.strokeStyle="#f2efe4"; cx.lineWidth=3; cx.lineCap="round";
         cx.beginPath(); cx.moveTo(a.x+tw,hy+8); cx.lineTo(a.x+tw+8,hy-6+wv); cx.stroke(); } }
     const sh=SHAME[a.t.name]||0;
-    /* best-finish banner */
-    const bl2=BESTLINE[a.t.name];
-    if(bl2){ cx.font="800 9px Sora"; cx.textAlign="center";
-      cx.lineWidth=3; cx.strokeStyle="rgba(0,0,0,.8)"; cx.lineJoin="round";
-      const byy=headY-hr-(ring?16:(sh>=2?34:10));
-      cx.strokeText(bl2[0],a.x,byy); cx.fillStyle=bl2[1]; cx.fillText(bl2[0],a.x,byy); }
-    /* nameplate */
+    /* nameplate — the accolade rides on top of it as a badge, so nothing that
+       looks like a caption is left floating where a speech bubble could go */
+    nameplate(a,o,isMe);
+  }
+
+  /* ═══ the nameplate — name, franchise, career money, and the accolade
+         welded on as a badge so nothing floats loose where speech goes ═══ */
+  const PLATECOL={"👑":["#f0c95c","#7a5c12","#1a1204"], "🥈":["#d8dee6","#5a6472","#12151a"],
+                  "🥉":["#e0a06a","#7a4a22","#1a1006"]};
+  function ownerNet(team){
+    const M=window.MONEY; if(!M) return null;
+    const r=M.byTeam&&M.byTeam[team]; return r?r.net:null; }
+  function nameplate(a,o,isMe){
     const nm=o.o.toUpperCase();
     cx.font="800 10.5px Sora"; const nw=cx.measureText(nm).width;
-    cx.fillStyle="rgba(10,10,8,.85)"; cx.beginPath(); cx.roundRect(a.x-Math.max(nw,60)/2-7,a.y+32,Math.max(nw,60)+14,26,5); cx.fill();
+    const bl=BESTLINE[a.t.name];
+    let bw=0; if(bl){ cx.font="800 8.5px Sora"; bw=cx.measureText(bl[0]).width+16; }
+    const pw=Math.max(nw,60,bw-14)+14, px=a.x-pw/2, py=a.y+32, ph=38;
+
+    /* the badge, fused to the top edge of the plate */
+    if(bl){
+      const key=bl[0].slice(0,2), pal=PLATECOL[key]||["#4a4335","#2a2519","#cfc6b4"];
+      const bx=a.x-bw/2, by=py-15;
+      const g=cx.createLinearGradient(bx,by,bx,by+15);
+      g.addColorStop(0,pal[0]); g.addColorStop(1,pal[1]);
+      cx.fillStyle=g; cx.beginPath(); cx.roundRect(bx,by,bw,17,[6,6,0,0]); cx.fill();
+      cx.strokeStyle="rgba(0,0,0,.55)"; cx.lineWidth=1; cx.stroke();
+      cx.font="800 8.5px Sora"; cx.textAlign="center"; cx.textBaseline="middle";
+      cx.fillStyle=pal[2]; cx.fillText(bl[0],a.x,by+8);
+      cx.textBaseline="alphabetic";
+    }
+    cx.fillStyle="rgba(10,10,8,.88)"; cx.beginPath(); cx.roundRect(px,py,pw,ph,bl?[0,0,6,6]:5); cx.fill();
     cx.strokeStyle=isMe?"#d4af37":"#332d1e"; cx.lineWidth=1; cx.stroke();
     cx.textBaseline="middle";
-    cx.fillStyle=isMe?"#f0c95c":"#e8e4d8"; cx.textAlign="center"; cx.fillText(nm,a.x,a.y+41);
-    cx.font="600 8px Sora"; cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,a.y+52);
-    if(a.t.name===LASTP){ cx.fillStyle="#c8102e"; cx.font="600 8.5px Sora"; cx.fillText("shirt candidate",a.x,a.y+64); }
+    cx.fillStyle=isMe?"#f0c95c":"#e8e4d8"; cx.textAlign="center";
+    cx.font="800 10.5px Sora"; cx.fillText(nm,a.x,py+10);
+    cx.font="600 8px Sora"; cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,py+21);
+    /* career net — what this chair has actually cost or made */
+    const net=ownerNet(a.t.name);
+    if(net!=null){ cx.font="800 8.5px Sora";
+      cx.fillStyle=net>0?"#8df08d":net<0?"#e0776a":"#a89f8a";
+      cx.fillText((net>0?"+$":net<0?"−$":"$")+Math.abs(net).toLocaleString()+" career",a.x,py+32); }
+    if(a.t.name===LASTP){ cx.fillStyle="#c8102e"; cx.font="600 8.5px Sora"; cx.fillText("shirt candidate",a.x,py+44); }
     cx.textBaseline="alphabetic";
   }
+
   function woodRect(x,y,w,h,c1,c2){ const g=cx.createLinearGradient(x,y,x,y+h); g.addColorStop(0,c1); g.addColorStop(1,c2); cx.fillStyle=g; cx.fillRect(x,y,w,h); }
 
   const FURN=[
@@ -6464,11 +6613,42 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
             <b style="color:${t.a>=0?"#8df08d":"#ff8a8a"};min-width:64px;text-align:right">${money(t.a)}</b>
           </div>`).join("")||'<div style="font-size:10px;color:#8a8378;padding:8px">No movement yet. The trays are empty.</div>'}
       </div>
+      ${careerLedgerHTML()}
       <div style="margin-top:10px;font-size:9px;color:#8a8378;line-height:1.5">
         Every hand of blackjack, every ticket written, every side bet the owners make on this floor lands in this room.
         The hold is swept nightly to the commissioner's penthouse.</div>`;
     const x=$("#ctx"); if(x) x.onclick=()=>{ el.style.display="none"; };
   }
+
+  /* ═══ the real books — four seasons of buy-ins and payouts, the money that
+         actually changed hands outside this building ═══ */
+  function careerLedgerHTML(){
+    const M=window.MONEY; if(!M) return "";
+    const sgn=v=>(v>0?"+$":v<0?"−$":"$")+Math.abs(v).toLocaleString();
+    const mx=Math.max(...M.rows.map(r=>Math.abs(r.net)))||1;
+    const mine=(meTeam()||{}).name;
+    return `
+      <div style="font-size:10px;letter-spacing:1.6px;color:#a89f8a;margin:14px 0 6px">
+        CAREER NET — ${M.YRS[0]}–${M.YRS[M.YRS.length-1]} · $${M.BUYIN}/season in · $${M.PRIZE[1].toLocaleString()} first · $${M.PRIZE[2]} second</div>
+      <div style="max-height:250px;overflow:auto;border-radius:9px;background:rgba(0,0,0,.26);padding:6px">
+        ${M.rows.map((r,i)=>{
+          const c=r.net>0?"#8df08d":r.net<0?"#e0776a":"#a89f8a";
+          const w=Math.max(3,Math.abs(r.net)/mx*58);
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 7px;border-bottom:1px solid rgba(138,109,28,.14);font-size:10.5px;${r.team===mine&&!r.fallen?"background:rgba(212,175,55,.09);border-radius:6px":""}">
+            <span style="color:#6a635a;min-width:16px;text-align:right">${i+1}</span>
+            <b style="color:${r.fallen?"#c9a0ff":"#e8e4d8"};min-width:62px">${r.own}${r.fallen?" 🕯":""}</b>
+            <span style="flex:1;color:#8a8378;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team}</span>
+            <span style="color:#a89f8a;min-width:58px;text-align:right">${"🏆".repeat(r.titles)}${"🥈".repeat(r.seconds)}</span>
+            <span style="color:#6a635a;min-width:34px;text-align:right">${r.seasons}yr</span>
+            <i style="display:block;height:6px;border-radius:3px;width:${w}px;background:${r.net>0?"#2e8b57":r.net<0?"#7a2a22":"#3a341f"}"></i>
+            <b style="color:${c};min-width:56px;text-align:right">${sgn(r.net)}</b></div>`;
+        }).join("")}
+      </div>
+      <div style="margin-top:6px;font-size:9px;color:#8a8378;line-height:1.5">
+        $${M.totalIn.toLocaleString()} in, $${M.totalOut.toLocaleString()} out — the pot pays itself back every year.
+        🕯 Betty and Edmonds are charged for ${M.YRS[0]} only; Ferrand and Alex took over in ${M.YRS[1]}.</div>`;
+  }
+
   function openCount(){ countUI().style.display="block"; countRender(); }
 
   /* ── the count room, physically ── */
@@ -7133,20 +7313,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.beginPath(); cx.arc(a.x-7,headY-hr-20,7,0,7); cx.arc(a.x+1,headY-hr-24,9,0,7); cx.arc(a.x+9,headY-hr-19,6,0,7); cx.fill();
         if(Math.sin(t7*3)>0.4){ cx.strokeStyle="rgba(120,160,220,.6)"; cx.lineWidth=1.4;
           cx.beginPath(); cx.moveTo(a.x+2,headY-hr-12); cx.lineTo(a.x-1,headY-hr-4); cx.stroke(); } } }
-    const bl2=BESTLINE[a.t.name];
-    if(bl2){ cx.font="800 9px Sora"; cx.textAlign="center";
-      cx.lineWidth=3; cx.strokeStyle="rgba(0,0,0,.8)"; cx.lineJoin="round";
-      const byy=headY-hr-(ring?24:(sh>=2?34:11));
-      cx.strokeText(bl2[0],a.x,byy); cx.fillStyle=bl2[1]; cx.fillText(bl2[0],a.x,byy); }
-    const nm=o.o.toUpperCase();
-    cx.font="800 10.5px Sora"; const nw=cx.measureText(nm).width;
-    cx.fillStyle="rgba(10,10,8,.85)"; cx.beginPath(); cx.roundRect(a.x-Math.max(nw,60)/2-7,a.y+32,Math.max(nw,60)+14,26,5); cx.fill();
-    cx.strokeStyle=isMe?"#d4af37":"#332d1e"; cx.lineWidth=1; cx.stroke();
-    cx.textBaseline="middle";
-    cx.fillStyle=isMe?"#f0c95c":"#e8e4d8"; cx.textAlign="center"; cx.fillText(nm,a.x,a.y+41);
-    cx.font="600 8px Sora"; cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,a.y+52);
-    if(a.t.name===LASTP){ cx.fillStyle="#c8102e"; cx.font="600 8.5px Sora"; cx.fillText("shirt candidate",a.x,a.y+64); }
-    cx.textBaseline="alphabetic";
+    nameplate(a,o,isMe);
   }
 
   /* ═══════════ the twelve ═══════════ */
@@ -8331,13 +8498,36 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(near&&!dlg){ const t=Date.now()/300;
       cx.fillStyle="#f0c95c"; cx.font="800 15px Sora"; cx.textAlign="center";
       cx.fillText("▾",near.x,(near.npc?near.y-84:near.y-24)+Math.sin(t)*3); }
+    /* ═══ speech — a real bubble with a tail, so a thing somebody SAID can
+           never be mistaken for the furniture bolted to their nameplate ═══ */
     for(let i=overs.length-1;i>=0;i--){ const o=overs[i]; o.life-=.0032;
       if(o.life<=0){overs.splice(i,1);continue;}
       cx.globalAlpha=Math.min(1,o.life*4);
       const col=o.me?"#ffe95c":(o.a.t?mixc(o.a.t.c):"#f2efe4");
+      const FS=12.5, LH=16, PADX=10, PADY=8;
+      cx.font=`600 ${FS}px Sora`;
       const words=o.txt.split(" "); let lines=[""],li=0;
-      for(const wd of words){ if((lines[li]+" "+wd).trim().length>34){ lines.push(wd); li++; } else lines[li]=(lines[li]+" "+wd).trim(); }
-      lines.forEach((ln,k)=>outlined(ln,o.a.x,o.a.y-92+k*16-(lines.length-1)*16,col,13));
+      for(const wd of words){ if((lines[li]+" "+wd).trim().length>32){ lines.push(wd); li++; } else lines[li]=(lines[li]+" "+wd).trim(); }
+      let wmax=0; for(const ln of lines) wmax=Math.max(wmax,cx.measureText(ln).width);
+      const bw=wmax+PADX*2, bh=lines.length*LH+PADY*2;
+      const tipY=o.a.y-56;                      /* just clear of the head */
+      const by=tipY-9-bh, bx=o.a.x-bw/2;
+      /* body */
+      cx.beginPath(); cx.roundRect(bx,by,bw,bh,9);
+      cx.fillStyle="rgba(12,10,8,.93)"; cx.fill();
+      cx.strokeStyle=col; cx.lineWidth=1.6; cx.stroke();
+      /* tail, drawn as part of the same silhouette */
+      cx.beginPath(); cx.moveTo(o.a.x-8,by+bh-1); cx.lineTo(o.a.x,tipY); cx.lineTo(o.a.x+8,by+bh-1);
+      cx.fillStyle="rgba(12,10,8,.93)"; cx.fill();
+      cx.beginPath(); cx.moveTo(o.a.x-8,by+bh); cx.lineTo(o.a.x,tipY); cx.lineTo(o.a.x+8,by+bh);
+      cx.strokeStyle=col; cx.lineWidth=1.6; cx.stroke();
+      /* wipe the seam the tail leaves across the bubble's bottom edge */
+      cx.beginPath(); cx.moveTo(o.a.x-7,by+bh); cx.lineTo(o.a.x+7,by+bh);
+      cx.strokeStyle="rgba(12,10,8,.93)"; cx.lineWidth=2.4; cx.stroke();
+      cx.fillStyle="#f2efe4"; cx.textAlign="center"; cx.textBaseline="middle";
+      cx.font=`600 ${FS}px Sora`;
+      lines.forEach((ln,k)=>cx.fillText(ln,o.a.x,by+PADY+LH/2+k*LH));
+      cx.textBaseline="alphabetic";
       cx.globalAlpha=1; }
     for(let i=drops.length-1;i>=0;i--){ const dr=drops[i]; dr.life-=.011; dr.y-=.7;
       if(dr.life<=0){drops.splice(i,1);continue;}
