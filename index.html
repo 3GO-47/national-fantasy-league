@@ -7934,7 +7934,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   );
 
   /* ═══════════════ v11 · THE WIRE — live clubhouse ═══════════════ */
-  const NET={ url:store.get("netURL",""), ws:null, id:null, on:false, tries:0,
+  const NETDEF="wss://nfl-clubhouse.onrender.com/ws";
+  const NET={ url:store.get("netURL",NETDEF), ws:null, id:null, on:false, tries:0,
               rem:new Map(), lastPos:0, banner:"", sbj:null, err:"" };
   const netTeam = ()=> (meTeam()||{}).name || "Guest";
   const netOwner= ()=> ((meTeam()&&OWN[meTeam().name])||{o:"Guest"}).o;
@@ -7954,7 +7955,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     NET.ws.onclose=()=>{ const was=NET.on; NET.on=false; NET.id=null; NET.rem.clear(); NET.sbj=null;
       unhideNPCs(); NET.banner=NET.url?"offline":""; netHud();
       if(was) sysLog("🌐 Disconnected. Back to a private clubhouse.");
-      if(NET.url&&NET.tries<8){ NET.tries++; setTimeout(()=>netConnect(),Math.min(20000,2000*NET.tries)); } };
+      if(NET.url&&NET.tries<14){ NET.tries++; NET.banner=NET.tries<4?"waking the server…":"reconnecting…"; netHud();
+        setTimeout(()=>netConnect(),Math.min(15000,2500*NET.tries)); } };
     NET.ws.onerror=()=>{ NET.err="cannot reach server"; };
     NET.ws.onmessage=e=>{ let m; try{ m=JSON.parse(e.data); }catch(x){ return; } netMsg(m); };
   }
@@ -8082,7 +8084,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         you'll see each other move, chat, sit at the table, and the rent money, the book and the
         blackjack shoe all run off the house server instead of your own browser.</div>
       <div style="font-size:9px;letter-spacing:1.6px;color:#5f8f72;margin-bottom:4px">SERVER ADDRESS</div>
-      <input id="neturl" value="${(NET.url||"").replace(/"/g,"&quot;")}" placeholder="wss://nfl-clubhouse.your-name.workers.dev"
+      <input id="neturl" value="${(NET.url||"").replace(/"/g,"&quot;")}" placeholder="${NETDEF}"
         style="width:100%;background:#04180c;color:#cfe8d4;border:1px solid #2e8b57;border-radius:8px;padding:9px 10px;font-size:12px;font-family:inherit;box-sizing:border-box">
       <div style="display:flex;gap:6px;margin-top:9px;flex-wrap:wrap">
         <button class="ntb" data-a="go" style="${BTN}">${NET.on?"RECONNECT":"CONNECT"}</button>
@@ -8097,8 +8099,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
           : `<div style="font-size:11px;color:#5f8f72">${NET.err||NET.banner||"not connected"}</div>`}
       </div>
       <div style="margin-top:10px;font-size:9px;color:#4f7a60;line-height:1.5">
-        The server lives in <b>clubhouse-server/</b> in your league folder — one command to deploy,
-        works on Cloudflare Workers or any Node host. Until it's up, everything here runs privately, exactly as before.</div>`;
+        The house server is already up at <b>${NETDEF}</b> and every owner points at it by default.
+        It sleeps when the clubhouse is empty, so the first owner through the door may wait ~50 seconds for the lights to come on — it keeps retrying on its own.
+        Hit GO PRIVATE any time to play alone.</div>`;
     el.querySelectorAll(".ntb").forEach(b=>b.onclick=()=>{
       if(b.dataset.a==="go") netConnect($("#neturl").value);
       else { NET.url=""; store.set("netURL",""); netClose(); NET.banner=""; netHud(); }
