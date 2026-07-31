@@ -2726,7 +2726,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
    Ego:"Ego opens one eye, decides you are beneath him, purrs anyway.",
    Nebula:"Nebula bats at your shoelace and wins the exchange.",
    Leo:"Leo stretches to twice his length, then folds back into shadow."};
-  window.__club={go:(x,y)=>{player.x=x;player.y=y;}, openIns:t=>openInsights(t), net:()=>NET, send:o=>netSend(o), openBJ:()=>openBJ(), openBook:()=>openBook(), openNet:()=>openNet(), book:()=>BOOK, ledger:()=>LEDGER, rent:()=>RENT,state:()=>({x:Math.round(player.x),y:Math.round(player.y),mode:MODE,seated:NPCS.filter(n=>n.sit).length,meSit:!!player.sit,live:NET.on,peers:NET.rem.size})};
+  window.__club={go:(x,y)=>{player.x=x;player.y=y;}, openIns:t=>openInsights(t), net:()=>NET, send:o=>netSend(o), openBJ:()=>openBJ(), openBook:()=>openBook(), openNet:()=>openNet(), book:()=>BOOK, ledger:()=>LEDGER, rent:()=>RENT,npcs:()=>NPCS,state:()=>({x:Math.round(player.x),y:Math.round(player.y),mode:MODE,seated:NPCS.filter(n=>n.sit).length,meSit:!!player.sit,live:NET.on,peers:NET.rem.size,
+    doubles:[...NET.rem.values()].filter(r=>NPCS.some(n=>n.t&&n.t.name===r.meta.team&&!n.hidden)).map(r=>r.meta.team)})};
 
   /* ── chat / overhead / fx ── */
   const overs=[]; const sparks=[]; const confetti=[]; let marker=null;
