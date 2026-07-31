@@ -2660,7 +2660,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const PETS=[
    {n:"",      k:"husky",sc:1.05,c1:"#d8dee6",c2:"#5b6472",eye:"#4d9fff",follow:"Jake",x:520,y:760,vx:0,vy:0,tx:null,ty:null,wt:60,ph:Math.random()*7,heart:0},
    {n:"Luna",  k:"husky",sc:1.0, c1:"#eef0f4",c2:"#9aa4b8",eye:"#4d9fff",x:1250,y:520,vx:0,vy:0,tx:null,ty:null,wt:80, ph:Math.random()*7,heart:0},
-   {n:"",      k:"cat",  sc:1.5, c1:"#b9bec8",c2:"#f2efe4",eye:"#8fd8b4",fluff:1,halo:1,epitaph:"no name · no collar",x:2250,y:780,vx:0,vy:0,tx:null,ty:null,wt:140,ph:Math.random()*7,heart:0},
+   {n:"",      k:"cat",  sc:1.5, c1:"#8f959f",c2:"#b9bec6",eye:"#8fd8b4",fluff:1,halo:1,epitaph:"no name · no collar",x:2250,y:780,vx:0,vy:0,tx:null,ty:null,wt:140,ph:Math.random()*7,heart:0},
    {n:"Ego",   k:"cat",  sc:1.35,c1:"#e2793b",c2:"#b8451c",eye:"#2e8b57",x:995, y:575,lounge:1,ph:Math.random()*7,heart:0},
    {n:"Nebula",k:"cat",  sc:0.72,c1:"#6b4226",c2:"#1c1410",eye:"#8df08d",tortie:1,x:900, y:900,vx:0,vy:0,play:1,ph:Math.random()*7,heart:0},
    {n:"Leo",   k:"cat",  sc:0.95,c1:"#141414",c2:"#141414",eye:"#f0c95c",x:960, y:930,vx:0,vy:0,play:2,lanky:1,ph:Math.random()*7,heart:0}];
@@ -2850,6 +2850,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
           .map(c=>`${c[0]} — ${c[1]}. Etched in gold.`).concat(["2026 — the plate is blank. For now."])); } break;
       case "door": exitClub(); break;
       case "bar": beers=Math.min(99,beers+1); store.set("beers",beers); grant("beer"); award("mix",20);
+        serveBeer();
         if(beers%3===0) grant("dog");
         openDlg("THE BARTENDER","#e2b13b",[BARLINES[Math.floor(Math.random()*BARLINES.length)],
           `That's pour #${beers} this offseason.`+(beers>=9?" That's a full 9·9·9 of beers. Concerning.":beers>=5?" Pacing like a man who fears the shirt.":"")]); break;
@@ -3521,20 +3522,36 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.beginPath(); cx.moveTo(a.x-tw*.62,hy+6); cx.lineTo(a.x-tw*.62,hy+th-6); cx.stroke();
         cx.beginPath(); cx.moveTo(a.x+tw*.62,hy+6); cx.lineTo(a.x+tw*.62,hy+th-6); cx.stroke();
         cx.fillStyle="#8a8378"; cx.fillRect(a.x-1,hy+2,2,th-4); break;
-      case "gatsby": /* Josh — black suit, white shirt, cigarette */
-        torso("#141414");
-        cx.fillStyle="#1e1e22";                                        // lapels
-        cx.beginPath(); cx.moveTo(a.x-5,hy); cx.lineTo(a.x-tw+1,hy+3); cx.lineTo(a.x-3,hy+th*.62); cx.closePath(); cx.fill();
-        cx.beginPath(); cx.moveTo(a.x+5,hy); cx.lineTo(a.x+tw-1,hy+3); cx.lineTo(a.x+3,hy+th*.62); cx.closePath(); cx.fill();
-        cx.fillStyle="#f7f4ec";                                        // shirt
+      case "gatsby": /* Josh — pinstriped mobster, house money */
+        torso("#101014");
+        cx.strokeStyle="rgba(212,175,55,.34)"; cx.lineWidth=1;              // pinstripes
+        for(let sx=-tw+3;sx<=tw-3;sx+=4.4){ cx.beginPath();
+          cx.moveTo(a.x+sx,hy+2); cx.lineTo(a.x+sx,hy+th-3); cx.stroke(); }
+        cx.fillStyle="#1c1c22";                                             // wide peak lapels
+        cx.beginPath(); cx.moveTo(a.x-5,hy); cx.lineTo(a.x-tw+1,hy+2);
+        cx.lineTo(a.x-tw+3,hy+9); cx.lineTo(a.x-3,hy+th*.64); cx.closePath(); cx.fill();
+        cx.beginPath(); cx.moveTo(a.x+5,hy); cx.lineTo(a.x+tw-1,hy+2);
+        cx.lineTo(a.x+tw-3,hy+9); cx.lineTo(a.x+3,hy+th*.64); cx.closePath(); cx.fill();
+        cx.fillStyle="#0f0f13";
+        cx.beginPath(); cx.moveTo(a.x-5,hy); cx.lineTo(a.x-tw+1,hy+2); cx.lineTo(a.x-4,hy+8); cx.closePath(); cx.fill();
+        cx.fillStyle="#151a2e";                                             // midnight shirt
         cx.beginPath(); cx.moveTo(a.x-4.4,hy); cx.lineTo(a.x+4.4,hy);
-        cx.lineTo(a.x+3.2,hy+th*.6); cx.lineTo(a.x-3.2,hy+th*.6); cx.closePath(); cx.fill();
-        cx.fillStyle="#0c0c0e";                                        // black tie
-        cx.beginPath(); cx.moveTo(a.x-2.4,hy+2); cx.lineTo(a.x+2.4,hy+2);
-        cx.lineTo(a.x+1.6,hy+th*.58); cx.lineTo(a.x-1.6,hy+th*.58); cx.closePath(); cx.fill();
-        cx.fillStyle="#d4af37";                                        // pocket square
-        cx.beginPath(); cx.moveTo(a.x-tw+4,hy+13); cx.lineTo(a.x-tw+10,hy+10); cx.lineTo(a.x-tw+9,hy+15); cx.closePath(); cx.fill();
-        cx.fillStyle="#0a0a0c"; cx.fillRect(a.x-tw,hy+th-5,tw*2,5); break;
+        cx.lineTo(a.x+3.2,hy+th*.62); cx.lineTo(a.x-3.2,hy+th*.62); cx.closePath(); cx.fill();
+        cx.fillStyle="#d4af37";                                             // gold tie
+        cx.beginPath(); cx.moveTo(a.x-2.6,hy+2); cx.lineTo(a.x+2.6,hy+2);
+        cx.lineTo(a.x+1.6,hy+th*.6); cx.lineTo(a.x-1.6,hy+th*.6); cx.closePath(); cx.fill();
+        cx.fillStyle="#f0c95c"; cx.beginPath(); cx.arc(a.x,hy+4.4,1.5,0,7); cx.fill();
+        cx.fillStyle="#f0c95c";                                             // pocket square
+        cx.beginPath(); cx.moveTo(a.x-tw+4,hy+13); cx.lineTo(a.x-tw+11,hy+9);
+        cx.lineTo(a.x-tw+10,hy+15); cx.closePath(); cx.fill();
+        cx.strokeStyle="#e8c14a"; cx.lineWidth=1.2;                         // watch chain across the vest
+        cx.beginPath(); cx.moveTo(a.x-tw+6,hy+19); cx.quadraticCurveTo(a.x-1,hy+27,a.x+6,hy+21); cx.stroke();
+        cx.fillStyle="#e8c14a"; cx.beginPath(); cx.arc(a.x+6.6,hy+21,2,0,7); cx.fill();
+        cx.fillStyle="#d4af37"; cx.fillRect(a.x-tw+2,hy+th-9,tw*2-4,4);     // gold-buckled belt
+        cx.fillStyle="#0a0a0c"; cx.fillRect(a.x-tw,hy+th-5,tw*2,5);
+        cx.fillStyle="#d4af37"; cx.fillRect(a.x-3.4,hy+th-6,6.8,5.4);
+        cx.fillStyle="#f7f4ec"; cx.font="900 4.6px Sora"; cx.textAlign="center";
+        cx.fillText("$",a.x,hy+th-2); break;
       case "peyton": torso("#003a70");
         cx.fillStyle="#fff"; cx.font="900 11px 'Archivo Black'"; cx.textAlign="center"; cx.fillText("18",a.x,hy+th*.55);
         cx.font="600 4.6px Sora"; cx.fillText("MANNING",a.x,hy+th*.2); break;
@@ -3686,7 +3703,19 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         cx.fillRect(a.x-1,headY-4,12,3);
         cx.strokeStyle="#fff"; cx.lineWidth=1.4;
         cx.beginPath(); cx.arc(a.x,headY-hr+3.4,3,Math.PI*1.08,Math.PI*1.92); cx.stroke(); break;
-      case "gatsby": cx.fillStyle="#f2ecd9";
+      case "gatsby": {                                            // black fedora, gold band
+        cx.fillStyle="#f0c95c";                                     // slicked hair showing under the brim
+        cx.fillStyle="#171310"; cx.beginPath(); cx.arc(a.x,headY-1,hr,Math.PI,0); cx.fill();
+        cx.fillStyle="#101014";
+        cx.beginPath(); cx.ellipse(a.x,headY-hr*.62,hr*1.62,hr*.42,0,0,7); cx.fill();   // brim
+        cx.beginPath(); cx.roundRect(a.x-hr*.86,headY-hr*1.86,hr*1.72,hr*1.3,3); cx.fill();
+        cx.fillStyle="#1a1a20";
+        cx.beginPath(); cx.ellipse(a.x,headY-hr*1.86,hr*.86,hr*.24,0,0,7); cx.fill();
+        cx.fillStyle="#0a0a0e"; cx.fillRect(a.x-hr*.3,headY-hr*1.9,hr*.6,hr*.34);       // crown crease
+        cx.fillStyle="#d4af37"; cx.fillRect(a.x-hr*.86,headY-hr*.86,hr*1.72,3.4);       // gold band
+        cx.fillStyle="#c8102e"; cx.fillRect(a.x+hr*.4,headY-hr*.9,hr*.2,4.2);           // feather
+        break; }
+      case "__gatsby_old": cx.fillStyle="#f2ecd9";
         cx.beginPath(); cx.ellipse(a.x,headY-hr+2,12,3.2,0,0,7); cx.fill();
         cx.beginPath(); cx.roundRect(a.x-7,headY-hr-6,14,9,3); cx.fill();
         cx.fillStyle="#171310"; cx.fillRect(a.x-7,headY-hr+.2,14,2.4); break;
@@ -4979,6 +5008,23 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
           cx.fillStyle="#e8e0cc"; cx.fillRect(cxp+i*10-2,Y+18,4,18);
           cx.fillStyle="#ffd77a"; cx.shadowColor="#ffb02a"; cx.shadowBlur=14*fl;
           cx.beginPath(); cx.ellipse(cxp+i*10,Y+14,2.6,5,0,0,7); cx.fill(); cx.shadowBlur=0; } }
+      /* the pot, stacked in the middle of the wood */
+      { const px=X+Wd*.62, py=Y+Ht*.5;
+        cx.fillStyle="rgba(0,0,0,.35)"; cx.beginPath(); cx.ellipse(px,py+11,34,9,0,0,7); cx.fill();
+        for(let c2=0;c2<4;c2++){ const bx=px-27+c2*18;
+          for(let L=0;L<5+((c2*3)%4);L++){
+            cx.fillStyle=L%2?"#cbd6b8":"#b9c9a4";
+            cx.fillRect(bx,py+4-L*2.4,15,4.4);
+            if(L===0){ cx.fillStyle="rgba(0,0,0,.25)"; cx.fillRect(bx,py+8,15,1.4); } }
+          cx.fillStyle="#c8102e"; cx.fillRect(bx,py-2-((c2*3)%4)*2.4,15,2); }
+        for(let i2=0;i2<7;i2++){ const cxp=px-30+((i2*13)%62), cyp=py+6+((i2*5)%7);
+          cx.fillStyle=["#c8102e","#3b6fe2","#2e8b57","#f0c95c"][i2%4];
+          cx.beginPath(); cx.ellipse(cxp,cyp,6,2.6,0,0,7); cx.fill();
+          cx.fillStyle="rgba(255,255,255,.35)"; cx.fillRect(cxp-4,cyp-.6,2.4,1); }
+        cx.fillStyle="#f0c95c"; cx.font="900 11px 'Archivo Black'"; cx.textAlign="center";
+        cx.fillText("$1,200",px,py-26);
+        cx.fillStyle="rgba(212,175,55,.7)"; cx.font="700 7px Sora";
+        cx.fillText("THE POT",px,py-16); }
       cx.fillStyle="#d4af37"; cx.font="800 10px Sora"; cx.textAlign="center";
       cx.fillText("TWELVE SEATS · ONE HEAD · ONE FOOT",X+Wd/2,Y+Ht+70); }},
 
@@ -5127,7 +5173,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     /* ═══ THE SHIRT — hung from the rafters ═══ */
     {base:9999, noShift:1, draw(){
       const t=Date.now()/1000, sw=Math.sin(t*.9)*.07;
-      cx.save(); cx.translate(1100,WALL+16); cx.rotate(sw);
+      cx.save(); cx.translate(1010,KT.Y-116); cx.rotate(sw);
       cx.strokeStyle="rgba(180,170,150,.6)"; cx.lineWidth=1.4;
       cx.beginPath(); cx.moveTo(-40,0); cx.lineTo(0,26); cx.lineTo(40,0); cx.stroke();
       cx.strokeStyle="#8a8378"; cx.lineWidth=2.4;
@@ -5143,12 +5189,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.fillStyle="#2a2118"; cx.font="700 7px Sora"; cx.fillText("PROPERTY OF THE LEAGUE",0,120);
       cx.restore();
       /* spotlight from above */
-      const sg=cx.createLinearGradient(1100,WALL,1100,WALL+220);
-      sg.addColorStop(0,"rgba(255,240,210,.18)"); sg.addColorStop(1,"transparent");
-      cx.fillStyle=sg; cx.beginPath(); cx.moveTo(1050,WALL); cx.lineTo(1150,WALL);
-      cx.lineTo(1210,WALL+230); cx.lineTo(990,WALL+230); cx.closePath(); cx.fill();
-      cx.fillStyle="rgba(143,29,44,.85)"; cx.font="800 9px Sora"; cx.textAlign="center";
-      cx.fillText("WORN BY "+LASTP.toUpperCase(),1100,WALL+176); }},
+      const sg=cx.createLinearGradient(1010,KT.Y-140,1010,KT.Y+40);
+      sg.addColorStop(0,"rgba(255,240,210,.20)"); sg.addColorStop(1,"transparent");
+      cx.fillStyle=sg; cx.beginPath(); cx.moveTo(966,KT.Y-140); cx.lineTo(1054,KT.Y-140);
+      cx.lineTo(1104,KT.Y+40); cx.lineTo(916,KT.Y+40); cx.closePath(); cx.fill();
+      cx.fillStyle="rgba(143,29,44,.9)"; cx.font="800 9px Sora"; cx.textAlign="center";
+      cx.fillText("WORN BY "+LASTP.toUpperCase(),1010,KT.Y+22); }},
 
     /* ═══ LEAGUE HISTORY PLAQUES ═══ */
     {base:1330, draw(){
@@ -5188,7 +5234,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     {id:"prize",  x:ARX+190,y:1120,r:120, label:"PRIZE COUNTER",  prompt:"cash in tickets"},
     {id:"colonnade",x:2339,y:452, r:190, label:"CHAMPIONS COLONNADE",prompt:"walk the bronze"},
     {id:"grotto", x:360, y:1480, r:170,  label:"THE GROTTO",      prompt:"step into the water"},
-    {id:"shirt2", x:1100,y:WALL+150,r:110,label:"THE I CAME LAST SHIRT",prompt:"look up"}
+    {id:"shirt2", x:1010,y:1046,     r:96, label:"THE I CAME LAST SHIRT",prompt:"look up"}
   );
 
   /* ═══════════════ v6 · SOULS — the fallen, the bartender, the Dude ═══════════════ */
@@ -6702,8 +6748,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ═══════════════ v10 · CALL TO ORDER ═══════════════ */
   const KT={X:700,Y:1112,W:620,H:112};
-  const SEATN=["My Kupp Hurts","DoughBoy$","Team Martens","Tig Bits","Suck my Footballz"];
-  const SEATS_=["Django Achaned","Sandusky Shower Buddy","Silence of the Lamb","Are you winning son?","Blitz"];
+  /* seated by best finish — the closer to the head of the table, the better you have done.
+     The worst finish in the league takes the foot, next to the bucket. */
+  const SEATN=["My Kupp Hurts","Suck my Footballz","DoughBoy$","Sandusky Shower Buddy","Silence of the Lamb"];
+  const SEATS_=["Team Martens","Blitz","Tig Bits","Are you winning son?","Django Achaned"];
   function seatMap(){
     const m={};
     SEATN.forEach((nm,i)=>m[nm]={x:KT.X+62+i*120,y:KT.Y-42,f:1,side:-1});
@@ -6749,6 +6797,39 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       return [endX, seat.y];
     }
     return [seat.x, seat.y];
+  }
+  /* one of the two behind the bar walks the beer over, then goes back to work */
+  let SERVER=null;
+  function serveBeer(){
+    if(SERVER) return;
+    const bar=NPCS.filter(n=>n.nm==="Lloyd Christmas"||n.nm==="Harry Dunne");
+    if(!bar.length) return;
+    const who=bar[Math.floor(Math.random()*bar.length)];
+    SERVER={who, home:{x:who.station.x,y:who.station.y}, phase:"out", t:0};
+    who.fixed=0;
+    overhead(who,["One cold one, coming up.","You got it.","Big gulps huh? Here.",
+      "Two beers and a shot of dignity.","On the house. It always is."][Math.floor(Math.random()*5)]);
+  }
+  function stepServe(){
+    if(!SERVER) return;
+    const w=SERVER.who;
+    if(SERVER.phase==="out"){
+      w.tx=player.x+22; w.ty=player.y+14;
+      const dx=w.tx-w.x, dy=w.ty-w.y, d=Math.hypot(dx,dy);
+      w.vx+=dx/(d||1)*.5; w.vy+=dy/(d||1)*.5;
+      if(d<34||++SERVER.t>420){ SERVER.phase="give"; SERVER.t=0;
+        sysLog(`🍺 ${w.own.o} hands you a cold one.`);
+        toast("🍺 Beer from "+w.own.o);
+        overhead(player,"Appreciate it.",true);
+        for(let i=0;i<10;i++) sparks.push({x:player.x,y:player.y-14,vx:(Math.random()-.5)*2,vy:-Math.random()*2,c:"#f0c95c",life:1}); }
+    } else if(SERVER.phase==="give"){
+      if(++SERVER.t>40){ SERVER.phase="back"; SERVER.t=0; }
+    } else {
+      w.tx=SERVER.home.x; w.ty=SERVER.home.y;
+      const dx=w.tx-w.x, dy=w.ty-w.y, d=Math.hypot(dx,dy);
+      w.vx+=dx/(d||1)*.5; w.vy+=dy/(d||1)*.5;
+      if(d<10||++SERVER.t>420){ w.x=SERVER.home.x; w.y=SERVER.home.y; w.vx=w.vy=0; w.fixed=1; w.tx=null; SERVER=null; }
+    }
   }
   function stepSeats(){
     if(!SEATED) return;
@@ -8207,7 +8288,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     const draws=[...FURN.map(f=>((f.base>=1240&&!f.noShift)?{y:f.base+DY,fn:()=>{cx.save();cx.translate(0,DY);f.draw();cx.restore();}}:{y:f.base,fn:f.draw})),
       ...NPCS.filter(n=>!n.hidden).map(n=>({y:n.y+26,fn:()=>{drawSeatedCue(n); drawAvatar(n,false); drawBroke(n);}})),
       ...[...NET.rem.values()].map(r=>({y:r.y+26,fn:()=>{drawSeatedCue(r); drawLive(r);}})),
-      ...PETS.map(pt=>({y:pt.y+10,fn:()=>{drawPet(pt); petHalo(pt);}})),
+      ...PETS.map(pt=>({y:pt.y+10+(pt.n==="Leo"?-16:0),fn:()=>{drawPet(pt); petHalo(pt);}})),
       {y:player.y+26,fn:()=>{drawSeatedCue(player); drawAvatar(player,true);}}];
     draws.sort((a,b)=>a.y-b.y).forEach(d=>d.fn());
     if(near&&!dlg){ const t=Date.now()/300;
@@ -8231,7 +8312,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(let i=confetti.length-1;i>=0;i--){ const p=confetti[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life-=.004;
       if(p.life<=0||p.y>H){confetti.splice(i,1);continue;}
       cx.globalAlpha=Math.min(1,p.life*2); cx.fillStyle=p.c; cx.fillRect(p.x,p.y,p.r,p.r*.6); cx.globalAlpha=1; }
-    stepProps(); stepSouls(); stepBuffs(); if(!NET.on) stepRent(); stepNet(); stepBookHud(); stepSeats(); stepAmb(); drawAmb(); drawCeiling();
+    stepProps(); stepSouls(); stepServe(); stepBuffs(); if(!NET.on) stepRent(); stepNet(); stepBookHud(); stepSeats(); stepAmb(); drawAmb(); drawCeiling();
     if(party&&Math.random()<.3) confetti.push({x:Math.random()*W,y:WALL,vx:(Math.random()-.5)*1.4,vy:1+Math.random()*2,c:["#d4af37","#c8102e","#4d9fff","#2e8b57","#c959ff"][Math.floor(Math.random()*5)],r:3+Math.random()*4,life:1});
     cx.setTransform(DPR,0,0,DPR,0,0);
     const vg=cx.createRadialGradient(innerWidth/2,innerHeight/2,Math.min(innerWidth,innerHeight)*.42,innerWidth/2,innerHeight/2,Math.max(innerWidth,innerHeight)*.75);
