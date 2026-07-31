@@ -7935,13 +7935,15 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ═══════════════ v11 · THE WIRE — live clubhouse ═══════════════ */
   const NETDEF="wss://nfl-clubhouse.onrender.com/ws";
-  const NET={ url:store.get("netURL",NETDEF), ws:null, id:null, on:false, tries:0,
+  /* a blank saved value means "never chose" → take the house server; only an explicit GO PRIVATE ("off") opts out */
+  const _nsav=store.get("netURL","");
+  const NET={ url:(_nsav==="off"?"":(_nsav||NETDEF)), ws:null, id:null, on:false, tries:0,
               rem:new Map(), lastPos:0, banner:"", sbj:null, err:"" };
   const netTeam = ()=> (meTeam()||{}).name || "Guest";
   const netOwner= ()=> ((meTeam()&&OWN[meTeam().name])||{o:"Guest"}).o;
 
   function netConnect(url){
-    if(url!==undefined){ NET.url=String(url||"").trim(); store.set("netURL",NET.url); }
+    if(url!==undefined){ NET.url=String(url||"").trim()||NETDEF; store.set("netURL",NET.url); }
     netClose();
     if(!NET.url){ NET.banner=""; netHud(); return; }
     let u=NET.url.replace(/^http/,"ws").replace(/\/+$/,"");
@@ -8104,7 +8106,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         Hit GO PRIVATE any time to play alone.</div>`;
     el.querySelectorAll(".ntb").forEach(b=>b.onclick=()=>{
       if(b.dataset.a==="go") netConnect($("#neturl").value);
-      else { NET.url=""; store.set("netURL",""); netClose(); NET.banner=""; netHud(); }
+      else { NET.url=""; store.set("netURL","off"); netClose(); NET.banner=""; netHud(); }
       netRender(); });
     $("#ntx").onclick=()=>{ el.style.display="none"; };
   }
