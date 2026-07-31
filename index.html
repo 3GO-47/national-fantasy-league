@@ -6680,7 +6680,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       for(const n of NPCS){
         if(n.soul||n.fixed||!n.t||!SEATMAP[n.t.name]) continue;
         n.seat=SEATMAP[n.t.name]; n.sit=false; n.seatT=0; n.manual=0; n.tx=n.seat.x; n.ty=n.seat.y; n.wt=99999; n.talk=0;
-        if(Math.random()<.55) setTimeout(()=>overhead(n,SEATLINES[(k)%SEATLINES.length]),500+k*420);
+        if(Math.random()<.30) setTimeout(()=>overhead(n,SEATLINES[(k)%SEATLINES.length]),700+k*900);
         k++; }
       const ms=meTeam(); if(ms&&SEATMAP[ms.name]){ player.seat=SEATMAP[ms.name]; player.sit=false;
         player.seatT=0; player.manual=0; player.tx=player.seat.x; player.ty=player.seat.y; marker={x:player.tx,y:player.ty,life:1}; }
@@ -6869,19 +6869,19 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     legs(a,wf,b,o){                                   // o:{c,shoe,sock,stripe,cuff,baggy}
       const w=o.baggy?9.4:7.4, gap=o.baggy?2.4:2.6, L=a.x-gap-w, R=a.x+gap;
       cx.fillStyle=o.c;
-      cx.beginPath(); cx.roundRect(L,a.y+7+b*.3,w,18,o.baggy?4:2); cx.fill();
-      cx.beginPath(); cx.roundRect(R,a.y+7-b*.3,w,18,o.baggy?4:2); cx.fill();
-      cx.fillStyle="rgba(255,255,255,.14)"; cx.fillRect(L,a.y+7+b*.3,2,18); cx.fillRect(R,a.y+7-b*.3,2,18);
+      cx.beginPath(); cx.roundRect(L,a.y+1+b*.3,w,21,o.baggy?4:2); cx.fill();
+      cx.beginPath(); cx.roundRect(R,a.y+1-b*.3,w,21,o.baggy?4:2); cx.fill();
+      cx.fillStyle="rgba(255,255,255,.14)"; cx.fillRect(L,a.y+1+b*.3,2,21); cx.fillRect(R,a.y+1-b*.3,2,21);
       cx.strokeStyle="rgba(0,0,0,.5)"; cx.lineWidth=1;
-      cx.strokeRect(L,a.y+7+b*.3,w,18); cx.strokeRect(R,a.y+7-b*.3,w,18);
+      cx.strokeRect(L,a.y+1+b*.3,w,21); cx.strokeRect(R,a.y+1-b*.3,w,21);
       if(o.stripe){ cx.fillStyle=o.stripe;                       // candy stripes / seams
-        for(let i=0;i<5;i++){ cx.fillRect(L,a.y+9+i*3.6,w,1.7); cx.fillRect(R,a.y+9+i*3.6,w,1.7); } }
-      if(o.sock){ cx.fillStyle=o.sock; cx.fillRect(L,a.y+20,w,6); cx.fillRect(R,a.y+20,w,6); }
-      if(o.cuff){ cx.fillStyle=o.cuff; cx.fillRect(L-.6,a.y+22,w+1.2,3); cx.fillRect(R-.6,a.y+22,w+1.2,3); }
+        for(let i=0;i<6;i++){ cx.fillRect(L,a.y+3+i*3.4,w,1.7); cx.fillRect(R,a.y+3+i*3.4,w,1.7); } }
+      if(o.sock){ cx.fillStyle=o.sock; cx.fillRect(L,a.y+15,w,7); cx.fillRect(R,a.y+15,w,7); }
+      if(o.cuff){ cx.fillStyle=o.cuff; cx.fillRect(L-.6,a.y+18,w+1.2,3); cx.fillRect(R-.6,a.y+18,w+1.2,3); }
       cx.fillStyle=o.shoe;
-      cx.beginPath(); cx.roundRect(L-2.6,a.y+24+b*.3,w+4.4,6,2.4); cx.fill();
-      cx.beginPath(); cx.roundRect(R-1.8,a.y+24-b*.3,w+4.4,6,2.4); cx.fill();
-      if(o.sole){ cx.fillStyle=o.sole; cx.fillRect(L-2.6,a.y+28+b*.3,w+4.4,2); cx.fillRect(R-1.8,a.y+28-b*.3,w+4.4,2); }
+      cx.beginPath(); cx.roundRect(L-2.6,a.y+21+b*.3,w+4.4,6.4,2.4); cx.fill();
+      cx.beginPath(); cx.roundRect(R-1.8,a.y+21-b*.3,w+4.4,6.4,2.4); cx.fill();
+      if(o.sole){ cx.fillStyle=o.sole; cx.fillRect(L-2.6,a.y+25.4+b*.3,w+4.4,2); cx.fillRect(R-1.8,a.y+25.4-b*.3,w+4.4,2); }
     },
     body(a,tw,th,hy,fill,r){ cx.fillStyle=fill; cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*2,th,r==null?9:r); cx.fill(); },
     belly(a,tw,th,hy,fill){                          // a proper gut
@@ -7072,7 +7072,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     OA.shadow(a,wf);
     OA.legs(a,wf,b,{c:"#dfe6ee",shoe:"#1a1a1a",sole:"#f2efe4"});
     cx.strokeStyle="#f2efe4"; cx.lineWidth=1.6;                        // leg bones
-    for(const lx of [a.x-9.4,a.x+2.4]){ cx.beginPath(); cx.moveTo(lx+3.6,a.y+9); cx.lineTo(lx+3.6,a.y+23); cx.stroke(); }
+    for(const lx of [a.x-9.4,a.x+2.4]){ cx.beginPath(); cx.moveTo(lx+3.6,a.y+3); cx.lineTo(lx+3.6,a.y+20); cx.stroke(); }
     OA.body(a,tw,th,hy,"#003a70",8);
     cx.strokeStyle="rgba(240,236,228,.85)"; cx.lineWidth=1.6;          // rib cage
     for(let r=0;r<5;r++){ cx.beginPath();
@@ -7137,7 +7137,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     const hr=9.4, sk="#8a5a34";
     OA.shadow(a,wf);
     OA.legs(a,wf,b,{c:"#e8e4d8",shoe:"#141414",sock:"#1c2f5e",sole:"#c9cfe4"});
-    cx.fillStyle="#c9cfe4"; cx.fillRect(a.x-9.4,a.y+9,7.4,7); cx.fillRect(a.x+2.6,a.y+9,7.4,7);  // thigh pads
+    cx.fillStyle="#c9cfe4"; cx.fillRect(a.x-9.4,a.y+3,7.4,8); cx.fillRect(a.x+2.6,a.y+3,7.4,8);  // thigh pads
     cx.fillStyle="#1c2f5e";                                            // shoulder pads
     cx.beginPath(); cx.roundRect(a.x-tw-8,hy-6,tw*2+16,15,7); cx.fill();
     cx.fillStyle="#243d78";
@@ -7303,7 +7303,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     OA.shadow(a,wf);
     OA.legs(a,wf,b,{c:"#5b2a86",shoe:"#f7f4ec",sole:"#c959ff"});
     cx.fillStyle="#c9a227";                                            // one gold leg
-    cx.fillRect(a.x-9.4,a.y+7+b*.3,7.4,18);
+    cx.fillRect(a.x-9.4,a.y+1+b*.3,7.4,21);
     OA.body(a,tw,th,hy,"#5b2a86",8);
     cx.fillStyle="#c9a227";                                            // motley diamonds
     for(let r=0;r<4;r++) for(let c=0;c<3;c++){ if((r+c)%2) continue;
@@ -7369,7 +7369,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     OA.shadow(a,wf);
     OA.legs(a,wf,b,{c:"#8d96a8",shoe:"#dfe3ea",baggy:1,sole:"#9aa2ae",cuff:"#7a828f"});
     cx.fillStyle="#c8102e"; cx.font="800 6px Sora"; cx.textAlign="center";   // the N
-    cx.fillText("N",a.x-5.6,a.y+29); cx.fillText("N",a.x+6.6,a.y+29);
+    cx.fillText("N",a.x-5.6,a.y+26); cx.fillText("N",a.x+6.6,a.y+26);
     OA.body(a,tw,th,hy,"#f2efe4",9);                                     // white sweater
     cx.fillStyle="#1d3f8f";                                              // royal puffer vest
     cx.beginPath(); cx.roundRect(a.x-tw-2,hy-1,tw*.86,th+2,6); cx.fill();
@@ -8138,7 +8138,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(const n of NPCS){
       if(n.hidden){ n.vx=n.vy=0; continue; }
       if(n.sit){ n.vx=n.vy=0; n.x=n.seat.x; n.y=n.seat.y; if(n.talk>0) n.talk--;
-        if(Math.random()<.0016) overhead(n,SEATLINES[Math.floor(Math.random()*SEATLINES.length)]);
+        if(Math.random()<.00022) overhead(n,SEATLINES[Math.floor(Math.random()*SEATLINES.length)]);
         continue; }
       if(n.talk>0){ n.talk--; }
       else if(n.tx!=null){ const dx=n.tx-n.x, dy=n.ty-n.y, d=Math.hypot(dx,dy);
