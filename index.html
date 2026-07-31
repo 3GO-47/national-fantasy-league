@@ -7574,9 +7574,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     /* ruffled shirt */
     cx.fillStyle="#fbf9f3";
     cx.beginPath(); cx.moveTo(-6.5,-33); cx.lineTo(6.5,-33); cx.lineTo(4.5,-5); cx.lineTo(-4.5,-5); cx.closePath(); cx.fill();
-    cx.strokeStyle="#dcd5c4"; cx.lineWidth=1.1;
-    for(let i=0;i<6;i++){ const ry=-28+i*4.3;
-      cx.beginPath(); cx.moveTo(-4.6,ry); cx.quadraticCurveTo(0,ry+2.2,4.6,ry); cx.stroke(); }
+    cx.strokeStyle="rgba(206,198,182,.55)"; cx.lineWidth=.9;
+    for(let i=0;i<3;i++){ const ry=-26+i*7.4;
+      cx.beginPath(); cx.moveTo(-4.2,ry); cx.quadraticCurveTo(0,ry+2,4.2,ry); cx.stroke(); }
     /* satin lapels */
     cx.fillStyle=C3;
     cx.beginPath(); cx.moveTo(-6.5,-33); cx.lineTo(-17,-31); cx.lineTo(-12,-10); cx.lineTo(-5,-17); cx.closePath(); cx.fill();
@@ -7600,42 +7600,43 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle="#9aa2a9"; cx.fillRect(16,-46+shk,12,4);
     cx.fillStyle="rgba(255,255,255,.5)"; cx.fillRect(18.4,-42+shk,2.4,11);
     /* head */
-    const hy=-47;
-    cx.fillStyle="#eccba7"; cx.beginPath(); cx.ellipse(0,hy+1,9.6,10.8,0,0,7); cx.fill();
-    cx.fillStyle="rgba(180,130,90,.22)"; cx.beginPath(); cx.ellipse(3.4,hy+3,5,7,0,0,7); cx.fill();
+    const hy=-48;
+    cx.fillStyle="#eccba7"; cx.beginPath(); cx.ellipse(0,hy+1,11,11.8,0,0,7); cx.fill();
+    cx.fillStyle="rgba(180,130,90,.20)"; cx.beginPath(); cx.ellipse(3.8,hy+4,5.4,7.6,0,0,7); cx.fill();
     cx.fillStyle="#e0bd98";
-    cx.beginPath(); cx.ellipse(-9.6,hy+3,2.3,3.1,0,0,7); cx.fill();
-    cx.beginPath(); cx.ellipse(9.6,hy+3,2.3,3.1,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(-11,hy+4,2.5,3.4,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(11,hy+4,2.5,3.4,0,0,7); cx.fill();
     /* eyes */
     cx.fillStyle="#fdfdfa";
-    cx.beginPath(); cx.ellipse(-3.8,hy+1,3,3.2,0,0,7); cx.fill();
-    cx.beginPath(); cx.ellipse(3.8,hy+1,3,3.2,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(-4.2,hy+3.4,3.1,3.3,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(4.2,hy+3.4,3.1,3.3,0,0,7); cx.fill();
     cx.fillStyle="#2a2118"; const gz=Math.sin(t*.7)*.8;
-    cx.beginPath(); cx.arc(-3.8+gz,hy+1.4,1.45,0,7); cx.fill();
-    cx.beginPath(); cx.arc(3.8+gz,hy+1.4,1.45,0,7); cx.fill();
+    cx.beginPath(); cx.arc(-4.2+gz,hy+3.8,1.5,0,7); cx.fill();
+    cx.beginPath(); cx.arc(4.2+gz,hy+3.8,1.5,0,7); cx.fill();
     cx.strokeStyle=HR1; cx.lineWidth=1.5; cx.lineCap="round";
-    cx.beginPath(); cx.moveTo(-6.8,hy-3.4); cx.lineTo(-1.6,hy-4.2);
-    cx.moveTo(6.8,hy-3.4); cx.lineTo(1.6,hy-4.2); cx.stroke();
-    cx.fillStyle="#e0bd98"; cx.beginPath(); cx.ellipse(0,hy+4.4,2,2.5,0,0,7); cx.fill();
+    cx.beginPath(); cx.moveTo(-7.2,hy-.6); cx.lineTo(-1.8,hy-1.4);
+    cx.moveTo(7.2,hy-.6); cx.lineTo(1.8,hy-1.4); cx.stroke();
+    cx.fillStyle="#e0bd98"; cx.beginPath(); cx.ellipse(0,hy+7,2.2,2.7,0,0,7); cx.fill();
     /* the grin with the chipped tooth */
     cx.fillStyle="#5c2a1c"; cx.beginPath();
-    cx.moveTo(-6,hy+7.4); cx.quadraticCurveTo(0,hy+13,6,hy+7.4);
-    cx.quadraticCurveTo(0,hy+9.4,-6,hy+7.4); cx.fill();
-    cx.fillStyle="#fbf9f3"; cx.fillRect(-5,hy+7,10,2.6);
+    cx.moveTo(-6.4,hy+10.4); cx.quadraticCurveTo(0,hy+16,6.4,hy+10.4);
+    cx.quadraticCurveTo(0,hy+12.4,-6.4,hy+10.4); cx.fill();
+    cx.fillStyle="#fbf9f3"; cx.fillRect(-5.4,hy+10,10.8,2.8);
     cx.fillStyle="#5c2a1c";
-    if(orange){ cx.beginPath(); cx.moveTo(.4,hy+7); cx.lineTo(2.4,hy+7); cx.lineTo(1.4,hy+9.6); cx.closePath(); cx.fill(); }
-    else cx.fillRect(-1.4,hy+7,1.4,2.6);
-    /* THE BOWL CUT — a solid helmet with a hard straight fringe */
+    if(orange){ cx.beginPath(); cx.moveTo(.4,hy+10); cx.lineTo(2.6,hy+10); cx.lineTo(1.5,hy+12.8); cx.closePath(); cx.fill(); }
+    else cx.fillRect(-1.5,hy+10,1.5,2.8);
+    /* THE BOWL CUT — a heavy helmet of hair with a hard straight fringe */
     cx.fillStyle=HR1;
-    cx.beginPath();
-    cx.moveTo(-13,hy+3);
-    cx.bezierCurveTo(-14.4,hy-14, 14.4,hy-14, 13,hy+3);
-    cx.lineTo(13,hy-3.2); cx.lineTo(-13,hy-3.2); cx.closePath(); cx.fill();
-    cx.fillRect(-13,hy-6.4,26,4.2);                       // the fringe, dead straight
-    cx.beginPath(); cx.ellipse(-12,hy+1,3.1,5.2,0,0,7); cx.fill();     // side flaps over the ears
-    cx.beginPath(); cx.ellipse(12,hy+1,3.1,5.2,0,0,7); cx.fill();
+    cx.beginPath();                                        // the dome of hair, wider than the head
+    cx.moveTo(-14.4,hy+5);
+    cx.bezierCurveTo(-15.6,hy-16, 15.6,hy-16, 14.4,hy+5);
+    cx.closePath(); cx.fill();
+    cx.fillRect(-14.4,hy-6.6,28.8,7.2);                    // the fringe, cut dead straight
+    cx.beginPath(); cx.ellipse(-13.2,hy+2,3.9,7.4,0,0,7); cx.fill();   // flaps hanging over the ears
+    cx.beginPath(); cx.ellipse(13.2,hy+2,3.9,7.4,0,0,7); cx.fill();
+    cx.fillStyle="rgba(0,0,0,.22)"; cx.fillRect(-14.4,hy+.2,28.8,1.6); // the blunt cut line
     cx.fillStyle=HR2;
-    cx.beginPath(); cx.ellipse(-4,hy-9.6,6.6,3.2,-.22,0,7); cx.fill();  // sheen
+    cx.beginPath(); cx.ellipse(-4.6,hy-10.6,7.6,3.6,-.2,0,7); cx.fill();  // sheen
     cx.restore();
     const nm=orange?"LLOYD CHRISTMAS":"HARRY DUNNE";
     cx.font="800 10px Sora"; cx.textAlign="center"; cx.lineWidth=3; cx.lineJoin="round";
