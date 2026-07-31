@@ -7982,8 +7982,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         hideClaimed(); netApplyState(m);
         for(const l of (m.chat||[]).slice(-12)) netLogLine(l,true);
         netHud(); break;
+      /* the server already logs "X walked in." — just claim their seat and hide their stand-in */
       case "join": { const r=mkRemote(m.id,m.meta); r.fresh=1; NET.rem.set(m.id,r);
-        hideClaimed(); netHud(); sysLog(`🌐 ${r.own.o||m.meta.owner} is in the clubhouse with you.`); break; }
+        hideClaimed(); netHud(); break; }
       case "leave": NET.rem.delete(m.id); hideClaimed(); netHud(); break;
       case "pos": { const r=NET.rem.get(m.id); if(!r) return;
         if(r.fresh){ r.fresh=0; r.x=m.x; r.y=m.y; }   /* land them where they really are, no slide across the floor */
