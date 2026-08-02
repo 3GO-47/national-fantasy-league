@@ -428,6 +428,44 @@ tr.avoided td:nth-child(3){text-decoration:line-through;text-decoration-color:va
 .mbn{width:32px;color:var(--dim2);text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
 .grip{color:var(--dim2);cursor:grab;font-size:15px}
 
+/* TIERS + DRAFT DAY */
+.tiertag{display:inline-block;padding:1px 6px;border-radius:5px;font:800 9.5px var(--body);letter-spacing:.5px;white-space:nowrap}
+#wartable tr.kept{opacity:.42}
+#wartable tr.kept .pname{text-decoration:line-through}
+.keptchip{display:inline-block;margin-left:5px;padding:1px 5px;border-radius:4px;background:rgba(212,175,55,.16);color:var(--gold);font:800 8.5px var(--body)}
+.ddhero{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.ddhero>div{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.ddhero span{display:block;font:700 9px var(--body);letter-spacing:1.4px;color:var(--dim2)}
+.ddhero b{display:block;font:900 26px var(--disp);color:var(--gold);line-height:1.15}
+.ddhero i{display:block;font-style:normal;font-size:10.5px;color:var(--dim)}
+.ddslot b{color:var(--acc)}
+.ddgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px}
+.ddpick{display:flex;gap:9px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.ddpk{text-align:center;min-width:42px;border-right:1px solid var(--line);padding-right:8px}
+.ddpk b{display:block;font:900 20px var(--disp);color:var(--gold);line-height:1}
+.ddpk span{display:block;font:700 8.5px var(--body);color:var(--dim2);letter-spacing:1px}
+.ddbody{flex:1;min-width:0}
+.ddtiers{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}
+.ddtar{font-size:11.5px;line-height:1.75}
+.ddodds{color:var(--dim2);font-size:9.5px}
+.ddwait{margin-top:5px;font-size:10px;color:var(--dim2);border-top:1px dashed var(--line);padding-top:4px}
+.ddgone{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+.ddgone span{color:var(--dim2);font-size:10px;white-space:nowrap}
+.ddgone.proj{opacity:.55}
+.ddcliff{padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:11.5px;line-height:1.6}
+/* OPTIMIZER, rebuilt */
+.optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:8px}
+.optcard{background:var(--card);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.optcard.made{opacity:.5}
+.opthead{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:rgba(212,175,55,.1);border-bottom:1px solid var(--line)}
+.opthead b{font:900 12px var(--disp);color:var(--gold);letter-spacing:1px}
+.opthead span{font:700 9.5px var(--body);color:var(--dim2);letter-spacing:1px}
+.optbody{padding:8px 10px}
+.optprime{display:flex;align-items:baseline;gap:6px;font-size:14px;margin-bottom:6px}
+.optprime .pname{font-weight:800}
+.optalt{display:flex;flex-wrap:wrap;gap:4px}
+.optchip{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:6px;padding:2px 6px;font-size:10.5px;white-space:nowrap}
+.optodds{color:var(--dim2);font-size:9.5px;margin-left:2px}
 /* WAR ROOM */
 .lockbox{max-width:440px;margin:56px auto;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:42px 32px;position:relative;overflow:hidden}
 .lockbox::before{content:"";position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent,var(--glow),transparent 30%);animation:spin 5s linear infinite;pointer-events:none}
@@ -1082,6 +1120,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
       <button data-w="lab">⚛ Physics Lab</button>
       <button data-w="deep">🔬 Deep Cuts</button>
       <button data-w="doss">🕵️ Dossiers</button>
+      <button data-w="dday">🎬 DRAFT DAY</button>
       <button data-w="opt">🎯 Pick Optimizer</button>
     </div>
     <div id="w-board" class="wpane">
@@ -1093,7 +1132,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
         <span style="color:var(--dim2);font-size:11px">click headers to sort</span>
       </div>
       <div class="twrap"><table id="wartable">
-        <thead><tr><th class="num" data-wk="rk">MK#</th><th class="num" data-wk="yr">Yah#</th><th class="num" data-wk="d">Δ</th><th data-wk="pos">Pos</th><th data-wk="name">Player</th><th data-wk="tm">Tm</th><th class="num" data-wk="val">$</th><th class="num" data-wk="lg24">Lg 24</th><th class="num" data-wk="lg25">Lg 25</th><th class="num" data-wk="proj" style="color:var(--acc)">'26 Proj</th><th class="num" data-wk="ppg">PPG</th><th class="num" data-wk="boom">Boom%</th><th class="num" data-wk="sosS">SOS</th><th class="num" data-wk="sosP">SOS P</th></tr></thead>
+        <thead><tr><th class="num" data-wk="tier">Tier</th><th class="num" data-wk="rk">MK#</th><th class="num" data-wk="yr">Yah#</th><th class="num" data-wk="d">Δ</th><th data-wk="pos">Pos</th><th data-wk="name">Player</th><th data-wk="tm">Tm</th><th class="num" data-wk="val">$</th><th class="num" data-wk="lg24">Lg 24</th><th class="num" data-wk="lg25">Lg 25</th><th class="num" data-wk="proj" style="color:var(--acc)">'26 Proj</th><th class="num" data-wk="ppg">PPG</th><th class="num" data-wk="boom">Boom%</th><th class="num" data-wk="sosS">SOS</th><th class="num" data-wk="sosP">SOS P</th></tr></thead>
         <tbody id="tb-war"></tbody>
       </table></div>
     </div>
@@ -1154,6 +1193,9 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
     <div id="w-doss" class="wpane" style="display:none">
       <div class="sub">Every rival's 2025 draft DNA — how they actually spent picks, when they panic-grab positions, and how to punish it.</div>
       <div class="dossiers" id="dossiers"></div>
+    </div>
+    <div id="w-dday" class="wpane" style="display:none">
+      <div id="dday"></div>
     </div>
     <div id="w-opt" class="wpane" style="display:none">
       <div class="sub">Your snake picks, cross-referenced: <b>MK value × probability the player survives to your pick</b> (from Yahoo ADP drift). The play at every turn.</div>
@@ -2316,18 +2358,152 @@ const sosCell=v=>{ if(v==null||v==="")return "<td class='num'>–</td>";
   const bg=v<=8?"#1f7a4d":(v>=25?"#8f2f3c":"#3a4166");
   return `<td class="num"><span class="sosc" style="background:${bg}">${v}</span></td>`; };
 let wSortK="rk", wSortAsc=true, wPos="", wQ="";
+/* ══════════════════════════════════════════════════════════════════════════
+   TIERS — seven bands per position, cut where the projection actually falls
+   off rather than at round numbers. A tier break is a real decision point:
+   the last man in a tier is the last man worth reaching for.
+   ══════════════════════════════════════════════════════════════════════════ */
+const WTIERC=["#f0c95c","#8df08d","#4d9fff","#c959ff","#e2793b","#d8dee6","#7a7469"];
+let TIERS=null;
+function buildTiers(){
+  TIERS={};
+  for(const pos of ["QB","RB","WR","TE","K","DST"]){
+    const list=P.filter(p=>p.pos===pos&&p.proj).sort((a,b)=>b.proj-a.proj);
+    if(!list.length) continue;
+    /* every gap between consecutive players, biggest first — the six widest
+       become the tier walls, so tiers are wherever the cliff actually is */
+    const gaps=[];
+    for(let i=0;i<list.length-1;i++) gaps.push({i, g:list[i].proj-list[i+1].proj});
+    const walls=new Set(gaps.sort((a,b)=>b.g-a.g).slice(0,6).map(x=>x.i));
+    let t=1;
+    list.forEach((p,i)=>{ TIERS[p.yr]=t; if(walls.has(i)&&t<7) t++; });
+  }
+}
+const tierOf=yr=>(TIERS&&TIERS[yr])||null;
+function tierTag(yr){
+  const t=tierOf(yr); if(!t) return '<span style="color:var(--dim2)">–</span>';
+  return `<span class="tiertag" style="background:${WTIERC[t-1]}22;color:${WTIERC[t-1]};border:1px solid ${WTIERC[t-1]}55">T${t}</span>`;
+}
+/* every keeper that is locked is off the board, and the board should say so */
+function keptBy(name){
+  for(const t of TEAMS) if(t.keeper===name) return {team:t, conf:KCONF.has(name)};
+  return null;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DRAFT DAY — the only screen that matters once the clock starts.
+   ══════════════════════════════════════════════════════════════════════════ */
+const pickAt=(rd,slot)=> rd%2 ? (rd-1)*12+slot : rd*12+1-slot;
+function renderDraftDay(){
+  const el=$("#dday"); if(!el) return;
+  if(myTeam==null){ el.innerHTML='<div class="card">Claim your franchise (top right) and this becomes your draft-day sheet.</div>'; return; }
+  if(!TIERS) buildTiers();
+  const slot=myTeam, me=TEAMS[slot-1];
+  const mine=[]; for(let rd=1;rd<=15;rd++) mine.push({rd,pk:pickAt(rd,slot)});
+  const keeperPk=pickAt(16,slot);
+
+  /* who is on the clock between each of my picks, and how long the wait is */
+  const rows=mine.map((m,i)=>{
+    const next=mine[i+1];
+    const wait=next?next.pk-m.pk-1:null;
+    let between=[];
+    if(next){ for(let pk=m.pk+1;pk<next.pk;pk++){
+      const rd=Math.ceil(pk/12), idx=pk-(rd-1)*12;
+      const s=rd%2?idx:13-idx; between.push(TEAMS[s-1]); } }
+    return {...m, wait, between};
+  });
+
+  /* what is realistically still there when I am on the clock */
+  const simAdp=yr=>(D.mc&&D.mc.players[yr]&&D.mc.players[yr].adp)||yr;
+  const gone=new Set(TEAMS.filter(t=>KCONF.has(t.keeper)).map(t=>t.keeper));
+  const liveP=P.filter(p=>p.proj&&!gone.has(p.name)&&["QB","RB","WR","TE"].includes(p.pos));
+  const survives=(p,pk)=>1/(1+Math.exp((pk-simAdp(p.yr))/7));
+  const targetsAt=pk=>liveP.map(p=>({p,s:survives(p,pk)}))
+      .filter(x=>x.s>0.35&&x.s<0.985)
+      .sort((a,b)=>(b.p.proj*b.s)-(a.p.proj*a.s)).slice(0,5);
+
+  /* tier drain — how many of each tier are likely gone by my next turn */
+  const tierLeftAt=pk=>{
+    const c={};
+    for(const p of liveP){ const t=tierOf(p.yr); if(!t) continue;
+      if(survives(p,pk)>0.5) c[t]=(c[t]||0)+1; }
+    return c;
+  };
+
+  const wait1=rows[0].wait;
+  const longest=rows.filter(r=>r.wait!=null).sort((a,b)=>b.wait-a.wait)[0];
+
+  el.innerHTML=`
+  <div class="ddhero">
+    <div class="ddslot"><span>YOUR SLOT</span><b>${slot}</b><i>${esc(me.name)}</i></div>
+    <div class="ddstat"><span>FIRST PICK</span><b>${rows[0].pk}</b><i>round 1</i></div>
+    <div class="ddstat"><span>PICKS YOU MAKE</span><b>15</b><i>+1 keeper</i></div>
+    <div class="ddstat"><span>LONGEST WAIT</span><b>${longest?longest.wait:"–"}</b><i>after pick ${longest?longest.pk:"–"}</i></div>
+    <div class="ddstat"><span>KEEPER</span><b style="font-size:15px">${esc(me.keeper)}</b><i>pick ${keeperPk} · ${KCONF.has(me.keeper)?"locked":"projected"}</i></div>
+  </div>
+
+  <div class="card mkpanel" style="margin:12px 0">
+    <h3>⏱ THE CLOCK — every pick you own</h3>
+    <div class="ddgrid">
+      ${rows.map(r=>{
+        const tl=tierLeftAt(r.pk);
+        const tiers=[1,2,3,4,5,6,7].filter(t=>tl[t]).map(t=>
+          `<span class="tiertag" style="background:${WTIERC[t-1]}22;color:${WTIERC[t-1]};border:1px solid ${WTIERC[t-1]}55">T${t}·${tl[t]}</span>`).join("");
+        const tg=targetsAt(r.pk);
+        return `<div class="ddpick">
+          <div class="ddpk"><b>${r.pk}</b><span>RD ${r.rd}</span></div>
+          <div class="ddbody">
+            <div class="ddtiers">${tiers||'<span style="color:var(--dim2);font-size:10px">board thin</span>'}</div>
+            <div class="ddtar">${tg.map(x=>`${posTag(x.p.pos)} <b class="pname" onclick="openCard(${x.p.yr})">${esc(x.p.name)}</b> <span class="ddodds">${Math.round(x.s*100)}%</span>`).join("<br>")||'<span style="color:var(--dim2)">take best available</span>'}</div>
+            ${r.wait!=null?`<div class="ddwait">${r.wait} picks until you're back · ${r.between.slice(0,4).map(t=>esc(t.mgr.split(" ")[0])).join(", ")}${r.between.length>4?" +"+(r.between.length-4):""}</div>`:'<div class="ddwait">last pick of the draft</div>'}
+          </div></div>`;
+      }).join("")}
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    <div class="card mkpanel"><h3>🚨 GONE BEFORE YOU PICK</h3>
+      <div class="sub" style="margin-bottom:6px">Locked keepers — do not put these on your board.</div>
+      ${TEAMS.filter(t=>KCONF.has(t.keeper)).map(t=>`<div class="ddgone">${posTag((P.find(p=>p.name===t.keeper)||{}).pos||"")} <b>${esc(t.keeper)}</b><span>${esc(t.mgr.split(" ")[0])} · pick ${pickAt(16,t.slot)}</span></div>`).join("")}
+      ${TEAMS.filter(t=>!KCONF.has(t.keeper)).length?`<div class="sub" style="margin-top:8px">Still undeclared — could come back into the pool:</div>`+
+        TEAMS.filter(t=>!KCONF.has(t.keeper)).map(t=>`<div class="ddgone proj"><b>${esc(t.keeper)}</b><span>${esc(t.mgr.split(" ")[0])} · projected</span></div>`).join(""):""}
+    </div>
+    <div class="card mkpanel"><h3>⛰ TIER CLIFFS — where the drop is</h3>
+      <div class="sub" style="margin-bottom:6px">The last man in a tier is the last one worth reaching for.</div>
+      <div id="ddcliffs"></div>
+    </div>
+  </div>`;
+
+  /* the last player in each of the top tiers, by position */
+  let cl="";
+  for(const pos of ["QB","RB","WR","TE"]){
+    const list=liveP.filter(p=>p.pos===pos).sort((a,b)=>b.proj-a.proj);
+    for(let t=1;t<=3;t++){
+      const inT=list.filter(p=>tierOf(p.yr)===t);
+      if(inT.length<2) continue;
+      const last=inT[inT.length-1], nextUp=list[list.indexOf(last)+1];
+      if(!nextUp) continue;
+      cl+=`<div class="ddcliff">${posTag(pos)} <span class="tiertag" style="background:${WTIERC[t-1]}22;color:${WTIERC[t-1]};border:1px solid ${WTIERC[t-1]}55">T${t}</span>
+        <b>${esc(last.name)}</b> is the last one <span style="color:var(--red)">−${(last.proj-nextUp.proj).toFixed(0)} pts</span> to ${esc(nextUp.name)}</div>`;
+      break;
+    }
+  }
+  const cc=$("#ddcliffs"); if(cc) cc.innerHTML=cl||'<div style="color:var(--dim2)">no clean breaks left</div>';
+}
+
 function renderWar(){
   if(!MK) return;
-  let rows=MK.players.map(p=>({...p, yr:mkYr(p), d:(mkYr(p)||999)-p.rk}));
+  if(!TIERS) buildTiers();
+  let rows=MK.players.map(p=>({...p, yr:mkYr(p), d:(mkYr(p)||999)-p.rk, tier:tierOf(mkYr(p))||9, kept:keptBy(p.name)}));
   rows=rows.filter(p=>(!wPos||p.pos===wPos)&&(!wQ||(p.name+" "+p.tm).toLowerCase().includes(wQ)));
   rows.sort((a,b)=>{ let x=a[wSortK],y=b[wSortK];
     if(x==null||x==="")return 1; if(y==null||y==="")return -1;
     if(typeof x==="string"){x=x.toLowerCase();y=(y+"").toLowerCase();}
     return (x<y?-1:x>y?1:0)*(wSortAsc?1:-1); });
-  $("#tb-war").innerHTML=rows.map(p=>`<tr style="border-left:3px solid ${posColor(p.pos)}">
-    <td class="num"><b>${p.rk}</b></td><td class="num" style="color:var(--dim)">${p.yr??"–"}</td>
+  $("#tb-war").innerHTML=rows.map(p=>`<tr class="${p.kept&&p.kept.conf?"kept":""}" style="border-left:3px solid ${posColor(p.pos)}">
+    <td class="num">${tierTag(p.yr)}</td><td class="num"><b>${p.rk}</b></td><td class="num" style="color:var(--dim)">${p.yr??"–"}</td>
     <td class="num">${p.yr?`<span class="${p.d>0?'valpos':(p.d<0?'valneg':'')}">${p.d>0?"+"+p.d:p.d}</span>`:"–"}</td>
-    <td>${posTag(p.pos)}</td><td><b class="pname" ${p.yr?`onclick="openCard(${p.yr})"`:""}>${esc(p.name)}</b></td><td>${nfl(p.tm)}</td>
+    <td>${posTag(p.pos)}</td><td><b class="pname" ${p.yr?`onclick="openCard(${p.yr})"`:""}>${esc(p.name)}</b>${p.kept?`<span class="keptchip">${p.kept.conf?"KEPT":"proj"} · ${esc(p.kept.team.mgr.split(" ")[0])}</span>`:""}</td><td>${nfl(p.tm)}</td>
     <td class="num">${fmt(p.val)}</td><td class="num">${fmt(p.lg24)}</td><td class="num">${fmt(p.lg25)}</td>
     <td class="num" style="color:var(--acc);font-weight:700">${fmt(p.proj)}</td>
     <td class="num">${fmt(p.ppg)}</td><td class="num">${p.boom==null?"–":p.boom+"%"}</td>
@@ -2386,7 +2562,7 @@ function renderOptimizer(){
   for(let rd=1; rd<=15; rd++){
     const pk = rd%2 ? (rd-1)*12+slot : rd*12+1-slot;
     if(!mockMode && pk in picks){ const p=byYr[picks[pk]]; if(p){cnt[p.pos]++; bp.push({rd,p:p.name,pos:p.pos,proj:p.proj,made:true});
-      html+=`<div class="optrow" style="opacity:.6"><b style="color:var(--dim)">RD ${rd} · PICK ${pk} — MADE:</b> ${posTag(p.pos)} <b>${esc(p.name)}</b></div>`; }
+      html+=`<div class="optcard made"><div class="opthead"><b>RD ${rd}</b><span>PICK ${pk} · MADE</span></div><div class="optbody"><div class="optprime">${posTag(p.pos)} <b>${esc(p.name)}</b></div></div></div>`; }
       continue; }
     const scored = all.filter(p=>!taken.has(p.yr) && cnt[p.pos]<(CAPS[p.pos]||1)
         && !((p.pos==="K"||p.pos==="DST") && rd<12))
@@ -2398,8 +2574,12 @@ function renderOptimizer(){
         const c=kPool.find(p=>p.pos===need&&!taken.has(p.yr)); if(c) scored.unshift({...c,pa:.99,ev:1}); } }
     const best=scored[0];
     if(best){ taken.add(best.yr); cnt[best.pos]++; bp.push({rd,p:best.name,pos:best.pos,proj:projOf(best.yr)}); }
-    html += `<div class="optrow"><b style="color:var(--gold)">RD ${rd} · PICK ${pk}</b><br>` +
-      scored.map((p,i)=>`<span style="margin-right:12px;white-space:nowrap"><b style="color:${i===0?'var(--gold)':'var(--dim2)'};font-size:10px">${i+1}.</b> ${posTag(p.pos)} <b class="pname" onclick="openCard(${p.yr})">${esc((p.name||"").replace("⭐",""))}</b> <span style="color:var(--dim2);font-size:10.5px">MK${Math.round(p.rk)} · ${Math.round(p.pa*100)}%</span></span>`).join("") + `</div>`;
+    html += `<div class="optcard"><div class="opthead"><b>RD ${rd}</b><span>PICK ${pk}</span></div><div class="optbody">` +
+      (scored.length?`<div class="optprime">${posTag(scored[0].pos)} <b class="pname" onclick="openCard(${scored[0].yr})">${esc(scored[0].name)}</b>
+         <span class="optodds">${Math.round(scored[0].pa*100)}% there</span></div>
+       <div class="optalt">${scored.slice(1).map(p=>`<span class="optchip">${posTag(p.pos)} ${esc(p.name)}<i class="optodds" style="font-style:normal">${Math.round(p.pa*100)}%</i></span>`).join("")}</div>`
+        :'<div style="color:var(--dim2);font-size:11.5px">board exhausted at this cap</div>') + `</div></div>` + `` +
+      [].map((p,i)=>`<span><b>${i+1}.</b> ${posTag(p.pos)} <b class="pname" onclick="openCard(${p.yr})">${esc((p.name||"").replace("⭐",""))}</b> <span style="color:var(--dim2);font-size:10.5px">MK${Math.round(p.rk)} · ${Math.round(p.pa*100)}%</span></span>`).join("") + `</div>`;
   }
   // blueprint lineup
   const by=pos=>bp.filter(x=>x.pos===pos).sort((a,b)=>(b.proj||0)-(a.proj||0));
@@ -2409,6 +2589,7 @@ function renderOptimizer(){
   const used=new Set(starters.map(([,x])=>x&&x.p));
   const bench=bp.filter(x=>!used.has(x.p));
   const tot=starters.reduce((s,[,x])=>s+(x&&x.proj||0),0);
+  html = `<div class="optgrid">`+html+`</div>`;
   html = `<div class="card mkpanel" style="margin-bottom:10px"><h3>THE BLUEPRINT — projected result if the board falls to plan</h3>
     <div class="grid" style="grid-template-columns:1fr 1fr">
       <table>${starters.map(([sl,x])=>`<tr><td style="color:var(--dim2);width:44px">${sl}</td><td>${x?`${posTag(x.pos)} <b>${esc(x.p)}</b>`:"—"}</td><td class="num" style="color:var(--acc)">${x&&x.proj?Math.round(x.proj):"–"}</td></tr>`).join("")}</table>
@@ -2549,6 +2730,7 @@ document.querySelectorAll("#wposf button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#wposf button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
   wPos=b.dataset.p; renderWar(); });
 document.querySelectorAll(".wtabs button").forEach(b=>b.onclick=()=>{
+  if(b.dataset.w==="dday") renderDraftDay();
   document.querySelectorAll(".wtabs button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
   document.querySelectorAll(".wpane").forEach(x=>x.style.display="none"); $("#w-"+b.dataset.w).style.display="block"; });
 const savedPin=sessionStorage.getItem("nflhq_pin");
@@ -2898,7 +3080,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         sb.title=mine?"Call the table to order — everyone to their seat (T)":""; };
       gavel(); setInterval(gavel,1500); }
     const nb=$("#netbtn"); if(nb) nb.onclick=()=>openNet();
-    const cb2=$("#castbtn"); if(cb2) cb2.onclick=()=>applyCast(castMode()==="celebs"?"owners":"celebs"); }
+    const cb2=$("#castbtn");
+    if(cb2){ cb2.onclick=()=>cycleFit();
+      cb2.oncontextmenu=e=>{ e.preventDefault(); fitPanel(); };
+      cb2.title="Click to cycle OG / FUNNY / DANGER · right-click for the full wardrobe"; } }
 
   /* ── panels ── */
   let panelMode=null;
@@ -8183,44 +8368,732 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.globalAlpha=1;
   }
 
+
+  /* ══ MORE BODIES FOR THE TWELVE CHAIRS ══ */
+  Object.assign(CELEBART,{
+
+  /* ── Ace Rothstein — salmon tailoring and lenses you could read a menu through ── */
+  rothstein(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e0b088", t=Date.now()/1000;
+    CB.legs(a,b,"#e2926a","#5a3a20",{baggy:1});
+    CB.torso(a,tw,th,hy,"#ef9d72");                                    /* salmon, unapologetic */
+    cx.fillStyle="#d4af37";                                            /* lapels cut for the whole room */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-1.5,hy+2); cx.lineTo(a.x-tw*.94,hy+th*.62); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+1.5,hy+2); cx.lineTo(a.x+tw*.94,hy+th*.62); cx.closePath(); cx.fill();
+    cx.fillStyle="#fdf4dc"; cx.beginPath();                            /* shirt */
+    cx.moveTo(a.x-4.6,hy); cx.lineTo(a.x+4.6,hy); cx.lineTo(a.x+3.2,hy+19); cx.lineTo(a.x-3.2,hy+19); cx.closePath(); cx.fill();
+    cx.fillStyle="#8a5a1e"; cx.beginPath();                            /* tan tie */
+    cx.moveTo(a.x-2.4,hy+2); cx.lineTo(a.x+2.4,hy+2); cx.lineTo(a.x+1.5,hy+20); cx.lineTo(a.x-1.5,hy+20); cx.closePath(); cx.fill();
+    cx.fillStyle="#f0c95c"; cx.fillRect(a.x-tw*.72,hy+th*.42,3.6,3);   /* pocket square */
+    const hq=CB.arms(a,tw,th,hy,"#ef9d72",sk,{});
+    cx.strokeStyle="#f2efe4"; cx.lineWidth=1.8; cx.lineCap="round";    /* cigarette */
+    cx.beginPath(); cx.moveTo(a.x+tw+6,hq-1); cx.lineTo(a.x+tw+11.4,hq-8); cx.stroke();
+    cx.fillStyle="#ff8c2a"; cx.beginPath(); cx.arc(a.x+tw+11.8,hq-8.6,1.1,0,7); cx.fill();
+    cx.globalAlpha=.13; cx.fillStyle="#d9d2c2";
+    for(let i=0;i<3;i++){ const sy=hq-12-((t*18+i*9)%26);
+      cx.beginPath(); cx.arc(a.x+tw+11.6+Math.sin(t*1.4+i)*2.6,sy,2+i*1.2,0,7); cx.fill(); }
+    cx.globalAlpha=1;
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#c8a24a","slick");
+    cx.fillStyle="#c8a54a";                                            /* frames you could serve dinner on */
+    cx.beginPath(); cx.roundRect(a.x-hr*1.02,headY-hr*.4,hr*.94,hr*.66,2.6); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.08,headY-hr*.4,hr*.94,hr*.66,2.6); cx.fill();
+    cx.fillRect(a.x-hr*.12,headY-hr*.16,hr*.24,1.8);
+    CB.eyes(a,headY,hr,{shades:1,lens:"#9a6a24"});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Tony Montana — cream suit, black shirt open to the sternum ── */
+  scarface(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#d8a074", t=Date.now()/1000;
+    CB.legs(a,b,"#f0ead6","#241810",{baggy:1});
+    CB.torso(a,tw,th,hy,"#f4efdc");
+    cx.fillStyle="#15151b";                                            /* the shirt */
+    cx.beginPath(); cx.moveTo(a.x-7.4,hy); cx.lineTo(a.x+7.4,hy);
+    cx.lineTo(a.x+4.6,hy+th*.92); cx.lineTo(a.x-4.6,hy+th*.92); cx.closePath(); cx.fill();
+    cx.fillStyle="#f4efdc";                                            /* lapels over it */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2.2,hy+1); cx.lineTo(a.x-tw*.82,hy+th*.6); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2.2,hy+1); cx.lineTo(a.x+tw*.82,hy+th*.6); cx.closePath(); cx.fill();
+    cx.strokeStyle="#d4af37"; cx.lineWidth=1.8;                        /* the chain */
+    cx.beginPath(); cx.arc(a.x,hy+1,7.8,.3,Math.PI-.3); cx.stroke();
+    cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(a.x,hy+9.2,1.7,0,7); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#f4efdc",sk,{});
+    cx.strokeStyle="#4a2a18"; cx.lineWidth=3;                          /* cigar, held out ── */
+    cx.beginPath(); cx.moveTo(a.x+tw+5,hq-2); cx.lineTo(a.x+tw+13,hq-7); cx.stroke();
+    cx.fillStyle="#ff8c2a"; cx.beginPath(); cx.arc(a.x+tw+13.6,hq-7.4,1.4,0,7); cx.fill();
+    cx.globalAlpha=.12; cx.fillStyle="#d9d2c2";
+    for(let i=0;i<3;i++){ const sy=hq-11-((t*16+i*10)%28);
+      cx.beginPath(); cx.arc(a.x+tw+13+Math.sin(t*1.2+i)*3,sy,2.2+i*1.3,0,7); cx.fill(); }
+    cx.globalAlpha=1;
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#181410","slick");
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Ricky Bobby — every square inch of him is sold ── */
+  rickybobby(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    CB.legs(a,b,"#f4f1e6","#141414",{boot:"#c8102e"});
+    CB.torso(a,tw,th,hy,"#f6f3ea");
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x-tw,hy+th*.3,tw*2,4.2);     /* sponsor blocks, in order of cheque size */
+    cx.fillStyle="#1b3a8a"; cx.fillRect(a.x-tw,hy+th*.46,tw*2,4.2);
+    cx.fillStyle="#f0c95c"; cx.fillRect(a.x-tw,hy+th*.62,tw*2,4.2);
+    for(let i=0;i<8;i++){ cx.fillStyle=i%2?"#141414":"#f6f3ea";        /* checker hem */
+      cx.fillRect(a.x-tw+i*(tw*2/8),hy+th-6,tw*2/8,6); }
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x-tw+2,hy+2.4,5.4,4.4);      /* patches */
+    cx.fillStyle="#1b3a8a"; cx.fillRect(a.x+tw-7.4,hy+2.4,5.4,4.4);
+    cx.fillStyle="#141414"; cx.fillRect(a.x-tw,hy,tw*2,2.6);           /* collar */
+    const hq=CB.arms(a,tw,th,hy,"#f6f3ea",sk,{});
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x-tw-8.4,hy+13,8.4,3.4);     /* cuff bands */
+    cx.fillRect(a.x+tw,hy+13,8.4,3.4);
+    for(let i=0;i<4;i++){ cx.fillStyle=i%2?"#141414":"#f6f3ea";
+      cx.fillRect(a.x-tw-8.4+i*2.1,hy+18,2.1,3); cx.fillRect(a.x+tw+i*2.1,hy+18,2.1,3); }
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#8a6a2a","");
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── The Mask — yellow zoot suit, green head, no further questions ── */
+  themask(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#f2c318","#3a2a10",{baggy:1});
+    cx.fillStyle="#f2c318";                                            /* the jacket, cut long */
+    cx.beginPath(); cx.roundRect(a.x-tw-4,hy,tw*2+8,th+9,[10,10,4,4]); cx.fill();
+    cx.strokeStyle="rgba(0,0,0,.35)"; cx.lineWidth=1;
+    cx.beginPath(); cx.roundRect(a.x-tw-4,hy,tw*2+8,th+9,[10,10,4,4]); cx.stroke();
+    cx.fillStyle="#d89a10";                                            /* lapels down to the belt */
+    cx.beginPath(); cx.moveTo(a.x-tw-4,hy); cx.lineTo(a.x-2,hy+3); cx.lineTo(a.x-tw*.86,hy+th*.86); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw+4,hy); cx.lineTo(a.x+2,hy+3); cx.lineTo(a.x+tw*.86,hy+th*.86); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8102e"; cx.beginPath();                            /* red tie, wide as a runway */
+    cx.moveTo(a.x-3.4,hy+2); cx.lineTo(a.x+3.4,hy+2); cx.lineTo(a.x+2.4,hy+24); cx.lineTo(a.x-2.4,hy+24); cx.closePath(); cx.fill();
+    CB.arms(a,tw+4,th,hy,"#f2c318","#5fbf3f",{bulk:1});
+    cx.fillStyle="#5fbf3f";                                            /* the head is the mask */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.14,hr*1.1,0,0,7); cx.fill();
+    cx.fillStyle="rgba(0,0,0,.16)";
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*1.02,hr*.44,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{r:2.6});
+    cx.fillStyle="#f2c318";                                            /* the hat, brim first */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*1.02,hr*2.2,4,0,0,7); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*1.05,headY-hr*2.1,hr*2.1,hr*1.14,[6,6,1,1]); cx.fill();
+    cx.fillStyle="#d89a10"; cx.fillRect(a.x-hr*1.05,headY-hr*1.24,hr*2.1,3);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Kenny Powers — the vest, the mullet, the entirely unearned confidence ── */
+  kennypowers(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6b88a";
+    CB.legs(a,b,"#3a4a68","#f2efe4");
+    cx.fillStyle="#4a3a2a";                                            /* the mullet lives behind everything */
+    cx.beginPath(); cx.roundRect(a.x-hr*1.2,headY-hr*.2,hr*.7,hr*1.9,3); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.5,headY-hr*.2,hr*.7,hr*1.9,3); cx.fill();
+    CB.torso(a,tw,th,hy,"#e0b48a");                                    /* chest, uncovered on purpose */
+    cx.fillStyle="#5878a8";                                            /* denim vest, sleeves gone */
+    cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*.66,th,[9,0,0,9]); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.34,hy,tw*.66,th,[0,9,9,0]); cx.fill();
+    cx.strokeStyle="#e8c86a"; cx.lineWidth=.8;
+    cx.beginPath(); cx.moveTo(a.x-tw+1.4,hy+2); cx.lineTo(a.x-tw+1.4,hy+th-2); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+tw-1.4,hy+2); cx.lineTo(a.x+tw-1.4,hy+th-2); cx.stroke();
+    cx.strokeStyle="#d4af37"; cx.lineWidth=1.6;                        /* the chain */
+    cx.beginPath(); cx.arc(a.x,hy+1,6.8,.28,Math.PI-.28); cx.stroke();
+    CB.arms(a,tw,th,hy,sk,sk,{bulk:1});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#4a3a2a";                                            /* business at the front */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*1.04,hr*.6,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{shades:1,lens:"#181c22"});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Dr Evil — grey Nehru collar, the pinkie, the cat ── */
+  drevil(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e4c0a0";
+    CB.legs(a,b,"#8d939c","#2a2a30");
+    CB.torso(a,tw,th,hy,"#9aa0a8");
+    cx.fillStyle="#7d838c";                                            /* the collar that means business */
+    cx.beginPath(); cx.roundRect(a.x-6.4,hy-1,12.8,6,2); cx.fill();
+    cx.strokeStyle="rgba(0,0,0,.3)"; cx.lineWidth=.8;
+    cx.beginPath(); cx.moveTo(a.x,hy+5); cx.lineTo(a.x,hy+th-2); cx.stroke();
+    for(let i=0;i<3;i++){ cx.fillStyle="#5f656e";
+      cx.beginPath(); cx.arc(a.x+1.8,hy+11+i*7,1.2,0,7); cx.fill(); }
+    const hq=CB.arms(a,tw,th,hy,"#9aa0a8",sk,{});
+    cx.fillStyle="#f2efe6";                                            /* Mr Bigglesworth, cradled */
+    cx.beginPath(); cx.ellipse(a.x-tw-7,hq-6,8.4,5.4,-.2,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x-tw-13,hq-9,4.2,0,7); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-tw-16,hq-11.4); cx.lineTo(a.x-tw-15,hq-15); cx.lineTo(a.x-tw-13,hq-12); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-tw-12,hq-12.4); cx.lineTo(a.x-tw-10.6,hq-15.4); cx.lineTo(a.x-tw-9.6,hq-11.8); cx.closePath(); cx.fill();
+    cx.fillStyle="#2a2a30";
+    cx.beginPath(); cx.arc(a.x-tw-14.4,hq-9.2,.9,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x-tw-11.6,hq-9.2,.9,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="rgba(0,0,0,.14)";                                    /* bald, and shining about it */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.46,hr*.92,hr*.42,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.goatee(a,headY,hr,"#3a3028");
+    cx.fillStyle=sk;                                                   /* the pinkie, en route */
+    cx.beginPath(); cx.roundRect(a.x+hr*.9,headY+hr*.2,4.6,5.2,2.2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.9,headY-hr*.5,2.4,5.4,1.2); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Coach Prime — black and gold, and the whistle is decorative ── */
+  coachprime(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#8a5f3a";
+    CB.legs(a,b,"#1c1c20","#f2efe4");
+    CB.torso(a,tw,th,hy,"#16161a");
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-1.2,hy,2.4,12);            /* gold placket */
+    cx.fillRect(a.x-tw,hy,tw*2,2.4);
+    cx.fillStyle="#0e0e12"; cx.beginPath();
+    cx.moveTo(a.x-6,hy); cx.lineTo(a.x+6,hy); cx.lineTo(a.x,hy+7); cx.closePath(); cx.fill();
+    cx.fillStyle="#d4af37"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("PRIME",a.x,hy+th*.74);
+    cx.strokeStyle="#d4af37"; cx.lineWidth=2.2;                        /* the chain, load bearing */
+    cx.beginPath(); cx.arc(a.x,hy+2,8.4,.26,Math.PI-.26); cx.stroke();
+    cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(a.x,hy+10.6,2.4,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,"#16161a",sk,{short:1});
+    cx.strokeStyle="#f2efe4"; cx.lineWidth=1;                          /* whistle on a cord */
+    cx.beginPath(); cx.moveTo(a.x-5,hy+1); cx.quadraticCurveTo(a.x-3,hy+16,a.x+3,hy+18); cx.stroke();
+    cx.fillStyle="#c8c2b4"; cx.beginPath(); cx.roundRect(a.x+2.4,hy+17,5.4,3.4,1.6); cx.fill();
+    CB.head(a,headY,hr,sk);
+    CB.eyes(a,headY,hr,{shades:1,lens:"#14100c"});
+    cx.fillStyle="#16161a";                                            /* visor, worn backwards */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.3,hr*1.04,Math.PI,0); cx.fill();
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-hr*1.04,headY-hr*.38,hr*2.08,3);
+    cx.fillStyle="#16161a"; cx.fillRect(a.x-hr*.44,headY-hr*.38,hr*.88,3.4);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Predator — the shoulder cannon tracks whoever is talking loudest ── */
+  predator(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), t=Date.now()/1000;
+    CB.legs(a,b,"#6a7a48","#3a4426",{boot:"#4a5430"});
+    CB.torso(a,tw,th,hy,"#7d8f52");
+    cx.fillStyle="rgba(58,68,32,.7)";                                  /* mottling */
+    for(let i=0;i<11;i++){ const mx=a.x-tw+3+((i*7)%(tw*2-6)), my=hy+3+((i*11)%(th-8));
+      cx.beginPath(); cx.ellipse(mx,my,2.6,1.8,i,0,7); cx.fill(); }
+    cx.strokeStyle="rgba(30,36,18,.6)"; cx.lineWidth=1.2;              /* slabs of muscle */
+    cx.beginPath(); cx.moveTo(a.x,hy+4); cx.lineTo(a.x,hy+th-6); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x-tw+3,hy+13); cx.lineTo(a.x+tw-3,hy+13); cx.stroke();
+    cx.fillStyle="#9aa26a"; cx.beginPath();                            /* net armour on the shoulders */
+    cx.roundRect(a.x-tw-1,hy,tw*2+2,6,3); cx.fill();
+    CB.arms(a,tw,th,hy,"#7d8f52","#7d8f52",{bulk:1});
+    cx.fillStyle="#5a6a3a"; cx.fillRect(a.x-tw-11,hy+16,10,5);         /* wrist blades housing */
+    cx.strokeStyle="#c8ccd4"; cx.lineWidth=1.6; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(a.x-tw-9,hy+21); cx.lineTo(a.x-tw-10,hy+33); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x-tw-5,hy+21); cx.lineTo(a.x-tw-6,hy+33); cx.stroke();
+    cx.fillStyle="#3a4028";                                            /* the cannon */
+    cx.beginPath(); cx.roundRect(a.x+tw-3,hy-13,7,10,2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw-1,hy-11,13,4.4,2); cx.fill();
+    cx.fillStyle="#8a9060"; cx.fillRect(a.x+tw-2,hy-4,5,5);
+    cx.fillStyle="#7d8f52";                                            /* the dreads, before the mask */
+    for(let i=0;i<7;i++){ const an=-2.9+i*.5;
+      cx.beginPath(); cx.roundRect(a.x+Math.cos(an)*hr*.9-1.6,headY+Math.sin(an)*hr*.9,3.2,hr*1.5,1.6); cx.fill(); }
+    cx.fillStyle="#9aa2a8";                                            /* biomask */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*.98,hr*1.08,0,0,7); cx.fill();
+    cx.fillStyle="#7a828a";
+    cx.beginPath(); cx.moveTo(a.x-hr*.8,headY-hr*.4); cx.lineTo(a.x,headY-hr*.1);
+    cx.lineTo(a.x+hr*.8,headY-hr*.4); cx.lineTo(a.x+hr*.5,headY+hr*.96);
+    cx.lineTo(a.x-hr*.5,headY+hr*.96); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a626a";
+    cx.beginPath(); cx.roundRect(a.x-hr*.62,headY-hr*.34,hr*.5,3.4,1.4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.12,headY-hr*.34,hr*.5,3.4,1.4); cx.fill();
+    const pl=.5+Math.sin(t*3.4)*.5;                                    /* three dots, and a decision */
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=6*pl; cx.fillStyle="#ff3b3b";
+    cx.beginPath(); cx.arc(a.x-4.4,headY-hr*1.5,1.2,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x,headY-hr*1.72,1.2,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+4.4,headY-hr*1.5,1.2,0,7); cx.fill();
+    cx.shadowBlur=0;
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Ron Burgundy — the suit, the hair, and a microphone he does not need ── */
+  burgundy(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e4b489";
+    CB.legs(a,b,"#6e2230","#3a2418",{baggy:1});
+    CB.torso(a,tw,th,hy,"#7d2836");
+    cx.fillStyle="#fdf6e4"; cx.beginPath();                            /* collar points, aviation grade */
+    cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+9); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-5,hy-1); cx.lineTo(a.x-13,hy+3); cx.lineTo(a.x-4,hy+9); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+5,hy-1); cx.lineTo(a.x+13,hy+3); cx.lineTo(a.x+4,hy+9); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a1c26";                                            /* lapels */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy+1); cx.lineTo(a.x-4,hy+6); cx.lineTo(a.x-tw*.86,hy+th*.6); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy+1); cx.lineTo(a.x+4,hy+6); cx.lineTo(a.x+tw*.86,hy+th*.6); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8a24a"; cx.beginPath();                            /* tie, worn wide */
+    cx.moveTo(a.x-3.4,hy+7); cx.lineTo(a.x+3.4,hy+7); cx.lineTo(a.x+2.2,hy+24); cx.lineTo(a.x-2.2,hy+24); cx.closePath(); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#7d2836",sk,{});
+    cx.fillStyle="#2a2a30";                                            /* the microphone */
+    cx.beginPath(); cx.roundRect(a.x+tw+4,hq-14,4.4,14,2); cx.fill();
+    cx.fillStyle="#8a8f98"; cx.beginPath(); cx.arc(a.x+tw+6.2,hq-16,3.6,0,7); cx.fill();
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x+tw+4,hq-11,4.4,3.4);
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#3a2a1a";                                            /* the helmet, held in place by chemistry */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.42,hr*1.16,hr*.82,0,Math.PI,0); cx.fill();
+    cx.fillRect(a.x-hr*1.16,headY-hr*.46,hr*2.32,hr*.4);
+    cx.strokeStyle="rgba(255,255,255,.28)"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(a.x-hr*.7,headY-hr*.9); cx.quadraticCurveTo(a.x,headY-hr*1.2,a.x+hr*.8,headY-hr*.8); cx.stroke();
+    CB.eyes(a,headY,hr,{});
+    CB.tache(a,headY,hr,"#3a2a1a");
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Homelander — the cape does most of the work ── */
+  homelander(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6bc94", t=Date.now()/1000;
+    cx.fillStyle="#8a1420";                                            /* cape, flag side out */
+    cx.beginPath(); cx.moveTo(a.x-tw-2,hy+1); cx.lineTo(a.x-tw-13,a.y+24);
+    cx.lineTo(a.x+tw+13,a.y+24); cx.lineTo(a.x+tw+2,hy+1); cx.closePath(); cx.fill();
+    cx.fillStyle="#f2efe4";                                            /* stripes in the lining */
+    for(let i=0;i<4;i++) cx.fillRect(a.x-tw-6-i*1.6,hy+9+i*8,tw*2+12+i*3.2,3.4);
+    cx.fillStyle="#1b3a8a"; cx.beginPath();
+    cx.moveTo(a.x-tw-2,hy+1); cx.lineTo(a.x-tw-6,hy+18); cx.lineTo(a.x-2,hy+18); cx.lineTo(a.x-2,hy+1); cx.closePath(); cx.fill();
+    cx.fillStyle="#f2efe4";
+    for(let i=0;i<5;i++){ cx.beginPath(); cx.arc(a.x-tw+1+(i%3)*5,hy+5+Math.floor(i/3)*6,1,0,7); cx.fill(); }
+    CB.legs(a,b,"#1c2c56","#8a1420",{boot:"#c8102e"});
+    CB.torso(a,tw,th,hy,"#22356a");
+    cx.fillStyle="#c8102e";                                            /* red panel down the middle */
+    cx.beginPath(); cx.moveTo(a.x-6,hy); cx.lineTo(a.x+6,hy); cx.lineTo(a.x+4,hy+th); cx.lineTo(a.x-4,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-tw,hy,tw*2,4.4);           /* gold shoulder trim */
+    cx.fillRect(a.x-tw+1,hy+th-6,tw*2-2,4);
+    cx.strokeStyle="rgba(255,255,255,.22)"; cx.lineWidth=.8;
+    for(let i=0;i<3;i++){ cx.beginPath(); cx.moveTo(a.x-tw+2,hy+9+i*7); cx.lineTo(a.x-5,hy+9+i*7); cx.stroke();
+      cx.beginPath(); cx.moveTo(a.x+5,hy+9+i*7); cx.lineTo(a.x+tw-2,hy+9+i*7); cx.stroke(); }
+    CB.arms(a,tw,th,hy,"#22356a","#8a1420",{bulk:1});
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#e0c060","slick");
+    const gl=.45+Math.sin(t*2.8)*.35;                                  /* the eyes are warming up */
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=9*gl;
+    CB.eyes(a,headY,hr,{c:"#ff3b3b",r:2});
+    cx.shadowBlur=0;
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Bane — the fur collar, and the only mouth in the building ── */
+  bane(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#2a2c34","#16161a",{boot:"#1a1a20"});
+    CB.torso(a,tw,th,hy,"#26282f");
+    cx.fillStyle="#16171c";                                            /* tactical vest, pouched to the gills */
+    cx.beginPath(); cx.roundRect(a.x-tw-1,hy+4,tw*2+2,th-8,3); cx.fill();
+    cx.fillStyle="#2e3038";
+    for(let i=0;i<3;i++){ cx.fillRect(a.x-tw+2,hy+8+i*8,7,6); cx.fillRect(a.x+tw-9,hy+8+i*8,7,6); }
+    cx.strokeStyle="#0e0e12"; cx.lineWidth=1.4;
+    cx.beginPath(); cx.moveTo(a.x-tw+1,hy+7); cx.lineTo(a.x+tw-1,hy+th-9); cx.stroke();
+    cx.fillStyle="#3a2c1e";                                            /* the coat, and its collar */
+    cx.beginPath(); cx.moveTo(a.x-tw-6,hy+3); cx.lineTo(a.x-tw-9,a.y+18); cx.lineTo(a.x-tw-1,a.y+18); cx.lineTo(a.x-tw-1,hy+3); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw+6,hy+3); cx.lineTo(a.x+tw+9,a.y+18); cx.lineTo(a.x+tw+1,a.y+18); cx.lineTo(a.x+tw+1,hy+3); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a4630";
+    for(let i=0;i<9;i++){ cx.beginPath();
+      cx.arc(a.x-tw-4+i*((tw*2+8)/8),hy-1+((i%2)?1.6:0),4.2,0,7); cx.fill(); }
+    CB.arms(a,tw,th,hy,"#26282f","#26282f",{bulk:1});
+    CB.head(a,headY,hr,"#c8a880");
+    cx.fillStyle="rgba(0,0,0,.3)";
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.92,hr*.44,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.strokeStyle="#4a4c54"; cx.lineWidth=2.6;                        /* tubes back over the cheeks */
+    cx.beginPath(); cx.moveTo(a.x-hr*.5,headY+hr*.44); cx.quadraticCurveTo(a.x-hr*1.3,headY+hr*.2,a.x-hr*1.06,headY-hr*.5); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+hr*.5,headY+hr*.44); cx.quadraticCurveTo(a.x+hr*1.3,headY+hr*.2,a.x+hr*1.06,headY-hr*.5); cx.stroke();
+    cx.fillStyle="#1c1e24";                                            /* the mask */
+    cx.beginPath(); cx.roundRect(a.x-hr*.72,headY+hr*.14,hr*1.44,hr*.86,[3,3,5,5]); cx.fill();
+    cx.strokeStyle="#5a5c66"; cx.lineWidth=1;
+    for(let i=0;i<5;i++){ const gx=a.x-hr*.52+i*(hr*1.04/4);
+      cx.beginPath(); cx.moveTo(gx,headY+hr*.22); cx.lineTo(gx,headY+hr*.9); cx.stroke(); }
+    cx.strokeStyle="#3a3c44"; cx.lineWidth=1.4;
+    cx.beginPath(); cx.moveTo(a.x-hr*.72,headY+hr*.52); cx.lineTo(a.x+hr*.72,headY+hr*.52); cx.stroke();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Uncle Rico — still throwing it, still 1982 ── */
+  unclerico(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e0b088";
+    CB.legs(a,b,"#7a6a4a","#3a2a18",{baggy:1});
+    CB.torso(a,tw,th,hy,"#b08a4a");                                    /* polyester, and proud */
+    cx.fillStyle="#8a6a30"; cx.beginPath();                            /* collar, open one button too many */
+    cx.moveTo(a.x-6,hy); cx.lineTo(a.x+6,hy); cx.lineTo(a.x,hy+10); cx.closePath(); cx.fill();
+    cx.strokeStyle="rgba(90,60,20,.5)"; cx.lineWidth=.8;
+    for(let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(a.x-tw+2,hy+11+i*6); cx.lineTo(a.x+tw-2,hy+11+i*6); cx.stroke(); }
+    cx.fillStyle="#6a5a3a"; cx.fillRect(a.x-tw+1,hy+th-5,tw*2-2,4);    /* belt */
+    const hq=CB.arms(a,tw,th,hy,"#b08a4a",sk,{});
+    cx.fillStyle=sk;                                                   /* the throwing arm, cocked back */
+    cx.beginPath(); cx.roundRect(a.x+tw-2,hy-14,8,16,4); cx.fill();
+    cx.fillStyle="#b08a4a"; cx.beginPath(); cx.roundRect(a.x+tw-2,hy+1,8,9,4); cx.fill();
+    cx.fillStyle="#7a4a24";                                            /* the ball he is never letting go of */
+    cx.beginPath(); cx.ellipse(a.x+tw+7,hy-19,7.4,4.6,-.4,0,7); cx.fill();
+    cx.strokeStyle="#f2efe4"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(a.x+tw+4,hy-20.4); cx.lineTo(a.x+tw+10,hy-17.6); cx.stroke();
+    for(let i=0;i<3;i++){ cx.beginPath();
+      cx.moveTo(a.x+tw+5+i*2,hy-21); cx.lineTo(a.x+tw+4.4+i*2,hy-18.6); cx.stroke(); }
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#6a4a26";                                            /* feathered, blow-dried, load-bearing */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.46,hr*1.14,hr*.74,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*1.14,headY-hr*.46); cx.lineTo(a.x-hr*1.3,headY+hr*.3); cx.lineTo(a.x-hr*.7,headY-hr*.2); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*1.14,headY-hr*.46); cx.lineTo(a.x+hr*1.3,headY+hr*.3); cx.lineTo(a.x+hr*.7,headY-hr*.2); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.tache(a,headY,hr,"#6a4a26");
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── The Riddler — the suit asks a lot of questions ── */
+  riddler(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8d4b8";
+    CB.legs(a,b,"#2f9a45","#1f6a30");
+    CB.torso(a,tw,th,hy,"#35b04e");
+    cx.fillStyle="#7a3ab0"; cx.font="900 7px 'Archivo Black'"; cx.textAlign="center";
+    for(let i=0;i<7;i++){ const qx=a.x-tw+4+((i*9)%(tw*2-6)), qy=hy+8+((i*13)%(th-10));
+      cx.fillText("?",qx,qy); }                                        /* rhetorical, mostly */
+    cx.fillStyle="#f2efe4"; cx.beginPath();
+    cx.moveTo(a.x-4,hy); cx.lineTo(a.x+4,hy); cx.lineTo(a.x,hy+7); cx.closePath(); cx.fill();
+    cx.fillStyle="#7a3ab0"; cx.beginPath();
+    cx.moveTo(a.x-2.2,hy+3); cx.lineTo(a.x+2.2,hy+3); cx.lineTo(a.x+1.4,hy+19); cx.lineTo(a.x-1.4,hy+19); cx.closePath(); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#35b04e",sk,{thin:1});
+    cx.strokeStyle="#2f9a45"; cx.lineWidth=2.4; cx.lineCap="round";    /* the cane, and its punchline */
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hq-2); cx.lineTo(a.x+tw+7,a.y+20); cx.stroke();
+    cx.beginPath(); cx.arc(a.x+tw+4,hq-6,3.6,-.4,Math.PI+.6); cx.stroke();
+    cx.fillStyle="#2f9a45"; cx.beginPath(); cx.arc(a.x+tw+7,hq-1,1.4,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#8a5a26","");
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#7a3ab0";                                            /* domino mask */
+    cx.beginPath(); cx.roundRect(a.x-hr*.86,headY-hr*.36,hr*1.72,hr*.54,3); cx.fill();
+    cx.fillStyle="#f2efe4";
+    cx.beginPath(); cx.arc(a.x-hr*.34,headY-hr*.08,1.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+hr*.34,headY-hr*.08,1.4,0,7); cx.fill();
+    cx.fillStyle="#2f9a45";                                            /* bowler */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.94,hr*1.42,3,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*1.14,hr*.86,hr*.66,0,Math.PI,0); cx.fill();
+    cx.fillRect(a.x-hr*.86,headY-hr*1.16,hr*1.72,hr*.24);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Belichick — the sleeves were a distraction ── */
+  belichick(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#dcb08c";
+    CB.legs(a,b,"#4a4e56","#2a2a2e");
+    CB.torso(a,tw,th,hy,"#8a8f98");
+    cx.fillStyle="#7a7f88";                                            /* hood, slumped */
+    cx.beginPath(); cx.ellipse(a.x,hy+2,hr*1.2,6,0,Math.PI,0); cx.fill();
+    cx.fillRect(a.x-hr*1.2,hy+1,hr*2.4,4.4);
+    cx.strokeStyle="#f2efe4"; cx.lineWidth=1;                          /* drawstrings */
+    cx.beginPath(); cx.moveTo(a.x-3,hy+5); cx.lineTo(a.x-4,hy+13); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+3,hy+5); cx.lineTo(a.x+4.4,hy+12); cx.stroke();
+    cx.fillStyle="#7a7f88"; cx.beginPath();                            /* pouch */
+    cx.roundRect(a.x-9,hy+th*.6,18,9,3); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#8a8f98",sk,{short:1});
+    cx.fillStyle="#8a8f98";                                            /* the sleeves, dealt with */
+    for(let s=-1;s<=1;s+=2) for(let i=0;i<4;i++){
+      cx.beginPath(); cx.moveTo(a.x+s*(tw+1.6)+s*i*2.2,hy+15);
+      cx.lineTo(a.x+s*(tw+3.6)+s*i*2.2,hy+15); cx.lineTo(a.x+s*(tw+2.6)+s*i*2.2,hy+19.4); cx.closePath(); cx.fill(); }
+    cx.fillStyle="#f4f1e6"; cx.beginPath();                            /* the play sheet */
+    cx.roundRect(a.x-tw-13,hq-9,12,15,1.5); cx.fill();
+    cx.strokeStyle="#9aa0a8"; cx.lineWidth=.7;
+    for(let i=0;i<5;i++){ cx.beginPath(); cx.moveTo(a.x-tw-11.4,hq-6.4+i*2.8); cx.lineTo(a.x-tw-2.6,hq-6.4+i*2.8); cx.stroke(); }
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#8a8578","");
+    CB.eyes(a,headY,hr,{r:1.3});
+    cx.strokeStyle="#1c1c22"; cx.lineWidth=2.2;                        /* headset, permanently listening to bad news */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.34,hr*1.02,Math.PI+.25,-.25); cx.stroke();
+    cx.fillStyle="#1c1c22";
+    cx.beginPath(); cx.roundRect(a.x-hr*1.22,headY-hr*.4,4.4,6.4,2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.82,headY-hr*.4,4.4,6.4,2); cx.fill();
+    cx.strokeStyle="#1c1c22"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(a.x-hr*1.06,headY+hr*.2); cx.quadraticCurveTo(a.x-hr*.9,headY+hr*.8,a.x-hr*.3,headY+hr*.74); cx.stroke();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Colonel Sanders — white suit, string tie, secret withheld ── */
+  colonel(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8c4a2";
+    CB.legs(a,b,"#f4f1e6","#1c1c1c");
+    CB.torso(a,tw,th,hy,"#f6f3ea");
+    cx.fillStyle="#e2ddcc";                                            /* double breasted, the second row is the point */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-1,hy+4); cx.lineTo(a.x-tw*.8,hy+th*.5); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+1,hy+4); cx.lineTo(a.x+tw*.8,hy+th*.5); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8c2b0";
+    for(let i=0;i<2;i++) for(let j=0;j<2;j++){
+      cx.beginPath(); cx.arc(a.x-5+i*10,hy+15+j*7,1.4,0,7); cx.fill(); }
+    cx.fillStyle="#14141a";                                            /* string tie */
+    cx.beginPath(); cx.arc(a.x,hy+3,2.2,0,7); cx.fill();
+    cx.strokeStyle="#14141a"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(a.x-1.4,hy+5); cx.lineTo(a.x-3.4,hy+14); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+1.4,hy+5); cx.lineTo(a.x+3.4,hy+14); cx.stroke();
+    const hq=CB.arms(a,tw,th,hy,"#f6f3ea",sk,{});
+    cx.strokeStyle="#3a2418"; cx.lineWidth=2.2; cx.lineCap="round";    /* the cane */
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hq-4); cx.lineTo(a.x+tw+10,a.y+21); cx.stroke();
+    cx.beginPath(); cx.arc(a.x+tw+4.6,hq-6,3,-.2,Math.PI+.4); cx.stroke();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#f2efe8"; cx.beginPath();                            /* white all the way round */
+    cx.ellipse(a.x,headY-hr*.42,hr*1.04,hr*.62,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.strokeStyle="#3a3a40"; cx.lineWidth=1;                          /* round frames */
+    cx.beginPath(); cx.arc(a.x-hr*.36,headY-hr*.04,hr*.32,0,7); cx.stroke();
+    cx.beginPath(); cx.arc(a.x+hr*.36,headY-hr*.04,hr*.32,0,7); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x-hr*.04,headY-hr*.04); cx.lineTo(a.x+hr*.04,headY-hr*.04); cx.stroke();
+    CB.goatee(a,headY,hr,"#f2efe8");
+    CB.tache(a,headY,hr,"#f2efe8");
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Bobby Boucher — the jug is the job, the tackling is a hobby ── */
+  boucher(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#f0c95c","#1c1c22",{boot:"#1b3a8a"});
+    CB.torso(a,tw,th,hy,"#1b3a8a");
+    cx.fillStyle="#f0c95c"; cx.fillRect(a.x-tw,hy+th*.24,tw*2,3.4);    /* gold trim */
+    cx.fillRect(a.x-tw,hy+th*.34,tw*2,2);
+    cx.fillStyle="#f2efe4"; cx.font="900 11px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("9",a.x,hy+th*.82);
+    cx.fillStyle="#0e2456"; cx.beginPath();
+    cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+6); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a4630"; cx.fillRect(a.x-tw+1,hy+th-6,tw*2-2,5);    /* the water carrier's belt */
+    cx.fillStyle="#c8c2b4";
+    cx.beginPath(); cx.roundRect(a.x-tw+3,hy+th-8,4.4,9,1.4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw-7.4,hy+th-8,4.4,9,1.4); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#1b3a8a","#e8bb90",{});
+    cx.fillStyle="#d8dfe8";                                            /* the jug */
+    cx.beginPath(); cx.roundRect(a.x+tw+3,hq-13,11,17,3); cx.fill();
+    cx.fillStyle="#4d9fff"; cx.fillRect(a.x+tw+4.4,hq-6,8.2,9);
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x+tw+4.4,hq-15,8.2,3.4);
+    cx.strokeStyle="#8a8f98"; cx.lineWidth=1.4;
+    cx.beginPath(); cx.moveTo(a.x+tw+14,hq-10); cx.quadraticCurveTo(a.x+tw+18,hq-6,a.x+tw+14,hq-2); cx.stroke();
+    cx.fillStyle="#1b3a8a";                                            /* helmet */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.1,hr*1.16,hr*1.1,0,0,7); cx.fill();
+    cx.fillStyle="#f0c95c"; cx.fillRect(a.x-1.6,headY-hr*1.2,3.2,hr*.9);
+    CB.eyes(a,headY,hr,{});
+    cx.strokeStyle="#c8ccd4"; cx.lineWidth=1.4;                        /* facemask */
+    cx.beginPath(); cx.moveTo(a.x-hr*1.1,headY+hr*.16); cx.quadraticCurveTo(a.x,headY+hr*1.24,a.x+hr*1.1,headY+hr*.16); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x-hr*.9,headY+hr*.62); cx.lineTo(a.x+hr*.9,headY+hr*.62); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x,headY+hr*.3); cx.lineTo(a.x,headY+hr*1.02); cx.stroke();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Ace Ventura — the shirt is louder than the quiff, but only just ── */
+  aceventura(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    cx.fillStyle="#f2efe4"; cx.fillRect(a.x-11,a.y-1,22,22);           /* striped trousers, laid in first */
+    for(let i=0;i<7;i++){ cx.fillStyle=i%2?"#c8102e":"#1b3a8a";
+      cx.fillRect(a.x-11+i*3.2,a.y-1,3.2,22); }
+    CB.legs(a,b,"rgba(0,0,0,0)","#f4f1e6");
+    for(let i=0;i<7;i++){ cx.fillStyle=i%2?"#c8102e":"#1b3a8a";
+      cx.fillRect(a.x-10.2+i*3,a.y+1,3,20); }
+    CB.torso(a,tw,th,hy,"#e83b2e");                                    /* the shirt, in three warring colours */
+    cx.fillStyle="#2fa050";
+    for(let i=0;i<5;i++){ cx.beginPath();
+      cx.ellipse(a.x-tw+5+((i*11)%(tw*2-8)),hy+7+((i*9)%(th-12)),4.4,3,i,0,7); cx.fill(); }
+    cx.fillStyle="#f0c95c";
+    for(let i=0;i<5;i++){ cx.beginPath();
+      cx.arc(a.x-tw+9+((i*13)%(tw*2-10)),hy+11+((i*7)%(th-14)),2.2,0,7); cx.fill(); }
+    cx.fillStyle="#1b3a8a";
+    for(let i=0;i<4;i++) cx.fillRect(a.x-tw+2+i*8,hy+th-9,4.4,4.4);
+    cx.fillStyle="#e83b2e"; cx.beginPath();                            /* collar, flipped */
+    cx.moveTo(a.x-7,hy-1); cx.lineTo(a.x,hy+8); cx.lineTo(a.x-1,hy-1); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+7,hy-1); cx.lineTo(a.x,hy+8); cx.lineTo(a.x+1,hy-1); cx.closePath(); cx.fill();
+    CB.arms(a,tw,th,hy,"#e83b2e",sk,{short:1});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#3a2a1a";                                            /* the quiff, defying everything */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.44,hr*1.02,hr*.56,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*.6,headY-hr*.8); cx.quadraticCurveTo(a.x-hr*.2,headY-hr*2.5,a.x+hr*.3,headY-hr*2.2);
+    cx.quadraticCurveTo(a.x+hr*.1,headY-hr*1.4,a.x+hr*.5,headY-hr*.8); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Brutus Buckeye — the head is the entire joke, so it gets the budget ── */
+  brutus(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    const nr=hr*2.05, ny=headY-hr*.62;
+    CB.legs(a,b,"#f4f1e6","#bb0000");
+    CB.torso(a,tw,th,hy,"#bb0000");
+    cx.fillStyle="#c9c9c9"; cx.fillRect(a.x-tw,hy+th*.26,tw*2,3);      /* grey trim */
+    cx.fillRect(a.x-tw,hy+th*.34,tw*2,1.6);
+    cx.fillStyle="#f2efe4"; cx.font="900 10px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("00",a.x,hy+th*.84);
+    CB.arms(a,tw,th,hy,"#bb0000","#f4f1e6",{short:1});
+    cx.fillStyle="#6b4423";                                            /* the nut */
+    cx.beginPath(); cx.arc(a.x,ny,nr,0,7); cx.fill();
+    cx.fillStyle="#4e3018";
+    cx.beginPath(); cx.arc(a.x,ny,nr,.5,Math.PI-.5); cx.fill();
+    cx.fillStyle="#c8a06a";                                            /* the pale cap of a buckeye */
+    cx.beginPath(); cx.ellipse(a.x,ny-nr*.42,nr*.62,nr*.38,0,0,7); cx.fill();
+    cx.fillStyle="#bb0000";                                            /* the cap band, scarlet and grey */
+    cx.beginPath(); cx.ellipse(a.x,ny-nr*.72,nr*.9,nr*.3,0,Math.PI,0); cx.fill();
+    for(let i=0;i<6;i++){ cx.fillStyle=i%2?"#c9c9c9":"#bb0000";
+      cx.fillRect(a.x-nr*.9+i*(nr*1.8/6),ny-nr*.78,nr*1.8/6,4.4); }
+    cx.fillStyle="#bb0000"; cx.beginPath();
+    cx.arc(a.x,ny-nr*.72,3.2,Math.PI,0); cx.fill();
+    CB.eyes(a,ny,nr,{r:3.4});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Master Chief — there is no face, and that is the character ── */
+  chief(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), t=Date.now()/1000;
+    CB.legs(a,b,"#3d5340","#232a24",{boot:"#2c3a2e"});
+    CB.torso(a,tw,th,hy,"#4a6a4c");
+    cx.fillStyle="#3d5340";                                            /* chest plate */
+    cx.beginPath(); cx.roundRect(a.x-tw*.78,hy+4,tw*1.56,th*.52,3); cx.fill();
+    cx.strokeStyle="rgba(20,26,20,.7)"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(a.x,hy+4); cx.lineTo(a.x,hy+4+th*.52); cx.stroke();
+    cx.fillStyle="#2c3a2e"; cx.fillRect(a.x-tw+1,hy+th*.66,tw*2-2,5);  /* under-armour band */
+    cx.fillStyle="#6a7f52";
+    for(let i=0;i<3;i++) cx.fillRect(a.x-9+i*7,hy+th*.66,3.4,5);
+    cx.fillStyle="#5a7a5c";                                            /* pauldrons, sized for a bad day */
+    cx.beginPath(); cx.moveTo(a.x-tw-9,hy+8); cx.lineTo(a.x-tw-6,hy-2);
+    cx.lineTo(a.x-tw+3,hy-2); cx.lineTo(a.x-tw+3,hy+12); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw+9,hy+8); cx.lineTo(a.x+tw+6,hy-2);
+    cx.lineTo(a.x+tw-3,hy-2); cx.lineTo(a.x+tw-3,hy+12); cx.closePath(); cx.fill();
+    CB.arms(a,tw,th,hy,"#3d5340","#2c3a2e",{bulk:1});
+    cx.fillStyle="#4a6a4c";                                            /* the helmet */
+    cx.beginPath(); cx.roundRect(a.x-hr*1.08,headY-hr*1.02,hr*2.16,hr*2.02,[7,7,5,5]); cx.fill();
+    cx.fillStyle="#3d5340"; cx.fillRect(a.x-hr*1.08,headY-hr*1.02,hr*2.16,hr*.42);
+    cx.fillStyle="#d4af37";                                            /* gold visor, nothing behind it */
+    cx.beginPath(); cx.moveTo(a.x-hr*.86,headY-hr*.34); cx.lineTo(a.x+hr*.86,headY-hr*.34);
+    cx.lineTo(a.x+hr*.66,headY+hr*.62); cx.lineTo(a.x-hr*.66,headY+hr*.62); cx.closePath(); cx.fill();
+    cx.fillStyle="rgba(255,240,190,"+(.22+Math.sin(t*1.6)*.12)+")";
+    cx.beginPath(); cx.moveTo(a.x-hr*.8,headY-hr*.28); cx.lineTo(a.x-hr*.1,headY-hr*.28);
+    cx.lineTo(a.x-hr*.44,headY+hr*.56); cx.lineTo(a.x-hr*.62,headY+hr*.56); cx.closePath(); cx.fill();
+    cx.fillStyle="#2c3a2e"; cx.fillRect(a.x-hr*1.08,headY+hr*.7,hr*2.16,hr*.3);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Jordan Belfort — pinstripes, and a fistful of somebody else's money ── */
+  belfort(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6bc94";
+    CB.legs(a,b,"#1e2a48","#1c1410");
+    CB.torso(a,tw,th,hy,"#243158");
+    cx.strokeStyle="rgba(230,235,245,.35)"; cx.lineWidth=.8;           /* the pins */
+    for(let i=0;i<7;i++){ const px=a.x-tw+3+i*((tw*2-6)/6);
+      cx.beginPath(); cx.moveTo(px,hy+1); cx.lineTo(px,hy+th-1); cx.stroke(); }
+    cx.fillStyle="#1a2440";                                            /* peak lapels */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2,hy+2); cx.lineTo(a.x-tw*.84,hy+th*.6); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2,hy+2); cx.lineTo(a.x+tw*.84,hy+th*.6); cx.closePath(); cx.fill();
+    cx.fillStyle="#fbf8f0"; cx.beginPath();
+    cx.moveTo(a.x-4.4,hy); cx.lineTo(a.x+4.4,hy); cx.lineTo(a.x+3,hy+18); cx.lineTo(a.x-3,hy+18); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8102e"; cx.beginPath();                            /* the tie does the talking */
+    cx.moveTo(a.x-2.6,hy+2); cx.lineTo(a.x+2.6,hy+2); cx.lineTo(a.x+1.6,hy+22); cx.lineTo(a.x-1.6,hy+22); cx.closePath(); cx.fill();
+    cx.fillStyle="#f0c95c"; cx.beginPath(); cx.arc(a.x,hy+3.4,1.2,0,7); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#243158",sk,{});
+    for(let i=0;i<5;i++){ cx.fillStyle=i%2?"#4f8f5a":"#3f7f4a";        /* a fan of hundreds */
+      cx.save(); cx.translate(a.x+tw+5,hq-3); cx.rotate(-.5+i*.22);
+      cx.beginPath(); cx.roundRect(-2,-14,5.4,13,1); cx.fill(); cx.restore(); }
+    cx.fillStyle="#e8dfc6"; cx.beginPath(); cx.arc(a.x+tw+5,hq-2,3.4,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#3a2a18","slick");
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Willy Wonka — plum velvet, and a hat with opinions ── */
+  wonka(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#ecc9a8";
+    CB.legs(a,b,"#d8c8a0","#3a2418");
+    cx.fillStyle="#5e2a48";                                            /* the tails, behind the man */
+    cx.beginPath(); cx.moveTo(a.x-tw+2,hy+th*.5); cx.lineTo(a.x-tw-2,a.y+16);
+    cx.lineTo(a.x-3,a.y+16); cx.lineTo(a.x-2,hy+th*.5); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw-2,hy+th*.5); cx.lineTo(a.x+tw+2,a.y+16);
+    cx.lineTo(a.x+3,a.y+16); cx.lineTo(a.x+2,hy+th*.5); cx.closePath(); cx.fill();
+    CB.torso(a,tw,th,hy,"#6e3355");
+    cx.fillStyle="#8a4368";                                            /* velvet catches what light there is */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2,hy+3); cx.lineTo(a.x-tw*.82,hy+th*.66); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2,hy+3); cx.lineTo(a.x+tw*.82,hy+th*.66); cx.closePath(); cx.fill();
+    cx.fillStyle="#f6f2e4"; cx.beginPath();
+    cx.moveTo(a.x-4,hy); cx.lineTo(a.x+4,hy); cx.lineTo(a.x,hy+11); cx.closePath(); cx.fill();
+    cx.fillStyle="#e0a92a"; cx.beginPath();                            /* mustard bow */
+    cx.moveTo(a.x-5.4,hy+1); cx.lineTo(a.x-1,hy+3.6); cx.lineTo(a.x-5.4,hy+6.2); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+5.4,hy+1); cx.lineTo(a.x+1,hy+3.6); cx.lineTo(a.x+5.4,hy+6.2); cx.closePath(); cx.fill();
+    cx.fillStyle="#e0a92a"; cx.beginPath(); cx.arc(a.x,hy+3.6,1.4,0,7); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#6e3355",sk,{thin:1});
+    cx.strokeStyle="#3a2418"; cx.lineWidth=2.2; cx.lineCap="round";    /* the cane he will not be needing */
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hq-3); cx.lineTo(a.x+tw+9,a.y+21); cx.stroke();
+    cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(a.x+tw+7,hq-5.6,2.4,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#d8b878","mop");
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#7a5a34";                                            /* the hat */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*1.1,hr*1.62,3.4,0,0,7); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*.94,headY-hr*2.16,hr*1.88,hr*1.1,[5,5,1,1]); cx.fill();
+    cx.fillStyle="#5a4024"; cx.fillRect(a.x-hr*.94,headY-hr*1.3,hr*1.88,3.4);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Agent 47 — black suit, red tie, and the barcode does the introductions ── */
+  agent47(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e4c2a4";
+    CB.legs(a,b,"#16161a","#0e0e12");
+    CB.torso(a,tw,th,hy,"#1a1a20");
+    cx.fillStyle="#f8f6f0"; cx.beginPath();                            /* the shirt, pressed within an inch */
+    cx.moveTo(a.x-5.4,hy); cx.lineTo(a.x+5.4,hy); cx.lineTo(a.x+3.4,hy+21); cx.lineTo(a.x-3.4,hy+21); cx.closePath(); cx.fill();
+    cx.fillStyle="#0e0e12";
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2.4,hy+1); cx.lineTo(a.x-tw*.86,hy+th*.62); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2.4,hy+1); cx.lineTo(a.x+tw*.86,hy+th*.62); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8102e"; cx.beginPath();                            /* the only colour he owns */
+    cx.moveTo(a.x-2.6,hy+1); cx.lineTo(a.x+2.6,hy+1); cx.lineTo(a.x+1.6,hy+24); cx.lineTo(a.x-1.6,hy+24); cx.closePath(); cx.fill();
+    CB.arms(a,tw,th,hy,"#1a1a20",sk,{});
+    cx.fillStyle="#f8f6f0";                                            /* gloves */
+    cx.beginPath(); cx.arc(a.x-tw-6.2,hy+27,4.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+6.2,hy+27,4.4,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="rgba(0,0,0,.12)";                                    /* nothing up top, by design */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.9,hr*.4,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{r:1.3});
+    cx.fillStyle="#1a1a20";                                            /* the barcode, round the back */
+    for(let i=0;i<6;i++) cx.fillRect(a.x+hr*.46+i*1.5,headY-hr*.94,(i%2?1.5:.8),5.4);
+    cx.font="700 3.4px Sora"; cx.textAlign="center";
+    cx.fillText("640509",a.x+hr*.82,headY-hr*.46);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  });
+
   /* ══ THE CAST — who is wearing whose body ══════════════════════════════ */
-  const CELEBCAST={
-    "DoughBoy$":            {p:"stonecold",  n:"Stone Cold",     hs:1.02, wf:1.04, skin:"#e0a878", hair:"#2a2018"},
-    "Suck my Footballz":    {p:"happy",      n:"Happy Gilmore",  hs:1.04, wf:.92,  skin:"#e8bb90", hair:"#4a3018"},
-    "Silence of the Lamb":  {p:"vader",      n:"Darth Vader",    hs:1.10, wf:1.00, skin:"#131318", hair:"#0c0c10"},
-    "Are you winning son?": {p:"borat",      n:"Borat",          hs:1.00, wf:.94,  skin:"#d8a877", hair:"#1c1410"},
-    "Kill Bill":            {p:"batman",     n:"Batman",         hs:1.04, wf:1.02, skin:"#d8a878", hair:"#2a2f3e"},
-    "Sandusky Shower Buddy":{p:"heisenberg", n:"Heisenberg",     hs:1.00, wf:.94,  skin:"#e6c09a", hair:"#4a3a2a"},
-    "Team Martens":         {p:"spider",     n:"Spider-Man",     hs:.98,  wf:.92,  skin:"#c8102e", hair:"#c8102e"},
-    "My Kupp Hurts":        {p:"soprano",    n:"Tony Soprano",   hs:1.04, wf:1.12, skin:"#e0b088", hair:"#3a3028"},
-    "Tig Bits":             {p:"wolverine",  n:"Wolverine",      hs:.92,  wf:1.06, skin:"#d8a878", hair:"#e8b93a"},
-    "Blitz":                {p:"osufan",     n:"Buckeye Guy",    hs:.98,  wf:1.08, skin:"#f0d0b0", hair:"#c8a24a"},
-    "Django Achaned":       {p:"joker",      n:"The Joker",      hs:1.00, wf:.90,  skin:"#e8e4de", hair:"#4faf5a"},
-    "Flacc Shots":          {p:"cgatsby",    n:"Jay Gatsby",     hs:1.00, wf:.96,  skin:"#e6bc94", hair:"#5a4326"}
-  };
   const OWNBASE=JSON.parse(JSON.stringify(OWN));      /* the real twelve, kept whole */
-  let CAST=store.get("cast","owners");
-  const castMode=()=>CAST;
-  function applyCast(mode,quiet){
-    CAST=(mode==="celebs")?"celebs":"owners";
-    store.set("cast",CAST);
+
+  /* ══════════════════════════════════════════════════════════════════════
+     THE FITS — three bodies per chair. OG is the owner drawn as himself,
+     the one we started with; FUNNY and DANGER are borrowed. The commissioner
+     sets what the league sees by default; any device can override for itself.
+     ══════════════════════════════════════════════════════════════════════ */
+  const FITS={
+    "DoughBoy$":            {og:null,        funny:"rothstein",  danger:"scarface",
+                             n:["Jake","Ace Rothstein","Tony Montana"]},
+    "Suck my Footballz":    {og:null,        funny:"rickybobby", danger:"themask",
+                             n:["Jacob","Ricky Bobby","The Mask"]},
+    "Sandusky Shower Buddy":{og:null,        funny:"kennypowers",danger:"drevil",
+                             n:["Scott","Kenny Powers","Dr Evil"]},
+    "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",
+                             n:["Tylor","Coach Prime","Predator"]},
+    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"vader",
+                             n:["Ferrand","Ron Burgundy","Darth Vader"]},
+    "Are you winning son?": {og:null,        funny:"borat",      danger:"homelander",
+                             n:["Phillips","Borat","Homelander"]},
+    "My Kupp Hurts":        {og:null,        funny:"soprano",    danger:"bane",
+                             n:["Griff","Tony Soprano","Bane"]},
+    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine",
+                             n:["Uncle Rico","The Riddler","Wolverine"]},
+    "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",
+                             n:["Belichick","Colonel Sanders","Bobby Boucher"]},
+    "Kill Bill":            {og:null,        funny:"aceventura", danger:"batman",
+                             n:["Garrett","Ace Ventura","Batman"]},
+    "Blitz":                {og:"osufan",    funny:"brutus",     danger:"chief",
+                             n:["Buckeye Guy","Brutus","Master Chief"]},
+    "Flacc Shots":          {og:"belfort",   funny:"wonka",      danger:"agent47",
+                             n:["Jordan Belfort","Willy Wonka","Agent 47"]}
+  };
+  const FITKEYS=["og","funny","danger"];
+  const FITLBL={og:"OG",funny:"FUNNY",danger:"DANGER"};
+
+  /* the commissioner's choice travels with the site; a device can pin its own */
+  const LEAGUEFIT="funny";                    /* what Flacc Shots has the league set to */
+  let FITMODE=store.get("fitmode","")||LEAGUEFIT;
+  const fitMode=()=>FITMODE;
+
+  function applyFit(mode,quiet){
+    FITMODE=FITKEYS.includes(mode)?mode:LEAGUEFIT;
+    store.set("fitmode",FITMODE);
     for(const team in OWN){
-      const base=OWNBASE[team], cel=CELEBCAST[team];
+      const base=OWNBASE[team], F=FITS[team];
       delete OWN[team].draw2;
       Object.assign(OWN[team],base);
-      if(CAST==="celebs"&&cel){
-        Object.assign(OWN[team],{p:cel.p,hs:cel.hs,wf:cel.wf,skin:cel.skin,hair:cel.hair});
-        const fn=CELEBART[cel.p], ent=OWN[team];
+      const key=F&&F[FITMODE];
+      if(key&&CELEBART[key]){
+        OWN[team].p=key;
+        const fn=CELEBART[key], ent=OWN[team];
         OWN[team].draw2=(av,isMe)=>fn(av,ent,isMe);
       }
+      /* og:null means the owner's own body — leaving base untouched does that */
     }
     const btn=$("#castbtn");
-    if(btn) btn.innerHTML=(CAST==="celebs"?"🎭":"👔")+'<span class="lbl"> '+(CAST==="celebs"?"CELEBS":"OWNERS")+'</span>';
-    if(!quiet){ sysLog(CAST==="celebs"
-      ? "🎭 The cast is in. Twelve borrowed bodies on the floor — the owners are still the owners."
-      : "👔 Back to the real twelve."); toast(CAST==="celebs"?"🎭 CELEBRITY CAST":"👔 OWNERS"); }
+    if(btn) btn.innerHTML=(FITMODE==="og"?"👤":FITMODE==="funny"?"🎭":"☠️")+
+      '<span class="lbl"> '+FITLBL[FITMODE]+'</span>';
+    if(!quiet){ sysLog("👕 The floor changes clothes — "+FITLBL[FITMODE]+" fits.");
+      toast((FITMODE==="og"?"👤 ":FITMODE==="funny"?"🎭 ":"☠️ ")+FITLBL[FITMODE]); }
   }
-  applyCast(CAST,1);        /* whatever this device last chose — must run after CAST exists */
+  /* the button cycles; the commissioner gets a panel to set the league default */
+  function cycleFit(){ applyFit(FITKEYS[(FITKEYS.indexOf(FITMODE)+1)%3]); }
+  function fitPanel(){
+    let el=$("#fitui");
+    if(!el){ el=document.createElement("div"); el.id="fitui";
+      el.style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:286;width:min(560px,94vw);background:linear-gradient(160deg,#12100a,#1a1509);border:2px solid #8a6d1c;border-radius:16px;padding:16px 18px;box-shadow:0 26px 80px rgba(0,0,0,.75);font-family:Sora,system-ui,sans-serif;color:#e8e4d8;max-height:80vh;overflow:auto";
+      fs.appendChild(el); }
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <b style="letter-spacing:2px;color:#f0c95c;font-size:13px">👕 THE WARDROBE — WHO EVERYONE IS</b>
+        <button id="ftx" style="background:none;border:1px solid #8a6d1c;color:#f0c95c;border-radius:6px;padding:4px 9px;cursor:pointer;font-size:11px">✕</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        ${FITKEYS.map(k=>`<button class="ftb" data-k="${k}" style="flex:1;background:${FITMODE===k?"#f0c95c":"rgba(255,255,255,.04)"};color:${FITMODE===k?"#14100c":"#cfc6b4"};border:1px solid #8a6d1c;border-radius:9px;padding:9px;cursor:pointer;font:800 11px Sora;letter-spacing:1px">${FITLBL[k]}</button>`).join("")}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px">
+        ${Object.entries(FITS).map(([tm,F])=>{
+          const own=(OWNBASE[tm]||{}).o||tm, i=FITKEYS.indexOf(FITMODE);
+          return `<div style="background:rgba(0,0,0,.25);border-radius:8px;padding:6px 8px">
+            <div style="font-size:9px;color:#8a8378;letter-spacing:1px">${esc(own.toUpperCase())}</div>
+            <div style="font-size:12px;font-weight:800;color:#f0c95c">${esc(F.n[i])}</div></div>`;
+        }).join("")}
+      </div>
+      <div style="margin-top:12px;font-size:9.5px;color:#8a8378;line-height:1.6">
+        ${amCommish()?"You set what the league sees. This device follows your choice immediately; everyone else picks it up on the next deploy."
+                     :"This changes what <b>you</b> see. The commissioner sets the league default."}</div>`;
+    el.querySelectorAll(".ftb").forEach(b=>b.onclick=()=>{ applyFit(b.dataset.k); fitPanel(); });
+    $("#ftx").onclick=()=>{ el.style.display="none"; };
+    el.style.display="block";
+    return el;
+  }
+
+  applyFit(FITMODE,1);      /* must run after FITMODE exists */
+
 
   /* ═══════════════ v12 · THE GUESTS, REDRAWN ═══════════════ */
 
@@ -8333,7 +9206,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── EDMONDS — one of the fallen, in a singlet and headgear ── */
   function drawEdmonds2(a){
-    if(castMode()==="celebs") return edmondsTerminator(a);
+    if(fitMode()==="danger") return edmondsTerminator(a);
     const al=a.gv*.82; if(al<.02) return;
     const t=Date.now()/1000;
     const b=ghostBody(a,"rgb(255,150,150)",al);
