@@ -2452,7 +2452,11 @@ function renderDraftDay(){
         return {p, s, v:vorp(p)*s*(w==null?0.1:w)};
       })
       .filter(x=>x.s>0.35&&x.s<0.985&&x.v>0)
-      .sort((a,b)=>b.v-a.v).slice(0,5);
+      .sort((a,b)=>b.v-a.v)
+      /* no more than two of a position in one list — you start one tight end,
+         so five of them is not a shortlist, it is noise */
+      .reduce((acc,x)=>{ const n=acc.filter(y=>y.p.pos===x.p.pos).length;
+        if(n<2&&acc.length<5) acc.push(x); return acc; },[]);
   }
   /* walk the draft once so each pick is advised knowing what the earlier picks
      already took — otherwise every round recommends the same position */
