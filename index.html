@@ -2886,8 +2886,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         sb.title=mine?"Call the table to order — everyone to their seat (T)":""; };
       gavel(); setInterval(gavel,1500); }
     const nb=$("#netbtn"); if(nb) nb.onclick=()=>openNet();
-    const cb2=$("#castbtn"); if(cb2) cb2.onclick=()=>applyCast(CAST==="celebs"?"owners":"celebs"); }
-  applyCast(CAST,1);        /* whatever this device last chose */
+    const cb2=$("#castbtn"); if(cb2) cb2.onclick=()=>applyCast(castMode()==="celebs"?"owners":"celebs"); }
 
   /* ── panels ── */
   let panelMode=null;
@@ -8208,6 +8207,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       ? "🎭 The cast is in. Twelve borrowed bodies on the floor — the owners are still the owners."
       : "👔 Back to the real twelve."); toast(CAST==="celebs"?"🎭 CELEBRITY CAST":"👔 OWNERS"); }
   }
+  applyCast(CAST,1);        /* whatever this device last chose — must run after CAST exists */
 
   /* ═══════════════ v12 · THE GUESTS, REDRAWN ═══════════════ */
 
