@@ -933,6 +933,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
     <div id="clubhint"></div>
     <button class="cbtn seatb" id="seatbtn" title="Call the table to order — everyone to their seat (T)">🪑<span class="lbl"> CALL TO ORDER</span></button>
     <button class="cbtn" id="netbtn" title="Play live with the other owners">🌐<span class="lbl"> LIVE</span></button>
+    <button class="cbtn" id="castbtn" title="Swap the whole floor between the real owners and the celebrity cast">👔<span class="lbl"> OWNERS</span></button>
     <button class="cbtn ptab" data-p="inv">🎒<span class="lbl"> INV</span></button>
     <button class="cbtn ptab" data-p="skills">📊<span class="lbl"> SKILLS</span></button>
     <button class="cbtn ptab" data-p="fit">🕴<span class="lbl"> FIT</span></button>
@@ -2884,7 +2885,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       const gavel=()=>{ const mine=amCommish(); sb.style.display=mine?"":"none";
         sb.title=mine?"Call the table to order — everyone to their seat (T)":""; };
       gavel(); setInterval(gavel,1500); }
-    const nb=$("#netbtn"); if(nb) nb.onclick=()=>openNet(); }
+    const nb=$("#netbtn"); if(nb) nb.onclick=()=>openNet();
+    const cb2=$("#castbtn"); if(cb2) cb2.onclick=()=>applyCast(CAST==="celebs"?"owners":"celebs"); }
+  applyCast(CAST,1);        /* whatever this device last chose */
 
   /* ── panels ── */
   let panelMode=null;
@@ -7757,6 +7760,455 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     return hr; }
   };
 
+
+  /* ══════════════════════════════════════════════════════════════════════
+     THE CELEBRITY CAST — an alternate set of bodies for the twelve chairs,
+     so nobody has to see a cartoon of themselves. Original stylised takes,
+     drawn to the house rules: minimal faces, all the character in the fit.
+     The real owner art is untouched — CAST flips between them.
+     ══════════════════════════════════════════════════════════════════════ */
+  const CB={
+    shadow(a,wf){ cx.fillStyle="rgba(0,0,0,.42)"; cx.beginPath(); cx.ellipse(a.x,a.y+27,15*(wf||1)+3,6,0,0,7); cx.fill(); },
+    legs(a,b,c,shoe,o){ o=o||{};
+      const w=o.baggy?9.4:7.6, g=2.6, L=a.x-g-w, R=a.x+g;
+      cx.fillStyle=c;
+      cx.beginPath(); cx.roundRect(L,a.y+1+b*.3,w,21,o.baggy?4:2); cx.fill();
+      cx.beginPath(); cx.roundRect(R,a.y+1-b*.3,w,21,o.baggy?4:2); cx.fill();
+      cx.strokeStyle="rgba(0,0,0,.45)"; cx.lineWidth=1;
+      cx.strokeRect(L,a.y+1+b*.3,w,21); cx.strokeRect(R,a.y+1-b*.3,w,21);
+      if(o.boot){ cx.fillStyle=o.boot; cx.fillRect(L,a.y+11,w,11); cx.fillRect(R,a.y+11,w,11); }
+      cx.fillStyle=shoe;
+      cx.beginPath(); cx.roundRect(L-2.6,a.y+21+b*.3,w+4.4,6.4,2.4); cx.fill();
+      cx.beginPath(); cx.roundRect(R-1.8,a.y+21-b*.3,w+4.4,6.4,2.4); cx.fill(); },
+    torso(a,tw,th,hy,c,r){ cx.fillStyle=c; cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*2,th,r==null?9:r); cx.fill(); },
+    arms(a,tw,th,hy,sleeve,skin,o){ o=o||{};
+      const w=o.bulk?11:(o.thin?6.4:8.4), len=o.short?15:23;
+      cx.fillStyle=sleeve;
+      cx.beginPath(); cx.roundRect(a.x-tw-w+2,hy+2,w,len,w/2); cx.fill();
+      cx.beginPath(); cx.roundRect(a.x+tw-2,hy+2,w,len,w/2); cx.fill();
+      cx.fillStyle=skin;
+      cx.beginPath(); cx.arc(a.x-tw-w/2+2,hy+len+2,4.4,0,7); cx.fill();
+      cx.beginPath(); cx.arc(a.x+tw+w/2-2,hy+len+2,4.4,0,7); cx.fill();
+      return hy+len+2; },
+    head(a,headY,hr,skin){ cx.fillStyle=skin; cx.beginPath(); cx.ellipse(a.x,headY,hr,hr*1.06,0,0,7); cx.fill(); },
+    eyes(a,headY,hr,o){ o=o||{};
+      const ex=hr*.34, ey=headY-hr*.04;
+      if(o.shades){ cx.fillStyle=o.lens||"#14100c";
+        cx.beginPath(); cx.roundRect(a.x-ex-3.6,ey-2.4,7.2,4.8,2); cx.fill();
+        cx.beginPath(); cx.roundRect(a.x+ex-3.6,ey-2.4,7.2,4.8,2); cx.fill();
+        cx.fillRect(a.x-1.4,ey-1,2.8,1.4); return; }
+      cx.fillStyle=o.c||"#1a1410";
+      cx.beginPath(); cx.arc(a.x-ex,ey,o.r||1.5,0,7); cx.fill();
+      cx.beginPath(); cx.arc(a.x+ex,ey,o.r||1.5,0,7); cx.fill(); },
+    hair(a,headY,hr,c,style){ cx.fillStyle=c;
+      if(style==="mop"){ for(let i=0;i<9;i++){ const an=-2.75+i*.44;
+        cx.beginPath(); cx.arc(a.x+Math.cos(an)*hr*.94,headY+Math.sin(an)*hr*.94-1.6,hr*.42,0,7); cx.fill(); } }
+      else if(style==="slick"){ cx.beginPath(); cx.ellipse(a.x,headY-hr*.55,hr*1.03,hr*.62,0,Math.PI,0); cx.fill();
+        cx.globalAlpha=.4; cx.strokeStyle="rgba(255,255,255,.6)"; cx.lineWidth=1.2;
+        cx.beginPath(); cx.moveTo(a.x-hr*.6,headY-hr*.8); cx.quadraticCurveTo(a.x,headY-hr*1.06,a.x+hr*.66,headY-hr*.66); cx.stroke(); cx.globalAlpha=1; }
+      else if(style==="bald"){ }
+      else if(style==="horseshoe"){ cx.beginPath(); cx.ellipse(a.x,headY-hr*.34,hr*1.02,hr*.6,0,Math.PI,0); cx.fill();
+        cx.fillStyle="rgba(0,0,0,0)"; }
+      else { cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*1.02,hr*.68,0,Math.PI,0); cx.fill(); } },
+    goatee(a,headY,hr,c){ cx.fillStyle=c;
+      cx.beginPath(); cx.ellipse(a.x,headY+hr*.66,hr*.34,hr*.34,0,0,7); cx.fill();
+      cx.fillRect(a.x-hr*.36,headY+hr*.3,hr*.72,2.2); },
+    tache(a,headY,hr,c){ cx.fillStyle=c;
+      cx.beginPath(); cx.roundRect(a.x-hr*.44,headY+hr*.26,hr*.88,3.4,1.6); cx.fill(); },
+    /* the chrome every avatar shares — crown, emote, nameplate */
+    chrome(a,o,isMe,tw,hy,headY,hr){
+      const ring=RINGS[a.t.name];
+      if(ring){ const t=Date.now()/1000, cb=Math.sin(t*1.7+a.bob)*1.6;
+        const cy=headY-hr-13+cb, cw=hr*1.08;
+        cx.fillStyle=CROWNC[a.t.name]||"#c8102e";
+        cx.beginPath();
+        cx.moveTo(a.x-cw,cy+7); cx.lineTo(a.x-cw,cy-1); cx.lineTo(a.x-cw*.5,cy+3.4);
+        cx.lineTo(a.x,cy-4.4); cx.lineTo(a.x+cw*.5,cy+3.4); cx.lineTo(a.x+cw,cy-1);
+        cx.lineTo(a.x+cw,cy+7); cx.closePath(); cx.fill(); }
+      if(a.emote){ a.emote.life-=.012; if(a.emote.life<=0) a.emote=null;
+        else if(a.emote.e==="flex"||a.emote.e==="rage"){ cx.strokeStyle=a.emote.e==="flex"?"#f0c95c":"#c8102e"; cx.lineWidth=3; cx.lineCap="round";
+          cx.beginPath(); cx.moveTo(a.x-tw-2,hy+10); cx.lineTo(a.x-tw-8,hy-2); cx.stroke();
+          cx.beginPath(); cx.moveTo(a.x+tw+2,hy+10); cx.lineTo(a.x+tw+8,hy-2); cx.stroke(); }
+        else if(a.emote.e==="wave"){ const wv=Math.sin(Date.now()/90)*6;
+          cx.strokeStyle="#f2efe4"; cx.lineWidth=3; cx.lineCap="round";
+          cx.beginPath(); cx.moveTo(a.x+tw,hy+8); cx.lineTo(a.x+tw+8,hy-6+wv); cx.stroke(); } }
+      nameplate(a,o,isMe);
+    },
+    /* every celebrity starts the same way */
+    frame(a,o){
+      const b=Math.sin((a.bob+=(Math.abs(a.vx)+Math.abs(a.vy)>0.3?.35:.08)))*2.4;
+      const hs=o.hs||1, wf=o.wf||1;
+      const tw=16*wf, th=34*hs, hy=a.y-22*hs-10*hs+b;
+      const headY=a.y-(32*hs)+b-(hs-1)*10;
+      CB.shadow(a,wf);
+      return {b,tw,th,hy,headY,hr:9.8*hs};
+    }
+  };
+
+  const CELEBART={
+  /* ── JAKE · Stone Cold — black trunks, 3:16 vest, two cold ones ── */
+  stonecold(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e0a878";
+    CB.legs(a,b,"#141414","#1a1a1a",{boot:"#0a0a0a"});
+    CB.torso(a,tw,th,hy,"#e8e0d0");                                   /* bare chest */
+    cx.fillStyle="#141414";                                            /* leather vest */
+    cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*.72,th,[9,0,0,9]); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.28,hy,tw*.72,th,[0,9,9,0]); cx.fill();
+    cx.fillStyle="#f2efe4"; cx.font="900 7px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("3:16",a.x,hy+th*.62);
+    CB.arms(a,tw,th,hy,sk,sk,{bulk:1});
+    cx.fillStyle="#c8c2b4";                                            /* a beer in each fist */
+    cx.beginPath(); cx.roundRect(a.x-tw-13,hy+22,7,10,2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw+6,hy+22,7,10,2); cx.fill();
+    cx.fillStyle="#8df08d"; cx.fillRect(a.x-tw-13,hy+25,7,2); cx.fillRect(a.x+tw+6,hy+25,7,2);
+    CB.head(a,headY,hr,sk);
+    CB.goatee(a,headY,hr,"#2a2018");
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="rgba(0,0,0,.25)";                                    /* the shine */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.9,hr*.42,0,Math.PI,0); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── JACOB · Happy Gilmore — hockey sweater, jeans, wrong club ── */
+  happy(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    CB.legs(a,b,"#4a6ea8","#1c1c1c");
+    CB.torso(a,tw,th,hy,"#f0b323");                                    /* gold sweater */
+    cx.fillStyle="#141414"; cx.fillRect(a.x-tw,hy+th*.34,tw*2,5);
+    cx.fillStyle="#f2efe4"; cx.font="900 9px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("9",a.x,hy+th*.78);
+    CB.arms(a,tw,th,hy,"#f0b323",sk,{});
+    cx.strokeStyle="#a97b3a"; cx.lineWidth=2.4;                        /* hockey stick */
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hy+8); cx.lineTo(a.x+tw+13,a.y+22); cx.stroke();
+    cx.strokeStyle="#141414"; cx.lineWidth=3;
+    cx.beginPath(); cx.moveTo(a.x+tw+13,a.y+22); cx.lineTo(a.x+tw+21,a.y+23); cx.stroke();
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#4a3018","");
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── FERRAND · Vader — cape, chest console, a red blade ── */
+  vader(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), t=Date.now()/1000;
+    cx.fillStyle="#0a0a0c";                                            /* cape behind everything */
+    cx.beginPath(); cx.moveTo(a.x-tw-3,hy+2); cx.lineTo(a.x-tw-9,a.y+24);
+    cx.lineTo(a.x+tw+9,a.y+24); cx.lineTo(a.x+tw+3,hy+2); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#101014","#0a0a0a",{boot:"#141418"});
+    CB.torso(a,tw,th,hy,"#131318");
+    cx.fillStyle="#26262e"; cx.beginPath(); cx.roundRect(a.x-9,hy+7,18,12,2); cx.fill();
+    const bl=Math.sin(t*2.2)>0?1:.35;                                  /* the console blinks */
+    cx.fillStyle="#c8102e"; cx.globalAlpha=bl; cx.fillRect(a.x-6,hy+10,3.4,3.4); cx.globalAlpha=1;
+    cx.fillStyle="#4d9fff"; cx.fillRect(a.x-1,hy+10,3.4,3.4);
+    cx.fillStyle="#f0c95c"; cx.fillRect(a.x+4,hy+10,3.4,3.4);
+    cx.fillStyle="#26262e"; cx.fillRect(a.x-tw+1,hy+22,tw*2-2,4);      /* belt */
+    CB.arms(a,tw,th,hy,"#131318","#131318",{});
+    cx.strokeStyle="#8a8a94"; cx.lineWidth=2.4;                        /* hilt */
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hy+24); cx.lineTo(a.x+tw+7,hy+15); cx.stroke();
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=9;                         /* blade */
+    cx.strokeStyle="#ff3b3b"; cx.lineWidth=3;
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hy+14); cx.lineTo(a.x+tw+7,hy-16); cx.stroke();
+    cx.shadowBlur=0;
+    cx.fillStyle="#16161b";                                            /* the helmet */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.05,hr*1.14,0,0,7); cx.fill();
+    cx.fillStyle="#0c0c10";
+    cx.beginPath(); cx.moveTo(a.x-hr*.8,headY-hr*.1); cx.lineTo(a.x,headY+hr*.2);
+    cx.lineTo(a.x+hr*.8,headY-hr*.1); cx.lineTo(a.x+hr*.66,headY+hr*.9);
+    cx.lineTo(a.x-hr*.66,headY+hr*.9); cx.closePath(); cx.fill();
+    cx.fillStyle="#1c1c22";                                            /* the lenses */
+    cx.beginPath(); cx.ellipse(a.x-hr*.4,headY-hr*.1,hr*.26,hr*.2,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+hr*.4,headY-hr*.1,hr*.26,hr*.2,0,0,7); cx.fill();
+    cx.fillStyle="#2a2a32"; cx.fillRect(a.x-hr*.5,headY+hr*.5,hr,2.6);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── PHILLIPS · Borat — grey suit, moustache, permanent thumbs up ── */
+  borat(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#d8a877";
+    CB.legs(a,b,"#9aa0a8","#2a2018");
+    cx.fillStyle=sk; cx.fillRect(a.x-9,a.y-1,18,4);                    /* trousers too short */
+    CB.torso(a,tw,th,hy,"#9aa0a8");
+    cx.fillStyle="#f2efe4"; cx.beginPath();                            /* shirt and tie */
+    cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+13); cx.closePath(); cx.fill();
+    cx.fillStyle="#7a2a2a"; cx.beginPath();
+    cx.moveTo(a.x-2.2,hy+3); cx.lineTo(a.x+2.2,hy+3); cx.lineTo(a.x+1.4,hy+21); cx.lineTo(a.x-1.4,hy+21); cx.closePath(); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#9aa0a8",sk,{});
+    cx.fillStyle=sk;                                                   /* the thumb, up, always */
+    cx.beginPath(); cx.roundRect(a.x+tw+5.6,hq-9,3,7,1.5); cx.fill();
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#1c1410","");
+    CB.eyes(a,headY,hr,{});
+    CB.tache(a,headY,hr,"#1c1410");
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── GARRETT · Batman — cowl, cape, the belt ── */
+  batman(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    cx.fillStyle="#12121a";                                            /* scalloped cape */
+    cx.beginPath(); cx.moveTo(a.x-tw-4,hy);
+    for(let i=0;i<4;i++) cx.quadraticCurveTo(a.x-tw-9+i*((tw*2+18)/4),a.y+26,a.x-tw-4+(i+1)*((tw*2+8)/4),a.y+22);
+    cx.lineTo(a.x+tw+4,hy); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#2a2f3e","#14141a",{boot:"#1a1a22"});
+    CB.torso(a,tw,th,hy,"#3a4052");
+    cx.fillStyle="#f0c95c";                                            /* the bat */
+    cx.beginPath(); cx.moveTo(a.x-9,hy+11); cx.lineTo(a.x-4,hy+8); cx.lineTo(a.x-2,hy+11);
+    cx.lineTo(a.x,hy+8); cx.lineTo(a.x+2,hy+11); cx.lineTo(a.x+4,hy+8); cx.lineTo(a.x+9,hy+11);
+    cx.lineTo(a.x+4,hy+15); cx.lineTo(a.x,hy+13); cx.lineTo(a.x-4,hy+15); cx.closePath(); cx.fill();
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-tw+1,hy+22,tw*2-2,5);      /* utility belt */
+    cx.fillStyle="#8a6d1c"; for(let i=0;i<4;i++) cx.fillRect(a.x-tw+4+i*8,hy+22,3.4,5);
+    CB.arms(a,tw,th,hy,"#3a4052","#2a2f3e",{bulk:1});
+    cx.fillStyle="#2a2f3e";                                            /* the cowl */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.04,hr*1.1,0,0,7); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*.82,headY-hr*.5); cx.lineTo(a.x-hr*.62,headY-hr*2.1); cx.lineTo(a.x-hr*.2,headY-hr*.72); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*.82,headY-hr*.5); cx.lineTo(a.x+hr*.62,headY-hr*2.1); cx.lineTo(a.x+hr*.2,headY-hr*.72); cx.closePath(); cx.fill();
+    cx.fillStyle="#d8a878"; cx.fillRect(a.x-hr*.62,headY+hr*.36,hr*1.24,hr*.6);   /* jaw */
+    cx.fillStyle="#f2f2f2";                                            /* white slit eyes */
+    cx.beginPath(); cx.roundRect(a.x-hr*.62,headY-hr*.2,hr*.42,3,1.4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.2,headY-hr*.2,hr*.42,3,1.4); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── SCOTT · Heisenberg — porkpie, shades, the goatee ── */
+  heisenberg(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6c09a";
+    CB.legs(a,b,"#3a3a42","#1c1c1c");
+    CB.torso(a,tw,th,hy,"#2a2a30");                                    /* black jacket */
+    cx.fillStyle="#6b7f5a"; cx.beginPath();                            /* olive shirt under */
+    cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+15); cx.closePath(); cx.fill();
+    CB.arms(a,tw,th,hy,"#2a2a30",sk,{});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="rgba(0,0,0,.2)";                                     /* shaved head */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.92,hr*.4,0,Math.PI,0); cx.fill();
+    CB.goatee(a,headY,hr,"#4a3a2a");
+    CB.eyes(a,headY,hr,{shades:1});
+    cx.fillStyle="#26262a";                                            /* the porkpie */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.92,hr*1.34,2.6,0,0,7); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*.8,headY-hr*1.72,hr*1.6,hr*.86,[4,4,1,1]); cx.fill();
+    cx.fillStyle="#16161a"; cx.fillRect(a.x-hr*.8,headY-hr*1.06,hr*1.6,2.4);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── TYLOR · Spider-Man — webbing, the eyes ── */
+  spider(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#1b3a8a","#7a1420");
+    CB.torso(a,tw,th,hy,"#c8102e");
+    cx.fillStyle="#1b3a8a";                                            /* blue flanks */
+    cx.beginPath(); cx.roundRect(a.x-tw,hy+th*.42,tw*.5,th*.58,[0,0,0,9]); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.5,hy+th*.42,tw*.5,th*.58,[0,0,9,0]); cx.fill();
+    cx.strokeStyle="rgba(0,0,0,.42)"; cx.lineWidth=.7;                 /* webbing */
+    for(let i=0;i<5;i++){ cx.beginPath(); cx.moveTo(a.x-tw+2,hy+4+i*6); cx.lineTo(a.x+tw-2,hy+4+i*6); cx.stroke(); }
+    for(let i=0;i<5;i++){ cx.beginPath(); cx.moveTo(a.x-tw+3+i*(tw*2-6)/4,hy+2); cx.lineTo(a.x,hy+th*.5); cx.stroke(); }
+    cx.fillStyle="#141414";                                            /* the spider */
+    cx.beginPath(); cx.ellipse(a.x,hy+11,2.2,3.4,0,0,7); cx.fill();
+    for(let i=0;i<3;i++){ cx.strokeStyle="#141414"; cx.lineWidth=.9;
+      cx.beginPath(); cx.moveTo(a.x-2,hy+9+i*2); cx.lineTo(a.x-6,hy+7+i*3); cx.stroke();
+      cx.beginPath(); cx.moveTo(a.x+2,hy+9+i*2); cx.lineTo(a.x+6,hy+7+i*3); cx.stroke(); }
+    CB.arms(a,tw,th,hy,"#c8102e","#1b3a8a",{});
+    cx.fillStyle="#c8102e";                                            /* mask */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.02,hr*1.08,0,0,7); cx.fill();
+    cx.strokeStyle="rgba(0,0,0,.4)"; cx.lineWidth=.7;
+    for(let i=0;i<4;i++){ cx.beginPath(); cx.arc(a.x,headY-hr*.2,hr*.34+i*hr*.24,.2,Math.PI-.2); cx.stroke(); }
+    cx.fillStyle="#f2f2f2";                                            /* the big white eyes */
+    cx.beginPath(); cx.ellipse(a.x-hr*.38,headY-hr*.06,hr*.34,hr*.26,-.3,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+hr*.38,headY-hr*.06,hr*.34,hr*.26,.3,0,7); cx.fill();
+    cx.strokeStyle="#141414"; cx.lineWidth=1;
+    cx.beginPath(); cx.ellipse(a.x-hr*.38,headY-hr*.06,hr*.34,hr*.26,-.3,0,7); cx.stroke();
+    cx.beginPath(); cx.ellipse(a.x+hr*.38,headY-hr*.06,hr*.34,hr*.26,.3,0,7); cx.stroke();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── GRIFF · Soprano — open bowling shirt, chain, cigar ── */
+  soprano(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e0b088", t=Date.now()/1000;
+    CB.legs(a,b,"#3a3a44","#241810");
+    cx.fillStyle="#e8e4d8"; cx.beginPath();                            /* the gut */
+    cx.moveTo(a.x-tw,hy+3);
+    cx.bezierCurveTo(a.x-tw*1.2,hy+th*.6,a.x-tw*1.06,hy+th,a.x,hy+th);
+    cx.bezierCurveTo(a.x+tw*1.06,hy+th,a.x+tw*1.2,hy+th*.6,a.x+tw,hy+3);
+    cx.quadraticCurveTo(a.x,hy-2,a.x-tw,hy+3); cx.closePath(); cx.fill();
+    cx.fillStyle="#7a2a2a";                                            /* open shirt */
+    cx.beginPath(); cx.roundRect(a.x-tw-1,hy,tw*.62,th,[9,0,0,6]); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.38,hy,tw*.62,th,[0,9,6,0]); cx.fill();
+    cx.strokeStyle="#d4af37"; cx.lineWidth=1.6;                        /* the chain */
+    cx.beginPath(); cx.arc(a.x,hy+2,7.4,.24,Math.PI-.24); cx.stroke();
+    CB.arms(a,tw,th,hy,"#7a2a2a",sk,{bulk:1});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#3a3028";                                            /* receding, and honest about it */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.34,hr*1.02,hr*.5,0,Math.PI,0); cx.fill();
+    cx.fillStyle=sk; cx.beginPath(); cx.ellipse(a.x,headY-hr*.62,hr*.62,hr*.34,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.strokeStyle="#4a2a18"; cx.lineWidth=2.6;                        /* cigar */
+    cx.beginPath(); cx.moveTo(a.x+hr*.3,headY+hr*.44); cx.lineTo(a.x+hr*1.5,headY+hr*.2); cx.stroke();
+    cx.fillStyle="#ff8c2a"; cx.beginPath(); cx.arc(a.x+hr*1.56,headY+hr*.18,1.3,0,7); cx.fill();
+    cx.globalAlpha=.14; cx.fillStyle="#d9d2c2";
+    for(let i=0;i<3;i++){ const sy=headY-((t*20+i*11)%34);
+      cx.beginPath(); cx.arc(a.x+hr*1.6+Math.sin(t*1.5+i)*3,sy,2.2+i*1.4,0,7); cx.fill(); }
+    cx.globalAlpha=1;
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── SAM · Wolverine — tan and blue, cowl, claws out ── */
+  wolverine(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#1b3a8a","#123");
+    CB.torso(a,tw,th,hy,"#e8b93a");
+    cx.fillStyle="#1b3a8a";                                            /* blue chevron */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-tw*.3,hy);
+    cx.lineTo(a.x,hy+th*.42); cx.lineTo(a.x+tw*.3,hy); cx.lineTo(a.x+tw,hy);
+    cx.lineTo(a.x+tw,hy+th*.34); cx.lineTo(a.x,hy+th*.8); cx.lineTo(a.x-tw,hy+th*.34); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x-tw+1,hy+th-8,tw*2-2,5);    /* red belt */
+    CB.arms(a,tw,th,hy,"#e8b93a","#1b3a8a",{bulk:1});
+    cx.strokeStyle="#dfe4ea"; cx.lineWidth=1.8; cx.lineCap="round";    /* six claws */
+    for(let s=-1;s<=1;s+=2) for(let i=0;i<3;i++){
+      const bx=a.x+s*(tw+7)+ (i-1)*2.6;
+      cx.beginPath(); cx.moveTo(bx,hy+27); cx.lineTo(bx+s*1.4,hy+40); cx.stroke(); }
+    cx.fillStyle="#e8b93a";                                            /* the cowl */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.02,hr*1.06,0,0,7); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*.98,headY-hr*.36); cx.lineTo(a.x-hr*1.5,headY-hr*1.62); cx.lineTo(a.x-hr*.24,headY-hr*.86); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*.98,headY-hr*.36); cx.lineTo(a.x+hr*1.5,headY-hr*1.62); cx.lineTo(a.x+hr*.24,headY-hr*.86); cx.closePath(); cx.fill();
+    cx.fillStyle="#d8a878"; cx.fillRect(a.x-hr*.56,headY+hr*.3,hr*1.12,hr*.66);
+    cx.fillStyle="#141414";
+    cx.beginPath(); cx.roundRect(a.x-hr*.6,headY-hr*.22,hr*.42,3,1.4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.18,headY-hr*.22,hr*.42,3,1.4); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── ALEX · the Ohio State guy — jersey, foam finger, cargo shorts ── */
+  osufan(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#f0d0b0";
+    CB.legs(a,b,"#8a8f7a","#d8d4c8",{baggy:1});
+    CB.torso(a,tw,th,hy,"#bb0000");
+    cx.fillStyle="#f2efe4"; cx.font="900 12px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("1",a.x,hy+th*.72);
+    cx.fillStyle="#c9c9c9"; cx.fillRect(a.x-tw,hy+th*.2,tw*2,2.4);
+    const hq=CB.arms(a,tw,th,hy,"#bb0000",sk,{});
+    cx.fillStyle="#bb0000";                                            /* the foam finger */
+    cx.beginPath(); cx.roundRect(a.x+tw+3,hq-24,9,20,4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw+4.6,hq-32,5.8,10,2.8); cx.fill();
+    cx.fillStyle="#f2efe4"; cx.font="900 5px Sora"; cx.fillText("1",a.x+tw+7.5,hq-12);
+    cx.fillStyle="#e8dfc6";                                            /* and a beer */
+    cx.beginPath(); cx.roundRect(a.x-tw-13,hq-10,7,11,2); cx.fill();
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#c8a24a","");
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#bb0000";                                            /* backwards cap */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.34,hr*1.02,Math.PI,0); cx.fill();
+    cx.fillRect(a.x-hr*1.02,headY-hr*.4,hr*2.04,3);
+    cx.fillStyle="#8a0000"; cx.fillRect(a.x-hr*.5,headY-hr*.4,hr,3.4);
+    cx.fillStyle="#f2efe4"; cx.font="900 5px Sora"; cx.fillText("O-H",a.x,headY-hr*.7);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── KENNY · the Joker — purple suit, green mop, acid waistcoat ── */
+  joker(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8e4de";
+    CB.legs(a,b,"#4a2a7a","#2a1a4a");
+    CB.torso(a,tw,th,hy,"#6b2fa0");
+    cx.fillStyle="#3f8f4f"; cx.beginPath();                            /* waistcoat */
+    cx.moveTo(a.x-tw*.55,hy); cx.lineTo(a.x+tw*.55,hy);
+    cx.lineTo(a.x+tw*.42,hy+th*.86); cx.lineTo(a.x-tw*.42,hy+th*.86); cx.closePath(); cx.fill();
+    cx.fillStyle="#e8b93a"; cx.beginPath();                            /* the tie */
+    cx.moveTo(a.x-2.4,hy+2); cx.lineTo(a.x+2.4,hy+2); cx.lineTo(a.x+1.5,hy+20); cx.lineTo(a.x-1.5,hy+20); cx.closePath(); cx.fill();
+    cx.fillStyle="#f2a0c8"; cx.beginPath(); cx.arc(a.x-tw*.7,hy+5,2.6,0,7); cx.fill();  /* boutonnière */
+    CB.arms(a,tw,th,hy,"#6b2fa0",sk,{thin:1});
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#4faf5a","mop");
+    CB.eyes(a,headY,hr,{});
+    cx.strokeStyle="#c8102e"; cx.lineWidth=1.6; cx.lineCap="round";    /* the grin, and only the grin */
+    cx.beginPath(); cx.moveTo(a.x-hr*.56,headY+hr*.3);
+    cx.quadraticCurveTo(a.x,headY+hr*.86,a.x+hr*.56,headY+hr*.3); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x-hr*.56,headY+hr*.3); cx.lineTo(a.x-hr*.74,headY+hr*.06); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+hr*.56,headY+hr*.3); cx.lineTo(a.x+hr*.74,headY+hr*.06); cx.stroke();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── JOSH · Gatsby — white tie, gold, a coupe that never empties ── */
+  cgatsby(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6bc94", t=Date.now()/1000;
+    CB.legs(a,b,"#efe9d8","#f4f1e6");
+    CB.torso(a,tw,th,hy,"#f2ecd9");                                    /* cream dinner jacket */
+    cx.fillStyle="#e4dcc4"; cx.beginPath();
+    cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-3,hy+2); cx.lineTo(a.x-tw*.5,hy+th*.6); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+3,hy+2); cx.lineTo(a.x+tw*.5,hy+th*.6); cx.closePath(); cx.fill();
+    cx.fillStyle="#fbf8f0"; cx.beginPath();                            /* shirt front */
+    cx.moveTo(a.x-4.4,hy); cx.lineTo(a.x+4.4,hy); cx.lineTo(a.x+3.4,hy+20); cx.lineTo(a.x-3.4,hy+20); cx.closePath(); cx.fill();
+    cx.fillStyle="#d4af37"; cx.beginPath();                            /* gold bow tie */
+    cx.moveTo(a.x-5,hy+1); cx.lineTo(a.x-1,hy+3.4); cx.lineTo(a.x-5,hy+5.8); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+5,hy+1); cx.lineTo(a.x+1,hy+3.4); cx.lineTo(a.x+5,hy+5.8); cx.closePath(); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,"#f2ecd9",sk,{});
+    cx.strokeStyle="#e8e4d8"; cx.lineWidth=1.2;                        /* the coupe, raised */
+    cx.beginPath(); cx.moveTo(a.x+tw+8,hq-4); cx.lineTo(a.x+tw+8,hq-11); cx.stroke();
+    cx.fillStyle="rgba(240,232,200,.85)";
+    cx.beginPath(); cx.ellipse(a.x+tw+8,hq-13,5.4,3,0,0,7); cx.fill();
+    for(let i=0;i<3;i++){ cx.fillStyle="rgba(255,255,255,.75)";
+      cx.beginPath(); cx.arc(a.x+tw+6+i*2,hq-15-((t*14+i*7)%9),.9,0,7); cx.fill(); }
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#5a4326","slick");
+    CB.eyes(a,headY,hr,{});
+    cx.font="900 8px 'Archivo Black'"; cx.textAlign="center";
+    const bw=cx.measureText("COMMISSIONER").width+12;
+    cx.fillStyle="rgba(240,201,92,.94)";
+    cx.beginPath(); cx.roundRect(a.x-bw/2,a.y+66,bw,13,3); cx.fill();
+    cx.fillStyle="#14100c"; cx.fillText("COMMISSIONER",a.x,a.y+75);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  };
+
+  /* ── EDMONDS · the Terminator — still coming for Kenny, just colder now ── */
+  function edmondsTerminator(a){
+    const al=a.gv*.82; if(al<.02) return;
+    const t=Date.now()/1000;
+    const b=ghostBody(a,"rgb(255,120,110)",al);
+    const lunge=a.wrest?Math.sin(t*10)*3.4:0;
+    cx.save(); cx.globalAlpha=al; cx.translate(lunge,0);
+    cx.fillStyle="#1a1a1e";                                            /* the jacket */
+    cx.beginPath();
+    cx.moveTo(a.x-16,a.y-34+b);
+    cx.quadraticCurveTo(a.x-19,a.y-14+b,a.x-14,a.y-2+b);
+    cx.lineTo(a.x+14,a.y-2+b);
+    cx.quadraticCurveTo(a.x+19,a.y-14+b,a.x+16,a.y-34+b);
+    cx.closePath(); cx.fill();
+    cx.fillStyle="#0e0e12";                                            /* lapels open over nothing good */
+    cx.beginPath(); cx.moveTo(a.x-16,a.y-34+b); cx.lineTo(a.x-4,a.y-30+b); cx.lineTo(a.x-11,a.y-6+b); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+16,a.y-34+b); cx.lineTo(a.x+4,a.y-30+b); cx.lineTo(a.x+11,a.y-6+b); cx.closePath(); cx.fill();
+    cx.fillStyle="rgba(180,186,196,.55)"; cx.fillRect(a.x-3.4,a.y-31+b,6.8,25);   /* chrome under the coat */
+    cx.strokeStyle="rgba(120,128,140,.5)"; cx.lineWidth=.9;
+    for(let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(a.x-3.4,a.y-27+b+i*5.4); cx.lineTo(a.x+3.4,a.y-27+b+i*5.4); cx.stroke(); }
+    const hy2=a.y-46+b;
+    cx.fillStyle="rgba(196,200,208,.72)";                              /* the skull under the skin */
+    cx.beginPath(); cx.ellipse(a.x,hy2,9.6,10.2,0,0,7); cx.fill();
+    cx.fillStyle="#14141a";                                            /* shades */
+    cx.beginPath(); cx.roundRect(a.x-8.4,hy2-2.6,16.8,5.2,2); cx.fill();
+    const glow=.55+Math.sin(t*2.4)*.45;                                /* and the one red eye */
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=8*glow;
+    cx.fillStyle=`rgba(255,40,40,${.6+glow*.4})`;
+    cx.beginPath(); cx.arc(a.x+3.4,hy2,1.8,0,7); cx.fill();
+    cx.shadowBlur=0;
+    cx.fillStyle="rgba(40,36,34,.85)";                                 /* dark crop */
+    cx.beginPath(); cx.ellipse(a.x,hy2-5.4,9.8,5.4,0,Math.PI,0); cx.fill();
+    cx.restore();
+    cx.globalAlpha=Math.min(1,al*1.3);
+    cx.font="800 8.5px Sora"; cx.textAlign="center"; cx.fillStyle="rgba(255,150,140,.92)";
+    cx.fillText("EDMONDS",a.x,a.y+16);
+    cx.globalAlpha=1;
+  }
+
+  /* ══ THE CAST — who is wearing whose body ══════════════════════════════ */
+  const CELEBCAST={
+    "DoughBoy$":            {p:"stonecold",  n:"Stone Cold",     hs:1.02, wf:1.04, skin:"#e0a878", hair:"#2a2018"},
+    "Suck my Footballz":    {p:"happy",      n:"Happy Gilmore",  hs:1.04, wf:.92,  skin:"#e8bb90", hair:"#4a3018"},
+    "Silence of the Lamb":  {p:"vader",      n:"Darth Vader",    hs:1.10, wf:1.00, skin:"#131318", hair:"#0c0c10"},
+    "Are you winning son?": {p:"borat",      n:"Borat",          hs:1.00, wf:.94,  skin:"#d8a877", hair:"#1c1410"},
+    "Kill Bill":            {p:"batman",     n:"Batman",         hs:1.04, wf:1.02, skin:"#d8a878", hair:"#2a2f3e"},
+    "Sandusky Shower Buddy":{p:"heisenberg", n:"Heisenberg",     hs:1.00, wf:.94,  skin:"#e6c09a", hair:"#4a3a2a"},
+    "Team Martens":         {p:"spider",     n:"Spider-Man",     hs:.98,  wf:.92,  skin:"#c8102e", hair:"#c8102e"},
+    "My Kupp Hurts":        {p:"soprano",    n:"Tony Soprano",   hs:1.04, wf:1.12, skin:"#e0b088", hair:"#3a3028"},
+    "Tig Bits":             {p:"wolverine",  n:"Wolverine",      hs:.92,  wf:1.06, skin:"#d8a878", hair:"#e8b93a"},
+    "Blitz":                {p:"osufan",     n:"Buckeye Guy",    hs:.98,  wf:1.08, skin:"#f0d0b0", hair:"#c8a24a"},
+    "Django Achaned":       {p:"joker",      n:"The Joker",      hs:1.00, wf:.90,  skin:"#e8e4de", hair:"#4faf5a"},
+    "Flacc Shots":          {p:"cgatsby",    n:"Jay Gatsby",     hs:1.00, wf:.96,  skin:"#e6bc94", hair:"#5a4326"}
+  };
+  const OWNBASE=JSON.parse(JSON.stringify(OWN));      /* the real twelve, kept whole */
+  let CAST=store.get("cast","owners");
+  const castMode=()=>CAST;
+  function applyCast(mode,quiet){
+    CAST=(mode==="celebs")?"celebs":"owners";
+    store.set("cast",CAST);
+    for(const team in OWN){
+      const base=OWNBASE[team], cel=CELEBCAST[team];
+      delete OWN[team].draw2;
+      Object.assign(OWN[team],base);
+      if(CAST==="celebs"&&cel){
+        Object.assign(OWN[team],{p:cel.p,hs:cel.hs,wf:cel.wf,skin:cel.skin,hair:cel.hair});
+        const fn=CELEBART[cel.p], ent=OWN[team];
+        OWN[team].draw2=(av,isMe)=>fn(av,ent,isMe);
+      }
+    }
+    const btn=$("#castbtn");
+    if(btn) btn.innerHTML=(CAST==="celebs"?"🎭":"👔")+'<span class="lbl"> '+(CAST==="celebs"?"CELEBS":"OWNERS")+'</span>';
+    if(!quiet){ sysLog(CAST==="celebs"
+      ? "🎭 The cast is in. Twelve borrowed bodies on the floor — the owners are still the owners."
+      : "👔 Back to the real twelve."); toast(CAST==="celebs"?"🎭 CELEBRITY CAST":"👔 OWNERS"); }
+  }
+
   /* ═══════════════ v12 · THE GUESTS, REDRAWN ═══════════════ */
 
   /* ── HOMER — same blocky build as the Dude ── */
@@ -7868,6 +8320,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── EDMONDS — one of the fallen, in a singlet and headgear ── */
   function drawEdmonds2(a){
+    if(castMode()==="celebs") return edmondsTerminator(a);
     const al=a.gv*.82; if(al<.02) return;
     const t=Date.now()/1000;
     const b=ghostBody(a,"rgb(255,150,150)",al);
