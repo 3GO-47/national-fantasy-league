@@ -2590,8 +2590,7 @@ function renderOptimizer(){
       (scored.length?`<div class="optprime">${posTag(scored[0].pos)} <b class="pname" onclick="openCard(${scored[0].yr})">${esc(scored[0].name)}</b>
          <span class="optodds">${Math.round(scored[0].pa*100)}% there</span></div>
        <div class="optalt">${scored.slice(1).map(p=>`<span class="optchip">${posTag(p.pos)} ${esc(p.name)}<i class="optodds" style="font-style:normal">${Math.round(p.pa*100)}%</i></span>`).join("")}</div>`
-        :'<div style="color:var(--dim2);font-size:11.5px">board exhausted at this cap</div>') + `</div></div>` + `` +
-      [].map((p,i)=>`<span><b>${i+1}.</b> ${posTag(p.pos)} <b class="pname" onclick="openCard(${p.yr})">${esc((p.name||"").replace("⭐",""))}</b> <span style="color:var(--dim2);font-size:10.5px">MK${Math.round(p.rk)} · ${Math.round(p.pa*100)}%</span></span>`).join("") + `</div>`;
+        :'<div style="color:var(--dim2);font-size:11.5px">board exhausted at this cap</div>') + `</div></div>`;
   }
   // blueprint lineup
   const by=pos=>bp.filter(x=>x.pos===pos).sort((a,b)=>(b.proj||0)-(a.proj||0));
