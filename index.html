@@ -2430,9 +2430,41 @@ function renderDraftDay(){
   const gone=new Set(TEAMS.filter(t=>KCONF.has(t.keeper)).map(t=>t.keeper));
   const liveP=P.filter(p=>p.proj&&!gone.has(p.name)&&["QB","RB","WR","TE"].includes(p.pos));
   const survives=(p,pk)=>1/(1+Math.exp((pk-simAdp(p.yr))/7));
-  const targetsAt=pk=>liveP.map(p=>({p,s:survives(p,pk)}))
-      .filter(x=>x.s>0.35&&x.s<0.985)
-      .sort((a,b)=>(b.p.proj*b.s)-(a.p.proj*a.s)).slice(0,5);
+  /* Raw projection ranks every quarterback above every running back, because a
+     QB scores more points than anyone — which would tell you to take a QB with
+     all fifteen picks. What matters is the points above what you could get at
+     that position anyway: twelve QBs and twelve TEs start in this league, but
+     roughly thirty backs and thirty receivers do. */
+  const STARTERS={QB:12,RB:30,WR:30,TE:14};
+  const REPL={};
+  for(const pos in STARTERS){
+    const l=P.filter(p=>p.pos===pos&&p.proj).sort((a,b)=>b.proj-a.proj);
+    REPL[pos]=(l[STARTERS[pos]-1]||l[l.length-1]||{proj:0}).proj;
+  }
+  const vorp=p=>p.proj-(REPL[p.pos]||0);
+  /* and once you already hold two of something, the third is worth less */
+  const NEEDW={QB:[1,.35,.15],RB:[1,1,.9,.55,.3],WR:[1,1,.9,.55,.3],TE:[1,.3,.12]};
+  function targetsAt(pk,held){
+    held=held||{QB:0,RB:0,WR:0,TE:0};
+    return liveP.map(p=>{
+        const s=survives(p,pk);
+        const w=(NEEDW[p.pos]||[1])[held[p.pos]||0];
+        return {p, s, v:vorp(p)*s*(w==null?0.1:w)};
+      })
+      .filter(x=>x.s>0.35&&x.s<0.985&&x.v>0)
+      .sort((a,b)=>b.v-a.v).slice(0,5);
+  }
+  /* walk the draft once so each pick is advised knowing what the earlier picks
+     already took — otherwise every round recommends the same position */
+  const held={QB:0,RB:0,WR:0,TE:0};
+  const keepPos=(P.find(x=>x.name===me.keeper)||{}).pos;
+  if(keepPos&&held[keepPos]!=null) held[keepPos]++;
+  const planned={};
+  for(const m of mine){
+    const t=targetsAt(m.pk,held);
+    planned[m.pk]=t;
+    if(t[0]&&held[t[0].p.pos]!=null) held[t[0].p.pos]++;
+  }
 
   /* tier drain — how many of each tier are likely gone by my next turn */
   const tierLeftAt=pk=>{
@@ -2461,7 +2493,7 @@ function renderDraftDay(){
         const tl=tierLeftAt(r.pk);
         const tiers=[1,2,3,4,5,6,7].filter(t=>tl[t]).map(t=>
           `<span class="tiertag" style="background:${WTIERC[t-1]}22;color:${WTIERC[t-1]};border:1px solid ${WTIERC[t-1]}55">T${t}·${tl[t]}</span>`).join("");
-        const tg=targetsAt(r.pk);
+        const tg=planned[r.pk]||[];
         return `<div class="ddpick">
           <div class="ddpk"><b>${r.pk}</b><span>RD ${r.rd}</span></div>
           <div class="ddbody">
@@ -8078,11 +8110,21 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   /* ── JACOB · Happy Gilmore — hockey sweater, jeans, wrong club ── */
   happy(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
     CB.legs(a,b,"#4a6ea8","#1c1c1c");
-    CB.torso(a,tw,th,hy,"#f0b323");                                    /* gold sweater */
-    cx.fillStyle="#141414"; cx.fillRect(a.x-tw,hy+th*.34,tw*2,5);
-    cx.fillStyle="#f2efe4"; cx.font="900 9px 'Archivo Black'"; cx.textAlign="center";
-    cx.fillText("9",a.x,hy+th*.78);
-    CB.arms(a,tw,th,hy,"#f0b323",sk,{});
+    CB.torso(a,tw,th,hy,"#0d0f12");                                    /* Bruins black */
+    cx.fillStyle="#f0b323";                                            /* gold bands, hem and chest */
+    cx.fillRect(a.x-tw,hy+th*.30,tw*2,3.6); cx.fillRect(a.x-tw,hy+th*.40,tw*2,2);
+    cx.fillRect(a.x-tw,hy+th-7,tw*2,3.4);
+    cx.beginPath(); cx.arc(a.x,hy+13,7.6,0,7); cx.fill();              /* the spoked B */
+    cx.fillStyle="#0d0f12"; cx.beginPath(); cx.arc(a.x,hy+13,5.6,0,7); cx.fill();
+    cx.strokeStyle="#f0b323"; cx.lineWidth=1.2;
+    for(let i=0;i<8;i++){ const an=i*Math.PI/4;
+      cx.beginPath(); cx.moveTo(a.x+Math.cos(an)*5.6,hy+13+Math.sin(an)*5.6);
+      cx.lineTo(a.x+Math.cos(an)*7.4,hy+13+Math.sin(an)*7.4); cx.stroke(); }
+    cx.fillStyle="#f0b323"; cx.font="900 7px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("B",a.x,hy+15.8);
+    CB.arms(a,tw,th,hy,"#0d0f12",sk,{});
+    cx.fillStyle="#f0b323";                                            /* gold cuffs */
+    cx.fillRect(a.x-tw-7,hy+19,8,3); cx.fillRect(a.x+tw-1,hy+19,8,3);
     cx.strokeStyle="#a97b3a"; cx.lineWidth=2.4;                        /* hockey stick */
     cx.beginPath(); cx.moveTo(a.x+tw+7,hy+8); cx.lineTo(a.x+tw+13,a.y+22); cx.stroke();
     cx.strokeStyle="#141414"; cx.lineWidth=3;
@@ -8126,14 +8168,21 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── PHILLIPS · Borat — grey suit, moustache, permanent thumbs up ── */
   borat(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#d8a877";
-    CB.legs(a,b,"#9aa0a8","#2a2018");
-    cx.fillStyle=sk; cx.fillRect(a.x-9,a.y-1,18,4);                    /* trousers too short */
-    CB.torso(a,tw,th,hy,"#9aa0a8");
-    cx.fillStyle="#f2efe4"; cx.beginPath();                            /* shirt and tie */
-    cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+13); cx.closePath(); cx.fill();
-    cx.fillStyle="#7a2a2a"; cx.beginPath();
-    cx.moveTo(a.x-2.2,hy+3); cx.lineTo(a.x+2.2,hy+3); cx.lineTo(a.x+1.4,hy+21); cx.lineTo(a.x-1.4,hy+21); cx.closePath(); cx.fill();
-    const hq=CB.arms(a,tw,th,hy,"#9aa0a8",sk,{});
+    CB.legs(a,b,sk,"#3a2a18");                                          /* bare legs, sandals */
+    CB.torso(a,tw,th,hy,sk);                                            /* and bare everything else */
+    cx.fillStyle="rgba(120,80,40,.22)";                                 /* a little definition */
+    cx.beginPath(); cx.ellipse(a.x,hy+th*.42,tw*.7,5,0,0,7); cx.fill();
+    cx.fillStyle="#a8d129";                                             /* the mankini */
+    cx.beginPath();
+    cx.moveTo(a.x-8,hy+th-2); cx.lineTo(a.x+8,hy+th-2);
+    cx.lineTo(a.x+4,hy+th+7); cx.lineTo(a.x-4,hy+th+7); cx.closePath(); cx.fill();
+    cx.beginPath();                                                     /* the straps, up over the shoulders */
+    cx.moveTo(a.x-7,hy+th-3); cx.quadraticCurveTo(a.x-9,hy+10,a.x-4.4,hy-1);
+    cx.lineTo(a.x-1.4,hy); cx.quadraticCurveTo(a.x-5.6,hy+11,a.x-3.4,hy+th-3); cx.closePath(); cx.fill();
+    cx.beginPath();
+    cx.moveTo(a.x+7,hy+th-3); cx.quadraticCurveTo(a.x+9,hy+10,a.x+4.4,hy-1);
+    cx.lineTo(a.x+1.4,hy); cx.quadraticCurveTo(a.x+5.6,hy+11,a.x+3.4,hy+th-3); cx.closePath(); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,sk,sk,{});
     cx.fillStyle=sk;                                                   /* the thumb, up, always */
     cx.beginPath(); cx.roundRect(a.x+tw+5.6,hq-9,3,7,1.5); cx.fill();
     CB.head(a,headY,hr,sk);
@@ -8562,37 +8611,47 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── Predator — the shoulder cannon tracks whoever is talking loudest ── */
   predator(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), t=Date.now()/1000;
-    CB.legs(a,b,"#6a7a48","#3a4426",{boot:"#4a5430"});
-    CB.torso(a,tw,th,hy,"#7d8f52");
-    cx.fillStyle="rgba(58,68,32,.7)";                                  /* mottling */
+    CB.legs(a,b,"#26282c","#141518",{boot:"#1c1e22"});
+    CB.torso(a,tw,th,hy,"#2c2f34");
+    cx.fillStyle="rgba(12,13,15,.75)";                                 /* mottling */
     for(let i=0;i<11;i++){ const mx=a.x-tw+3+((i*7)%(tw*2-6)), my=hy+3+((i*11)%(th-8));
       cx.beginPath(); cx.ellipse(mx,my,2.6,1.8,i,0,7); cx.fill(); }
     cx.strokeStyle="rgba(30,36,18,.6)"; cx.lineWidth=1.2;              /* slabs of muscle */
     cx.beginPath(); cx.moveTo(a.x,hy+4); cx.lineTo(a.x,hy+th-6); cx.stroke();
     cx.beginPath(); cx.moveTo(a.x-tw+3,hy+13); cx.lineTo(a.x+tw-3,hy+13); cx.stroke();
-    cx.fillStyle="#9aa26a"; cx.beginPath();                            /* net armour on the shoulders */
+    cx.fillStyle="#4a4e56"; cx.beginPath();                            /* net armour on the shoulders */
     cx.roundRect(a.x-tw-1,hy,tw*2+2,6,3); cx.fill();
-    CB.arms(a,tw,th,hy,"#7d8f52","#7d8f52",{bulk:1});
-    cx.fillStyle="#5a6a3a"; cx.fillRect(a.x-tw-11,hy+16,10,5);         /* wrist blades housing */
+    CB.arms(a,tw,th,hy,"#2c2f34","#2c2f34",{bulk:1});
+    cx.fillStyle="#3a3e45"; cx.fillRect(a.x-tw-11,hy+16,10,5);         /* wrist blades housing */
     cx.strokeStyle="#c8ccd4"; cx.lineWidth=1.6; cx.lineCap="round";
     cx.beginPath(); cx.moveTo(a.x-tw-9,hy+21); cx.lineTo(a.x-tw-10,hy+33); cx.stroke();
     cx.beginPath(); cx.moveTo(a.x-tw-5,hy+21); cx.lineTo(a.x-tw-6,hy+33); cx.stroke();
-    cx.fillStyle="#3a4028";                                            /* the cannon */
+    cx.fillStyle="#1e2024";                                            /* the cannon */
     cx.beginPath(); cx.roundRect(a.x+tw-3,hy-13,7,10,2); cx.fill();
     cx.beginPath(); cx.roundRect(a.x+tw-1,hy-11,13,4.4,2); cx.fill();
-    cx.fillStyle="#8a9060"; cx.fillRect(a.x+tw-2,hy-4,5,5);
-    cx.fillStyle="#7d8f52";                                            /* the dreads, before the mask */
-    for(let i=0;i<7;i++){ const an=-2.9+i*.5;
-      cx.beginPath(); cx.roundRect(a.x+Math.cos(an)*hr*.9-1.6,headY+Math.sin(an)*hr*.9,3.2,hr*1.5,1.6); cx.fill(); }
-    cx.fillStyle="#9aa2a8";                                            /* biomask */
+    cx.fillStyle="#5a6068"; cx.fillRect(a.x+tw-2,hy-4,5,5);
+    /* the dreads — heavy, black, banded, and they fall in front of the mask
+       as well as behind it, which is the whole silhouette */
+    const drd=(i,front)=>{ const an=-2.95+i*.42, L=hr*(1.7+((i*7)%3)*.22);
+      cx.save();
+      cx.translate(a.x+Math.cos(an)*hr*.92, headY+Math.sin(an)*hr*.86);
+      cx.rotate(Math.cos(an)*.5+Math.sin(t*1.1+i)*.05);
+      cx.fillStyle=front?"#1a1c20":"#101216";
+      cx.beginPath(); cx.roundRect(-2,0,4,L,2); cx.fill();
+      cx.fillStyle="#6a6f78";                                          /* the metal bands */
+      cx.fillRect(-2.4,L*.34,4.8,1.8); cx.fillRect(-2.4,L*.66,4.8,1.8);
+      cx.restore(); };
+    for(let i=0;i<8;i++) drd(i,false);
+    cx.fillStyle="#78808a";                                            /* biomask */
     cx.beginPath(); cx.ellipse(a.x,headY,hr*.98,hr*1.08,0,0,7); cx.fill();
-    cx.fillStyle="#7a828a";
+    cx.fillStyle="#525a64";
     cx.beginPath(); cx.moveTo(a.x-hr*.8,headY-hr*.4); cx.lineTo(a.x,headY-hr*.1);
     cx.lineTo(a.x+hr*.8,headY-hr*.4); cx.lineTo(a.x+hr*.5,headY+hr*.96);
     cx.lineTo(a.x-hr*.5,headY+hr*.96); cx.closePath(); cx.fill();
-    cx.fillStyle="#5a626a";
+    cx.fillStyle="#33383f";
     cx.beginPath(); cx.roundRect(a.x-hr*.62,headY-hr*.34,hr*.5,3.4,1.4); cx.fill();
     cx.beginPath(); cx.roundRect(a.x+hr*.12,headY-hr*.34,hr*.5,3.4,1.4); cx.fill();
+    drd(1,true); drd(6,true);                                          /* two fall across the mask */
     const pl=.5+Math.sin(t*3.4)*.5;                                    /* three dots, and a decision */
     cx.shadowColor="#ff2a2a"; cx.shadowBlur=6*pl; cx.fillStyle="#ff3b3b";
     cx.beginPath(); cx.arc(a.x-4.4,headY-hr*1.5,1.2,0,7); cx.fill();
@@ -8700,16 +8759,24 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.strokeStyle="rgba(90,60,20,.5)"; cx.lineWidth=.8;
     for(let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(a.x-tw+2,hy+11+i*6); cx.lineTo(a.x+tw-2,hy+11+i*6); cx.stroke(); }
     cx.fillStyle="#6a5a3a"; cx.fillRect(a.x-tw+1,hy+th-5,tw*2-2,4);    /* belt */
-    const hq=CB.arms(a,tw,th,hy,"#b08a4a",sk,{});
-    cx.fillStyle=sk;                                                   /* the throwing arm, cocked back */
-    cx.beginPath(); cx.roundRect(a.x+tw-2,hy-14,8,16,4); cx.fill();
-    cx.fillStyle="#b08a4a"; cx.beginPath(); cx.roundRect(a.x+tw-2,hy+1,8,9,4); cx.fill();
+    /* left arm hangs; the right is cocked back mid-throw, so both are drawn
+       by hand — CB.arms would put a second forearm underneath the wind-up */
+    cx.fillStyle="#b08a4a";
+    cx.beginPath(); cx.roundRect(a.x-tw-6,hy+2,8,23,4); cx.fill();
+    cx.fillStyle=sk; cx.beginPath(); cx.arc(a.x-tw-2,hy+27,4.4,0,7); cx.fill();
+    cx.save(); cx.translate(a.x+tw-2,hy+6); cx.rotate(-0.85);          /* upper arm, back and up */
+    cx.fillStyle="#b08a4a"; cx.beginPath(); cx.roundRect(0,-4,15,8,4); cx.fill();
+    cx.restore();
+    cx.fillStyle=sk;                                                   /* forearm out of the sleeve */
+    cx.beginPath(); cx.roundRect(a.x+tw+6,hy-16,7,12,3.5); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+9.5,hy-17,4.2,0,7); cx.fill();
+    const hq=hy+27;
     cx.fillStyle="#7a4a24";                                            /* the ball he is never letting go of */
-    cx.beginPath(); cx.ellipse(a.x+tw+7,hy-19,7.4,4.6,-.4,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+tw+13,hy-22,7.4,4.6,-.4,0,7); cx.fill();
     cx.strokeStyle="#f2efe4"; cx.lineWidth=1;
-    cx.beginPath(); cx.moveTo(a.x+tw+4,hy-20.4); cx.lineTo(a.x+tw+10,hy-17.6); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+tw+10,hy-23.4); cx.lineTo(a.x+tw+16,hy-20.6); cx.stroke();
     for(let i=0;i<3;i++){ cx.beginPath();
-      cx.moveTo(a.x+tw+5+i*2,hy-21); cx.lineTo(a.x+tw+4.4+i*2,hy-18.6); cx.stroke(); }
+      cx.moveTo(a.x+tw+11+i*2,hy-24); cx.lineTo(a.x+tw+10.4+i*2,hy-21.6); cx.stroke(); }
     CB.head(a,headY,hr,sk);
     cx.fillStyle="#6a4a26";                                            /* feathered, blow-dried, load-bearing */
     cx.beginPath(); cx.ellipse(a.x,headY-hr*.46,hr*1.14,hr*.74,0,Math.PI,0); cx.fill();
@@ -8815,28 +8882,28 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── Bobby Boucher — the jug is the job, the tackling is a hobby ── */
   boucher(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
-    CB.legs(a,b,"#f0c95c","#1c1c22",{boot:"#1b3a8a"});
-    CB.torso(a,tw,th,hy,"#1b3a8a");
-    cx.fillStyle="#f0c95c"; cx.fillRect(a.x-tw,hy+th*.24,tw*2,3.4);    /* gold trim */
+    CB.legs(a,b,"#5a3a1e","#1c1610",{boot:"#e8621f"});
+    CB.torso(a,tw,th,hy,"#e8621f");
+    cx.fillStyle="#5a3a1e"; cx.fillRect(a.x-tw,hy+th*.24,tw*2,3.4);    /* brown trim */
     cx.fillRect(a.x-tw,hy+th*.34,tw*2,2);
     cx.fillStyle="#f2efe4"; cx.font="900 11px 'Archivo Black'"; cx.textAlign="center";
     cx.fillText("9",a.x,hy+th*.82);
-    cx.fillStyle="#0e2456"; cx.beginPath();
+    cx.fillStyle="#5a3a1e"; cx.beginPath();
     cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+6); cx.closePath(); cx.fill();
     cx.fillStyle="#5a4630"; cx.fillRect(a.x-tw+1,hy+th-6,tw*2-2,5);    /* the water carrier's belt */
     cx.fillStyle="#c8c2b4";
     cx.beginPath(); cx.roundRect(a.x-tw+3,hy+th-8,4.4,9,1.4); cx.fill();
     cx.beginPath(); cx.roundRect(a.x+tw-7.4,hy+th-8,4.4,9,1.4); cx.fill();
-    const hq=CB.arms(a,tw,th,hy,"#1b3a8a","#e8bb90",{});
+    const hq=CB.arms(a,tw,th,hy,"#e8621f","#e8bb90",{});
     cx.fillStyle="#d8dfe8";                                            /* the jug */
     cx.beginPath(); cx.roundRect(a.x+tw+3,hq-13,11,17,3); cx.fill();
     cx.fillStyle="#4d9fff"; cx.fillRect(a.x+tw+4.4,hq-6,8.2,9);
     cx.fillStyle="#c8102e"; cx.fillRect(a.x+tw+4.4,hq-15,8.2,3.4);
     cx.strokeStyle="#8a8f98"; cx.lineWidth=1.4;
     cx.beginPath(); cx.moveTo(a.x+tw+14,hq-10); cx.quadraticCurveTo(a.x+tw+18,hq-6,a.x+tw+14,hq-2); cx.stroke();
-    cx.fillStyle="#1b3a8a";                                            /* helmet */
+    cx.fillStyle="#5a3a1e";                                            /* helmet */
     cx.beginPath(); cx.ellipse(a.x,headY-hr*.1,hr*1.16,hr*1.1,0,0,7); cx.fill();
-    cx.fillStyle="#f0c95c"; cx.fillRect(a.x-1.6,headY-hr*1.2,3.2,hr*.9);
+    cx.fillStyle="#e8621f"; cx.fillRect(a.x-1.6,headY-hr*1.2,3.2,hr*.9);
     CB.eyes(a,headY,hr,{});
     cx.strokeStyle="#c8ccd4"; cx.lineWidth=1.4;                        /* facemask */
     cx.beginPath(); cx.moveTo(a.x-hr*1.1,headY+hr*.16); cx.quadraticCurveTo(a.x,headY+hr*1.24,a.x+hr*1.1,headY+hr*.16); cx.stroke();
@@ -8977,10 +9044,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     CB.head(a,headY,hr,sk);
     CB.hair(a,headY,hr,"#d8b878","mop");
     CB.eyes(a,headY,hr,{});
-    cx.fillStyle="#7a5a34";                                            /* the hat */
-    cx.beginPath(); cx.ellipse(a.x,headY-hr*1.1,hr*1.62,3.4,0,0,7); cx.fill();
-    cx.beginPath(); cx.roundRect(a.x-hr*.94,headY-hr*2.16,hr*1.88,hr*1.1,[5,5,1,1]); cx.fill();
-    cx.fillStyle="#5a4024"; cx.fillRect(a.x-hr*.94,headY-hr*1.3,hr*1.88,3.4);
+    cx.fillStyle="#5e2a55";                                            /* the hat, and it is a tall one */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*1.08,hr*1.7,3.8,0,0,7); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*.96,headY-hr*3.15,hr*1.92,hr*2.1,[6,6,1,1]); cx.fill();
+    cx.fillStyle="#7a3a6e";                                            /* velvet highlight down one side */
+    cx.fillRect(a.x-hr*.86,headY-hr*3.05,hr*.34,hr*1.95);
+    cx.fillStyle="#2e1428"; cx.fillRect(a.x-hr*.96,headY-hr*1.42,hr*1.92,4.2);
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
   /* ── Agent 47 — black suit, red tie, and the barcode does the introductions ── */
@@ -9009,6 +9078,64 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     CB.chrome(a,o,isMe,tw,hy,headY,hr); }
   });
 
+  Object.assign(CELEBART,{
+  /* ── JOHNNY BRAVO — all shoulders, no hips, and that hair ── */
+  bravo(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb8a";
+    CB.legs(a,b,"#2a3f7a","#141414");
+    cx.fillStyle="#141414";                                            /* the black tee, and it is straining */
+    cx.beginPath();
+    cx.moveTo(a.x-tw*1.35,hy+4);
+    cx.quadraticCurveTo(a.x-tw*1.15,hy+th*.72,a.x-tw*.5,hy+th);
+    cx.lineTo(a.x+tw*.5,hy+th);
+    cx.quadraticCurveTo(a.x+tw*1.15,hy+th*.72,a.x+tw*1.35,hy+4);
+    cx.quadraticCurveTo(a.x,hy-4,a.x-tw*1.35,hy+4); cx.closePath(); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.07)"; cx.fillRect(a.x-tw*1.2,hy+8,4,th*.5);
+    cx.fillStyle=sk;                                                   /* arms folded, permanently */
+    cx.beginPath(); cx.roundRect(a.x-tw*1.3,hy+th*.5,tw*2.6,9,4.5); cx.fill();
+    cx.strokeStyle="rgba(120,80,40,.35)"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(a.x,hy+th*.5); cx.lineTo(a.x,hy+th*.5+9); cx.stroke();
+    CB.head(a,headY,hr,sk);
+    CB.eyes(a,headY,hr,{shades:1});
+    cx.fillStyle="#f0c94a";                                            /* the pompadour, load-bearing */
+    cx.beginPath();
+    cx.moveTo(a.x-hr*1.02,headY-hr*.3);
+    cx.bezierCurveTo(a.x-hr*1.5,headY-hr*2.2, a.x+hr*.4,headY-hr*2.6, a.x+hr*1.05,headY-hr*1.1);
+    cx.quadraticCurveTo(a.x+hr*.5,headY-hr*.9,a.x+hr*1.02,headY-hr*.3);
+    cx.closePath(); cx.fill();
+    cx.fillStyle="#d8a92a";
+    cx.beginPath(); cx.moveTo(a.x-hr*.5,headY-hr*1.2);
+    cx.quadraticCurveTo(a.x-hr*.2,headY-hr*1.9,a.x+hr*.5,headY-hr*1.6); cx.stroke();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── SAUL GOODMAN — the suit is loud, the tie is louder ── */
+  saul(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8c49c";
+    CB.legs(a,b,"#3a4a86","#2a1c12");
+    CB.torso(a,tw,th,hy,"#48619c");                                    /* a blue nobody else would wear */
+    cx.fillStyle="#5a75b4";
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-3,hy+3); cx.lineTo(a.x-tw*.72,hy+th*.66); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+3,hy+3); cx.lineTo(a.x+tw*.72,hy+th*.66); cx.closePath(); cx.fill();
+    cx.fillStyle="#f6f4ec"; cx.beginPath();
+    cx.moveTo(a.x-4.6,hy); cx.lineTo(a.x+4.6,hy); cx.lineTo(a.x,hy+15); cx.closePath(); cx.fill();
+    cx.fillStyle="#e8a01f"; cx.beginPath();                            /* the tie */
+    cx.moveTo(a.x-2.6,hy+2); cx.lineTo(a.x+2.6,hy+2); cx.lineTo(a.x+1.6,hy+23); cx.lineTo(a.x-1.6,hy+23); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8102e";
+    for(let i=0;i<4;i++) cx.fillRect(a.x-2.4,hy+5+i*5,4.8,1.6);
+    const hq=CB.arms(a,tw,th,hy,"#48619c",sk,{});
+    cx.fillStyle="#e8e4d8";                                            /* a phone he is always mid-call on */
+    cx.beginPath(); cx.roundRect(a.x-tw-11,hq-13,5,10,1.6); cx.fill();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#a8763a";                                            /* the comb-over, doing its best */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.46,hr*1.04,hr*.6,0,Math.PI,0); cx.fill();
+    cx.fillStyle="#8a5e2a";
+    cx.beginPath(); cx.moveTo(a.x-hr,headY-hr*.62);
+    cx.quadraticCurveTo(a.x-hr*.1,headY-hr*1.16,a.x+hr*.98,headY-hr*.72);
+    cx.lineTo(a.x+hr*.98,headY-hr*.5); cx.quadraticCurveTo(a.x-hr*.1,headY-hr*.92,a.x-hr,headY-hr*.44); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#4d9fff";                                            /* the earpiece */
+    cx.beginPath(); cx.roundRect(a.x+hr*.78,headY-hr*.24,3,5.4,1.4); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  });
+
   /* ══ THE CAST — who is wearing whose body ══════════════════════════════ */
   const OWNBASE=JSON.parse(JSON.stringify(OWN));      /* the real twelve, kept whole */
 
@@ -9020,10 +9147,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const FITS={
     "DoughBoy$":            {og:null,        funny:"rothstein",  danger:"scarface",
                              n:["Jake","Ace Rothstein","Tony Montana"]},
-    "Suck my Footballz":    {og:null,        funny:"rickybobby", danger:"themask",
-                             n:["Jacob","Ricky Bobby","The Mask"]},
-    "Sandusky Shower Buddy":{og:null,        funny:"kennypowers",danger:"drevil",
-                             n:["Scott","Kenny Powers","Dr Evil"]},
+    "Suck my Footballz":    {og:null,        funny:"happy",      danger:"themask",
+                             n:["Jacob","Happy Gilmore","The Mask"]},
+    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",
+                             n:["Scott","Saul Goodman","Dr Evil"]},
     "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",
                              n:["Tylor","Coach Prime","Predator"]},
     "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"vader",
@@ -9036,8 +9163,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
                              n:["Uncle Rico","The Riddler","Wolverine"]},
     "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",
                              n:["Belichick","Colonel Sanders","Bobby Boucher"]},
-    "Kill Bill":            {og:null,        funny:"aceventura", danger:"batman",
-                             n:["Garrett","Ace Ventura","Batman"]},
+    "Kill Bill":            {og:null,        funny:"bravo",      danger:"batman",
+                             n:["Garrett","Johnny Bravo","Batman"]},
     "Blitz":                {og:"osufan",    funny:"brutus",     danger:"chief",
                              n:["Buckeye Guy","Brutus","Master Chief"]},
     "Flacc Shots":          {og:"belfort",   funny:"wonka",      danger:"agent47",
