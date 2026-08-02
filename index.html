@@ -751,7 +751,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
   <div class="statrow">
     <div class="stat"><b id="s-days">—</b><span>days to draft</span></div>
     <div class="stat"><b>300</b><span>ranked players</span></div>
-    <div class="stat"><b>9<span style="font-size:13px;color:var(--dim)">/12</span></b><span>keepers confirmed</span></div>
+    <div class="stat"><b>10<span style="font-size:13px;color:var(--dim)">/12</span></b><span>keepers confirmed</span></div>
     <div class="stat"><b id="s-mypick">—</b><span>your first pick</span></div>
     <div class="stat"><b style="color:var(--gold)">$1,200</b><span>total pot</span></div>
   </div>
@@ -909,7 +909,7 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
 <!-- 2025 ROSTERS -->
 <section class="view" id="v-rost">
   <h2>2025 FINAL ROSTERS <span class="lt">as imported into the 2026 league — the keeper pool</span></h2>
-  <div class="sub">Keepers come from these rosters and lock <b>Sep 1</b>. <span class="keepchip">✓ CONFIRMED</span> = officially declared · <span class="keepchip spec">? PROJECTED</span> = our best guess, subject to scheming. 9/12 confirmed so far — only Jake, Tylor and Sam left to declare.</div>
+  <div class="sub">Keepers come from these rosters and lock <b>Sep 1</b>. <span class="keepchip">✓ CONFIRMED</span> = officially declared · <span class="keepchip spec">? PROJECTED</span> = our best guess, subject to scheming. 10/12 confirmed so far — only Jake and Tylor left to declare.</div>
   <div class="grid" id="rostboards"></div>
 </section>
 
@@ -1226,7 +1226,8 @@ const nfl = tm => { const c=NFLC[tm]||"#3a341f"; const txt=(tm==="NO"||tm==="PIT
   const lg = ESPNL[tm]?`<img src="https://a.espncdn.com/i/teamlogos/nfl/500/scoreboard/${ESPNL[tm]}.png" loading="lazy" onerror="this.remove()" alt="">`:"";
   return `<span class="nflchip" style="background:${c};color:${txt}">${lg}${tm||"–"}</span>`; };
 const KCONF = new Set(["Puka Nacua","Bijan Robinson","Josh Allen","Jahmyr Gibbs",
-  "Justin Jefferson","Jaxon Smith-Njigba","CeeDee Lamb","Christian McCaffrey","Jonathan Taylor"]);   // confirmed keepers — waiting on Jake, Tylor, Sam
+  "Justin Jefferson","Jaxon Smith-Njigba","CeeDee Lamb","Christian McCaffrey","Jonathan Taylor",
+  "James Cook III"]);   // confirmed keepers — waiting on Jake and Tylor
 const kConf = t => KCONF.has(t.keeper);
 const MAXPROJ = Math.max(...P.map(p=>p.proj||0));
 
@@ -1498,7 +1499,7 @@ if(myTeam==null) setTimeout(()=>$("#fback").classList.add("on"), 1400);
   lines.push(`QB1 <b>${qb.name}</b> ${qb.proj} · RB1 <b>${rb.name}</b> ${rb.proj} · WR1 <b>${wr.name}</b> ${wr.proj} · TE1 <b>${te.name}</b> ${te.proj}`);
   const rook = P.filter(p=>p.rook&&p.proj).sort((a,b)=>b.proj-a.proj)[0];
   if(rook) lines.push(`Top rookie: <b>${rook.name}</b> at <b class="up">${rook.proj}</b> projected`);
-  lines.push(`Keeper lock <b>Sep 1</b> — nine confirmed: Nacua, Allen, Jefferson, Smith-Njigba, Gibbs, Lamb, McCaffrey, Taylor &amp; Robinson · waiting on Jake, Tylor &amp; Sam`);
+  lines.push(`Keeper lock <b>Sep 1</b> — ten confirmed — only <b>Jake</b> and <b>Tylor</b> left to declare`);
   lines.push(`Draft <b>Sep 3, 7:00 PM CDT</b> · 75-second clock · attendance is not optional`);
   if(D.mc&&D.mc.season){ const so=Object.entries(D.mc.season).sort((a,b)=>b[1].champ-a[1].champ);
     lines.push(`1,000,000 simulated seasons: <b>${so[0][0]}</b> leads at <b class="up">${so[0][1].champ}%</b> · highest 9·9·9 exposure: <b class="dn">${[...so].sort((a,b)=>b[1].last-a[1].last)[0][0]}</b>`); }
@@ -2009,7 +2010,12 @@ $("#thopen").onclick=openTheatre;
 /* Monte Carlo presentation */
 (function(){
   const MC=D.mc; if(!MC){ $("#mcwrap").parentElement.style.display="none"; return; }
-  const rows=Object.entries(MC.players).map(([yr,m])=>({yr:+yr, ...m, p:byYr[+yr]})).filter(r=>r.p&&r.pct>=55);
+  /* kickers and defences swamped these boards — their Yahoo rank and their real
+     draft slot have nothing to do with each other, so every reach was a kicker.
+     Only the positions anyone actually strategises over belong here. */
+  const SKILL=new Set(["QB","RB","WR","TE"]);
+  const rows=Object.entries(MC.players).map(([yr,m])=>({yr:+yr, ...m, p:byYr[+yr]}))
+    .filter(r=>r.p&&r.pct>=55&&SKILL.has((r.p.pos||"").toUpperCase()));
   const deltas=rows.map(r=>({...r, d:r.adp-r.yr}));
   const falls=[...deltas].sort((a,b)=>b.d-a.d).slice(0,7);
   const rises=[...deltas].sort((a,b)=>a.d-b.d).slice(0,7);
@@ -2137,18 +2143,20 @@ window.MONEY=(function(){
     const fins=ix.map(i=>FIN[team][i]);
     const won=fins.reduce((a,f)=>a+(PRIZE[f]||0),0);
     const paid=ix.length*BUYIN;
-    return {own, team, fallen:!!fallen,
+    const roi = paid ? (won-paid)/paid : 0;      /* what the chair returned on its outlay */
+    return {own, team, fallen:!!fallen, roi,
       years:ix.map(i=>YRS[i]), seasons:ix.length, fins,
       titles:fins.filter(f=>f===1).length,
       seconds:fins.filter(f=>f===2).length,
       best:Math.min(...fins), paid, won, net:won-paid};
-  }).sort((a,b)=>b.net-a.net || a.own.localeCompare(b.own));
+  }).sort((a,b)=>b.roi-a.roi || b.net-a.net || a.own.localeCompare(b.own));
 
   const totalIn=rows.reduce((a,r)=>a+r.paid,0);
   const totalOut=rows.reduce((a,r)=>a+r.won,0);
   const byOwner={}; rows.forEach(r=>byOwner[r.own]=r);
   const byTeam={};  rows.forEach(r=>{ if(!byTeam[r.team]||!r.fallen) byTeam[r.team]=r; });
-  return {rows, byOwner, byTeam, totalIn, totalOut, BUYIN, PRIZE, YRS, FIN,
+  const pct=v=>(v>0?"+":v<0?"\u2212":"")+Math.round(Math.abs(v)*100)+"%";
+  return {rows, byOwner, byTeam, totalIn, totalOut, BUYIN, PRIZE, YRS, FIN, pct,
           balanced:totalIn===totalOut};
 })();
 
@@ -2160,7 +2168,7 @@ window.MONEY=(function(){
   const money=v=>(v<0?"-$":"$")+Math.abs(v).toLocaleString();
   const signed=v=>(v>0?"+$":v<0?"-$":"$")+Math.abs(v).toLocaleString();
   const mx=Math.max(...M.rows.map(r=>Math.abs(r.net)))||1;
-  el.innerHTML="<tr><th></th><th>OWNER · FRANCHISE</th><th>SZN</th><th>HARDWARE</th><th>PAID IN</th><th>COLLECTED</th><th>NET</th></tr>"+
+  el.innerHTML="<tr><th></th><th>OWNER · FRANCHISE</th><th>SZN</th><th>HARDWARE</th><th>PAID IN</th><th>COLLECTED</th><th>NET</th><th>RETURN</th></tr>"+
    M.rows.map((r,i)=>{
     const t=(typeof teamBy==="function"&&teamBy(r.team))||{c:"#8a8378",slot:-1};
     const cls=r.net>0?"up":r.net<0?"dn":"ev";
@@ -2174,14 +2182,16 @@ window.MONEY=(function(){
       <td class="mtr">${hw}</td>
       <td class="mtin">${money(-r.paid)}</td>
       <td class="mtin">${r.won?money(r.won):"—"}</td>
+      <td><span class="mnet ${cls}" style="font-size:13px">${signed(r.net)}</span></td>
       <td><div class="moneybars"><i style="width:${w}px;background:${r.net>0?"#2e8b57":r.net<0?"#7a2a22":"#3a341f"}"></i>
-        <span class="mnet ${cls}">${signed(r.net)}</span></div></td></tr>`;
+        <span class="mnet ${cls}">${M.pct(r.roi)}</span></div></td></tr>`;
    }).join("");
   const win=M.rows.filter(r=>r.net>0).length;
   document.querySelector("#moneyfoot").innerHTML=
     `$${M.BUYIN} a season from every owner · $${M.PRIZE[1].toLocaleString()} to the champion · $${M.PRIZE[2]} to the runner-up.
      Four recorded seasons, ${M.YRS[0]}–${M.YRS[M.YRS.length-1]} — $${M.totalIn.toLocaleString()} in, $${M.totalOut.toLocaleString()} out, the house keeps nothing.
      <b style="color:var(--gold)">${win} of ${M.rows.length} owners are up.</b>
+     Return is measured against what that owner has actually paid in, so a shorter tenure is judged on its own terms.
      <span style="color:#c9a0ff">\u{1f56f} Betty and Edmonds</span> are charged for ${M.YRS[0]} only; Ferrand and Alex took the wheel in ${M.YRS[1]}.
      The Lost Era (2018–2021) has no surviving standings, so it is not counted.`;
 })();
@@ -2200,7 +2210,7 @@ window.MONEY=(function(){
    "DoughBoy$":{own:"Jake",f22:5,y:[[8,"N. Chubb",5],[8,"G. Wilson",2],[11,"J. Jacobs",11]],y26:[2,"J. Jacobs",0]},
    "Sandusky Shower Buddy":{own:"Scott",f22:2,y:[[11,"K. Williams",4],[9,"K. Williams",8],[5,"D. London",6]],y26:[7,"C. McCaffrey",1]},
    "My Kupp Hurts":{own:"Griff",f22:4,y:[[9,"J. Chase",3],[10,"J. Chase",12],[1,"J. Chase",1]],y26:[12,"J. Gibbs",1]},
-   "Tig Bits":{own:"Sam",f22:12,y:[[1,"J. Jefferson",2],[11,"J. Jefferson",9],[4,"L. Jackson",9]],y26:[4,"J. Cook III",0]},
+   "Tig Bits":{own:"Sam",f22:12,y:[[1,"J. Jefferson",2],[11,"J. Jefferson",9],[4,"L. Jackson",9]],y26:[4,"J. Cook III",1]},
    "Team Martens":{own:"Tylor",f22:8,y:[[5,"A. St. Brown",1],[12,"A. St. Brown",5],[8,"A. St. Brown",10]],y26:[3,"A. St. Brown",0]}};
   const FKA={"Kill Bill":"f/k/a Built Ford Tough, Dicker Down","Flacc Shots":"f/k/a IR-REPLACABLES, Slingin' Herb, Watsonder My Towel",
    "Are you winning son?":"f/k/a Country Roads Take Mahomes","Silence of the Lamb":"f/k/a King of the Hill",
@@ -2751,6 +2761,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const TIEC={gold:"#d4af37",crimson:"#c8102e",royal:"#3b6fe2",emerald:"#2e8b57",violet:"#8b3be2"};
   let fit=store.get("rsFit",null)||{hat:"signature",shades:"off",chain:"off",suit:"signature",tie:"gold"};
   if(!store.get("rsFitV3",0)){ fit.hat="signature"; fit.suit="signature"; fit.shades="off"; fit.chain="off"; store.set("rsFit",fit); store.set("rsFitV3",1); }
+  /* every device, desktop and phone alike, back to the signature look */
+  if(!store.get("rsFitV4",0)){ fit.hat="signature"; fit.suit="signature"; store.set("rsFit",fit); store.set("rsFitV4",1); }
   function saveFit(){ store.set("rsFit",fit); if(panelMode==="fit") renderPanel(); }
 
   /* ── entities ── */
@@ -3898,9 +3910,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
          welded on as a badge so nothing floats loose where speech goes ═══ */
   const PLATECOL={"👑":["#f0c95c","#7a5c12","#1a1204"], "🥈":["#d8dee6","#5a6472","#12151a"],
                   "🥉":["#e0a06a","#7a4a22","#1a1006"]};
-  function ownerNet(team){
+  /* the floor talks in percentages — the actual dollar outlay stays in the Vault */
+  function ownerRoi(team){
     const M=window.MONEY; if(!M) return null;
-    const r=M.byTeam&&M.byTeam[team]; return r?r.net:null; }
+    const r=M.byTeam&&M.byTeam[team]; return r?r.roi:null; }
+  function roiTxt(v){ return (v>0?"+":v<0?"\u2212":"")+Math.round(Math.abs(v)*100)+"%"; }
   function nameplate(a,o,isMe){
     const nm=o.o.toUpperCase();
     cx.font="800 10.5px Sora"; const nw=cx.measureText(nm).width;
@@ -3908,8 +3922,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     let bw=0; if(bl){ cx.font="800 8.5px Sora"; bw=cx.measureText(bl[0]).width+16; }
     /* the money rides on the franchise line — a third line made the plate tall
        enough to sit on whoever is standing in the row behind */
-    const net=ownerNet(a.t.name);
-    const sub=a.t.name+(net!=null?"  ·  "+((net>0?"+$":net<0?"−$":"$")+Math.abs(net).toLocaleString()):"");
+    const roi=ownerRoi(a.t.name);
+    const sub=a.t.name+(roi!=null?"  ·  "+roiTxt(roi):"");
     cx.font="600 8px Sora"; const sw2=cx.measureText(sub).width;
     cx.font="800 10.5px Sora";
     const pw=Math.max(nw,sw2,60,bw-14)+14, px=a.x-pw/2, py=a.y+32, ph=28;
@@ -3934,15 +3948,15 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     /* franchise on the left of the centre line, career net on the right, in the
        colour of the damage — green if this chair has made money, red if not */
     cx.font="600 8px Sora";
-    if(net==null){ cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,py+20); }
+    if(roi==null){ cx.fillStyle=a.t.c; cx.fillText(a.t.name,a.x,py+20); }
     else {
-      const cash=(net>0?"+$":net<0?"−$":"$")+Math.abs(net).toLocaleString();
+      const cash=roiTxt(roi);
       const tw2=cx.measureText(a.t.name).width, gw=cx.measureText("  ·  ").width;
       const cw=cx.measureText(cash).width, tot=tw2+gw+cw, x0=a.x-tot/2;
       cx.textAlign="left";
       cx.fillStyle=a.t.c;  cx.fillText(a.t.name,x0,py+20);
       cx.fillStyle="#5a5348"; cx.fillText("  ·  ",x0+tw2,py+20);
-      cx.fillStyle=net>0?"#8df08d":net<0?"#e0776a":"#a89f8a";
+      cx.fillStyle=roi>0?"#8df08d":roi<0?"#e0776a":"#a89f8a";
       cx.font="800 8px Sora"; cx.fillText(cash,x0+tw2+gw,py+20);
       cx.textAlign="center";
     }
@@ -6642,28 +6656,27 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
          actually changed hands outside this building ═══ */
   function careerLedgerHTML(){
     const M=window.MONEY; if(!M) return "";
-    const sgn=v=>(v>0?"+$":v<0?"−$":"$")+Math.abs(v).toLocaleString();
-    const mx=Math.max(...M.rows.map(r=>Math.abs(r.net)))||1;
+    const mx=Math.max(...M.rows.map(r=>Math.abs(r.roi)))||1;
     const mine=(meTeam()||{}).name;
     return `
       <div style="font-size:10px;letter-spacing:1.6px;color:#a89f8a;margin:14px 0 6px">
-        CAREER NET — ${M.YRS[0]}–${M.YRS[M.YRS.length-1]} · $${M.BUYIN}/season in · $${M.PRIZE[1].toLocaleString()} first · $${M.PRIZE[2]} second</div>
+        CAREER RETURN — ${M.YRS[0]}–${M.YRS[M.YRS.length-1]} · $${M.BUYIN}/season in · $${M.PRIZE[1].toLocaleString()} first · $${M.PRIZE[2]} second</div>
       <div style="max-height:250px;overflow:auto;border-radius:9px;background:rgba(0,0,0,.26);padding:6px">
         ${M.rows.map((r,i)=>{
-          const c=r.net>0?"#8df08d":r.net<0?"#e0776a":"#a89f8a";
-          const w=Math.max(3,Math.abs(r.net)/mx*58);
+          const c=r.roi>0?"#8df08d":r.roi<0?"#e0776a":"#a89f8a";
+          const w=Math.max(3,Math.abs(r.roi)/mx*58);
           return `<div style="display:flex;align-items:center;gap:8px;padding:5px 7px;border-bottom:1px solid rgba(138,109,28,.14);font-size:10.5px;${r.team===mine&&!r.fallen?"background:rgba(212,175,55,.09);border-radius:6px":""}">
             <span style="color:#6a635a;min-width:16px;text-align:right">${i+1}</span>
             <b style="color:${r.fallen?"#c9a0ff":"#e8e4d8"};min-width:62px">${r.own}${r.fallen?" 🕯":""}</b>
             <span style="flex:1;color:#8a8378;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team}</span>
             <span style="color:#a89f8a;min-width:58px;text-align:right">${"🏆".repeat(r.titles)}${"🥈".repeat(r.seconds)}</span>
             <span style="color:#6a635a;min-width:34px;text-align:right">${r.seasons}yr</span>
-            <i style="display:block;height:6px;border-radius:3px;width:${w}px;background:${r.net>0?"#2e8b57":r.net<0?"#7a2a22":"#3a341f"}"></i>
-            <b style="color:${c};min-width:56px;text-align:right">${sgn(r.net)}</b></div>`;
+            <i style="display:block;height:6px;border-radius:3px;width:${w}px;background:${r.roi>0?"#2e8b57":r.roi<0?"#7a2a22":"#3a341f"}"></i>
+            <b style="color:${c};min-width:56px;text-align:right">${M.pct(r.roi)}</b></div>`;
         }).join("")}
       </div>
       <div style="margin-top:6px;font-size:9px;color:#8a8378;line-height:1.5">
-        $${M.totalIn.toLocaleString()} in, $${M.totalOut.toLocaleString()} out — the pot pays itself back every year.
+        Return on what each owner has actually paid in. The dollar figures live in the Vault.
         🕯 Betty and Edmonds are charged for ${M.YRS[0]} only; Ferrand and Alex took over in ${M.YRS[1]}.</div>`;
   }
 
