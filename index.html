@@ -2443,7 +2443,7 @@ function renderDraftDay(){
   }
   const vorp=p=>p.proj-(REPL[p.pos]||0);
   /* and once you already hold two of something, the third is worth less */
-  const NEEDW={QB:[1,.35,.15],RB:[1,1,.9,.55,.3],WR:[1,1,.9,.55,.3],TE:[1,.3,.12]};
+  const NEEDW={QB:[1,.18,.06],RB:[1,1,.92,.6,.34],WR:[1,1,.92,.6,.34],TE:[1,.14,.05]};
   function targetsAt(pk,held){
     held=held||{QB:0,RB:0,WR:0,TE:0};
     return liveP.map(p=>{
@@ -2451,7 +2451,10 @@ function renderDraftDay(){
         const w=(NEEDW[p.pos]||[1])[held[p.pos]||0];
         return {p, s, v:vorp(p)*s*(w==null?0.1:w)};
       })
-      .filter(x=>x.s>0.35&&x.s<0.985&&x.v>0)
+      /* the upper bound existed so the sheet would not tell you to take someone
+         who is obviously still going to be there. By round nine that is almost
+         everyone, and filtering them out left nothing but tight ends. */
+      .filter(x=>x.s>0.35&&x.v>0)
       .sort((a,b)=>b.v-a.v)
       /* no more than two of a position in one list — you start one tight end,
          so five of them is not a shortlist, it is noise */
