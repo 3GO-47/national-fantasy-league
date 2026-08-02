@@ -259,20 +259,32 @@ body[data-theme="mw2"] .hero img,body[data-theme="mw2"] #hdrlogo{filter:saturate
   .chud .cbtn .lbl{display:none}
   .chud .seatb{padding:6px 9px}
   #clubhint{font-size:10.5px;padding:5px 8px;flex:1 1 0;min-width:0}
-  #clubchat{left:8px;right:auto;bottom:188px;width:calc(100vw - 116px);max-width:none;height:auto}
-  #clubchat:not(.min){height:38vh}
+  /* the RuneScape arrangement: the chat is the floor of the screen, full width,
+     input welded to the very bottom. Nothing else lives down there. */
+  #clubchat{left:0;right:0;bottom:0;width:100vw;max-width:none;height:auto;
+    border-radius:0;border-left:none;border-right:none;border-bottom:none;
+    padding-bottom:env(safe-area-inset-bottom,0px)}
+  #clubchat:not(.min){height:34vh}
+  #clubchat .chatin{padding:7px 8px 8px}
+  #clubchat .chatin input{font-size:16px}          /* 16px or iOS zooms the page on focus */
   #chathead{padding:6px 10px;font-size:10px;letter-spacing:1px}
   #chathead span{display:none}
   #clubchat .chatlog{font-size:11.5px;padding:5px 8px}
-  #minimap{width:104px;height:70px;right:8px;bottom:8px}
-  #joy{width:96px;height:96px;bottom:70px;left:10px}
-  #actbtn{width:58px;height:58px;right:16px;bottom:150px}
+  /* everything else gets out of the way of the chat floor */
+  #minimap{width:104px;height:70px;right:8px;bottom:74px}
+  #joy{width:96px;height:96px;bottom:120px;left:10px}
+  #actbtn{width:58px;height:58px;right:16px;bottom:196px}
+  #clubfs.chatopen #joy{bottom:calc(34vh + 14px)}
+  #clubfs.chatopen #actbtn{bottom:calc(34vh + 90px)}
+  #clubfs.chatopen #minimap{display:none}
   #sidepanel{width:min(320px,92vw)}
 }
 @media(max-width:420px){
   .chud .cbtn{font-size:10px;padding:5px 7px}
   #clubhint{font-size:9.5px}
-  #clubchat{bottom:180px;width:calc(100vw - 100px)}
+  #clubchat:not(.min){height:38vh}
+  #clubfs.chatopen #joy{bottom:calc(38vh + 14px)}
+  #clubfs.chatopen #actbtn{bottom:calc(38vh + 90px)}
 }
 /* power index */
 .pib{display:flex;align-items:center;gap:9px;padding:3.5px 0;font-size:12.5px}
@@ -3122,7 +3134,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   addEventListener("keydown",e=>{ if(!fs.classList.contains("on")) return;
     if(document.activeElement===$("#chatin")) return;
     if(e.key==="t"||e.key==="T"){ e.preventDefault(); callToOrder(); } });
-  $("#chathead").onclick=()=>$("#clubchat").classList.toggle("min");
+  function chatShift(){ fs.classList.toggle("chatopen",!$("#clubchat").classList.contains("min")); }
+  $("#chathead").onclick=()=>{ $("#clubchat").classList.toggle("min"); chatShift(); };
   if(innerWidth<=760||TOUCH) $("#clubchat").classList.add("min");
   { const sb=$("#seatbtn");
     if(sb){ sb.onclick=()=>callToOrder();
@@ -3166,11 +3179,17 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
               <div style="font-size:10px;color:#a89f8a">total level ${tl}${nx?` · ${nx[0]-tl} to ${nx[1]}`:" · nothing left to climb"}</div>
               <div style="font-size:10px;color:#8df08d;margin-top:4px">skills compound while you're away · tecmo best ${store.get("tecmoHS",0)||0} · rent money ${rentFmt(RENT.me)}</div></div>`; })(); }
     else if(panelMode==="fit"){ title.textContent="🕴 WARDROBE";
-      el.innerHTML='<div class="pnote" style="margin:0 0 8px">signature = your owner build, tailored by the league</div>'
+      const mt=meTeam(), F=(typeof FITS!=="undefined"&&mt)?FITS[mt.name]:null;
+      const who=F?`<div class="fitg"><div class="fitl">WHO YOU ARE</div><div class="fitc">`+
+        ["og","funny","danger"].map((k,i)=>`<button class="fchip pchip ${(fit.persona||fitMode())===k?"on":""}" data-p="${k}">${esc(F.n[i])}</button>`).join("")+
+        `</div></div><div class="pnote" style="margin:-2px 0 8px">the league is showing <b>${esc(F.n[["og","funny","danger"].indexOf(fitMode())])}</b> by default — this is just for you</div>`:"";
+      el.innerHTML=who
+        +'<div class="pnote" style="margin:0 0 8px">signature = your owner build, tailored by the league</div>'
         +Object.keys(FITDEF).map(g=>`<div class="fitg"><div class="fitl">${g.toUpperCase()}</div><div class="fitc">`+
         FITDEF[g].map(o=>`<button class="fchip ${fit[g]===o?'on':''}" data-g="${g}" data-o="${o}">${o}</button>`).join("")+'</div></div>').join("")
         + '<div class="pnote">saved to this browser</div>';
-      el.querySelectorAll(".fchip").forEach(b=>b.onclick=()=>{ fit[b.dataset.g]=b.dataset.o; saveFit(); }); } }
+      el.querySelectorAll(".pchip").forEach(b=>b.onclick=()=>{ fit.persona=b.dataset.p; saveFit(); });
+      el.querySelectorAll(".fchip:not(.pchip)").forEach(b=>b.onclick=()=>{ fit[b.dataset.g]=b.dataset.o; saveFit(); }); } }
   document.querySelectorAll(".ptab").forEach(b=>b.onclick=()=>openPanel(b.dataset.p));
 
   /* ── pool physics ── */
@@ -3349,7 +3368,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       return; }
     if(k==="escape"){ if(panelMode){ openPanel(panelMode); } else exitClub(); e.preventDefault(); return; }
     if(k==="enter"){ e.preventDefault(); if(dlg){ advDlg(); return; } $("#chatin").focus(); return; }
-    if(k==="c"){ $("#clubchat").classList.toggle("min"); e.preventDefault(); return; }
+    if(k==="c"){ $("#clubchat").classList.toggle("min"); chatShift(); e.preventDefault(); return; }
     if(k==="i"){ openPanel("inv"); e.preventDefault(); return; }
     if(k==="k"){ openPanel("skills"); e.preventDefault(); return; }
     if(["1","2","3","4"].includes(k)){ doEmote(player,["wave","dance","flex","rage"][+k-1],true); e.preventDefault(); return; }
@@ -3393,7 +3412,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   window.enterClub=function(){ buildCast(); fs.classList.add("on"); document.body.style.overflow="hidden";
     sizeFS(); cam.x=player.x-innerWidth/cam.s/2; cam.y=player.y-innerHeight/cam.s/2;
     try{ if(fs.requestFullscreen) fs.requestFullscreen().catch(()=>{}); }catch(e){}
-    if(TOUCH) $("#clubchat").classList.add("min");
+    if(TOUCH){ $("#clubchat").classList.add("min"); chatShift(); }
     if(!running){ running=true; requestAnimationFrame(step); }
     sysLog("🚪 You enter the clubhouse.");
     openDlg("THE CLUBHOUSE","#d4af37",["Members only. Est. 2018. Twelve owners walk this floor in their true forms.",
@@ -3720,7 +3739,15 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   const SHAME={"Kill Bill":2,"Tig Bits":1,"Are you winning son?":1};
   function drawAvatar(a,isMe){
     const o=a.own||GUESTOWN, ring=RINGS[a.t.name];
-    if(o.draw2){ o.draw2(a,isMe); return; }
+    /* your own choice beats the league default — pick your body in the wardrobe.
+       An "og" with no celebrity behind it falls through to the hand-drawn owner. */
+    if(isMe&&fit.persona&&typeof FITS!=="undefined"&&FITS[a.t.name]){
+      const key=FITS[a.t.name][fit.persona];
+      if(key&&CELEBART[key]){ CELEBART[key](a,o,isMe); return; }
+      if(!key){ /* the owner as himself — keep going into the normal art below */ }
+      else if(o.draw2){ o.draw2(a,isMe); return; }
+    }
+    else if(o.draw2){ o.draw2(a,isMe); return; }
     const f=isMe?fit:{hat:"signature",shades:o.shd?"on":"off",chain:o.chn?"on":"off",suit:"signature",tie:"gold"};
     const hs=o.hs, wf=o.wf;
     const b=Math.sin((a.bob+=(Math.abs(a.vx)+Math.abs(a.vy)>0.3?.35:.08)))*2.4;
