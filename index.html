@@ -2364,19 +2364,31 @@ let wSortK="rk", wSortAsc=true, wPos="", wQ="";
    the last man in a tier is the last man worth reaching for.
    ══════════════════════════════════════════════════════════════════════════ */
 const WTIERC=["#f0c95c","#8df08d","#4d9fff","#c959ff","#e2793b","#d8dee6","#7a7469"];
+const POOLN={QB:32,RB:60,WR:72,TE:28,K:14,DST:14};   /* how deep the position is actually drafted */
 let TIERS=null;
 function buildTiers(){
   TIERS={};
   for(const pos of ["QB","RB","WR","TE","K","DST"]){
     const list=P.filter(p=>p.pos===pos&&p.proj).sort((a,b)=>b.proj-a.proj);
     if(!list.length) continue;
-    /* every gap between consecutive players, biggest first — the six widest
-       become the tier walls, so tiers are wherever the cliff actually is */
-    const gaps=[];
-    for(let i=0;i<list.length-1;i++) gaps.push({i, g:list[i].proj-list[i+1].proj});
-    const walls=new Set(gaps.sort((a,b)=>b.g-a.g).slice(0,6).map(x=>x.i));
-    let t=1;
-    list.forEach((p,i)=>{ TIERS[p.yr]=t; if(walls.has(i)&&t<7) t++; });
+    /* natural breaks, not round numbers. Absolute gaps are widest at the very
+       top, so cutting on the six biggest gaps buries eighty receivers in one
+       band — cluster the projections instead and let the bands fall where the
+       scoring actually separates. Everyone past the draftable pool is tier 7. */
+    const cap=POOLN[pos]||40;
+    const draft=list.slice(0,cap);
+    list.slice(cap).forEach(p=>TIERS[p.yr]=7);
+    if(draft.length<8){ draft.forEach(p=>TIERS[p.yr]=1); continue; }
+    const v=draft.map(p=>p.proj);
+    let c=[]; for(let i=0;i<7;i++) c.push(v[Math.floor(i*(v.length-1)/6)]);
+    for(let it=0;it<40;it++){
+      const g=Array.from({length:7},()=>[]);
+      v.forEach(x=>{ let bi=0,bd=1e9; c.forEach((cc,i)=>{const d=Math.abs(x-cc); if(d<bd){bd=d;bi=i;}}); g[bi].push(x); });
+      const nc=g.map((grp,i)=>grp.length?grp.reduce((a,b)=>a+b,0)/grp.length:c[i]);
+      const done=nc.every((x,i)=>Math.abs(x-c[i])<0.01); c=nc; if(done) break;
+    }
+    c.sort((a,b)=>b-a);
+    draft.forEach(p=>{ let bi=0,bd=1e9; c.forEach((cc,i)=>{const d=Math.abs(p.proj-cc); if(d<bd){bd=d;bi=i;}}); TIERS[p.yr]=bi+1; });
   }
 }
 const tierOf=yr=>(TIERS&&TIERS[yr])||null;
