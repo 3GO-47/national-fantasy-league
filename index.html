@@ -6226,7 +6226,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
                                       : `<button class="bjb" data-a="deal">DEAL</button><button class="bjb" data-a="up">LEAVE SEAT</button>`))
           : `<button class="bjb" data-a="sit25">SIT · $25</button><button class="bjb" data-a="sit50">SIT · $50</button><button class="bjb" data-a="sit100">SIT · $100</button>`}
       </div>
-      <div style="margin-top:8px;font-size:10px;color:#5f8f72">one shoe, one dealer, everyone at the table — the count is shared</div>`;
+      <div style="margin-top:8px;font-size:10px;color:#5f8f72">one shoe, one dealer, everyone at the table — the count is shared.
+        The running count only moves when cards come out, so at an empty table it sits at zero.
+        <a href="#" id="bjsolo" style="color:#f0c95c">Deal yourself in privately</a> for split, surrender, insurance and a live count.</div>`;
+    const sl=$("#bjsolo"); if(sl) sl.onclick=e=>{ e.preventDefault(); BJ.solo=true; bjRender(); };
     el.querySelectorAll(".bjb").forEach(b=>{
       b.style.cssText="flex:1;min-width:86px;background:linear-gradient(180deg,#2e8b57,#1d5c39);border:none;color:#eafff0;font-weight:800;letter-spacing:1px;border-radius:8px;padding:9px 6px;cursor:pointer;font-size:11px;font-family:inherit";
       b.onclick=()=>{ const a=b.dataset.a; NET.err="";
