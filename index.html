@@ -563,6 +563,17 @@ tr.avoided td:nth-child(3){text-decoration:line-through;text-decoration-color:va
   background:linear-gradient(90deg,rgba(212,175,55,.12),#f0c95c,rgba(212,175,55,.12));background-size:200% 100%;animation:wireflow 2.6s linear infinite}
 @keyframes wireflow{0%{background-position:200% 0}100%{background-position:-200% 0}}
 @media(max-width:640px){.lin-ring{width:34px;height:34px;font-size:12px}.lin-node{min-width:52px}.lin-node i{display:none}.lin-node.ghost i{display:block}}
+/* ALL-TIME STANDINGS */
+.legwrap{display:flex;flex-direction:column;gap:2px}
+.legrow{display:flex;align-items:center;gap:8px;padding:4px 7px;border-radius:7px;font-size:12.5px;background:rgba(255,255,255,.02)}
+.legrow.myrow{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold) 55%,transparent)}
+.legrow .lrk{width:20px;text-align:right;font-family:var(--disp);font-size:14px;color:var(--dim2)}
+.legrow .lown{min-width:66px;font-weight:700}
+.legrow .lteam{flex:1;color:var(--dim2);font-size:10.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legrow .lhw{min-width:52px;text-align:right;font-size:11px}
+.legrow .lbar{height:7px;border-radius:4px;min-width:2px}
+.legrow .lpts{min-width:34px;text-align:right;font-weight:900;font-size:14px;font-variant-numeric:tabular-nums}
+.legfoot{margin-top:8px;font-size:10.5px;color:var(--dim2);line-height:1.6}
 /* THE MONEY */
 #t-money{width:100%;border-collapse:separate;border-spacing:3px;min-width:660px}
 #t-money th{font-size:10px;letter-spacing:1.2px;color:var(--gold);border:none;padding:4px 8px;text-align:right;white-space:nowrap}
@@ -1053,6 +1064,11 @@ footer{max-width:1420px;margin:0 auto;padding:0 14px 20px;color:var(--dim2);font
     <div class="ledwrap"><table id="t-ledger"></table></div>
     <div class="lednote"><span class="lfin f1">1st</span> champion · <span class="lfin f2">2nd</span> runner-up · <span class="lfin f3">3rd</span> podium · <span class="lfin f12">12th</span> the shirt · 2022 picks &amp; keepers lost to the void · <b style="color:#c9a0ff">purple owners</b> rest in the Founders' Wing</div>
   </div>
+      <div class="card" style="margin-top:0">
+        <h3 style="color:var(--gold)">🏅 ALL-TIME STANDINGS <span style="letter-spacing:0;text-transform:none;color:var(--dim2)">— every finish since 2022, scored</span></h3>
+        <div class="legwrap" id="t-legacy"></div>
+        <div class="legfoot" id="legfoot"></div>
+      </div>
   <div class="card ledcard">
     <h3 style="color:var(--gold)">💰 THE MONEY <span style="letter-spacing:0;text-transform:none;color:var(--dim2)">— career net, every dollar in and out since 2022</span></h3>
     <div class="ledwrap"><table id="t-money"></table></div>
@@ -2217,10 +2233,15 @@ window.MONEY=(function(){
     const won=fins.reduce((a,f)=>a+(PRIZE[f]||0),0);
     const paid=ix.length*BUYIN;
     const roi = paid ? (won-paid)/paid : 0;      /* what the chair returned on its outlay */
+    /* a finish is worth something and last place costs — 1st 5, 2nd 3, 3rd 2, 4th-6th 1, 12th -1 */
+    const SCORE=f=> f===1?5 : f===2?3 : f===3?2 : (f>=4&&f<=6)?1 : f===12?-1 : 0;
+    const pts=fins.reduce((a,f)=>a+SCORE(f),0);
     return {own, team, fallen:!!fallen, roi,
       years:ix.map(i=>YRS[i]), seasons:ix.length, fins,
+      pts,
       titles:fins.filter(f=>f===1).length,
       seconds:fins.filter(f=>f===2).length,
+      thirds:fins.filter(f=>f===3).length,
       best:Math.min(...fins), paid, won, net:won-paid};
   }).sort((a,b)=>b.roi-a.roi || b.net-a.net || a.own.localeCompare(b.own));
 
@@ -2233,6 +2254,33 @@ window.MONEY=(function(){
           balanced:totalIn===totalOut};
 })();
 
+
+
+/* ══ ALL-TIME STANDINGS — a finish is worth something, and last place costs ══ */
+(function(){
+  const el=document.querySelector("#t-legacy"); if(!el||!window.MONEY) return;
+  const M=window.MONEY;
+  const rows=M.rows.slice().sort((a,b)=>b.pts-a.pts||b.titles-a.titles||a.own.localeCompare(b.own));
+  const hi=Math.max(...rows.map(r=>r.pts)), lo=Math.min(0,...rows.map(r=>r.pts));
+  const span=Math.max(1,hi-lo);
+  el.innerHTML=rows.map((r,i)=>{
+    const t=(typeof teamBy==="function"&&teamBy(r.team))||{c:"#8a8378",slot:-1};
+    const w=Math.max(2,((r.pts-lo)/span)*84);
+    const col=r.pts>0?"#2e8b57":r.pts<0?"#7a2a22":"#3a341f";
+    const hw=("\u{1F3C6}".repeat(r.titles))+("\u{1F948}".repeat(r.seconds))+("\u{1F949}".repeat(r.thirds));
+    return `<div class="legrow ${(typeof myTeam!=="undefined"&&myTeam===t.slot&&!r.fallen)?"myrow":""}">
+      <span class="lrk">${i+1}</span>
+      <span class="lown" style="color:${r.fallen?"#c9a0ff":"var(--txt)"}">${r.own}${r.fallen?" \u{1F56F}":""}</span>
+      <span class="lteam"><span class="frdot" style="background:${t.c}"></span>${r.team}</span>
+      <span class="lhw">${hw||"—"}</span>
+      <i class="lbar" style="width:${w}px;background:${col}"></i>
+      <span class="lpts" style="color:${r.pts>0?"#8df08d":r.pts<0?"#e0776a":"var(--dim)"}">${r.pts>0?"+":""}${r.pts}</span></div>`;
+  }).join("");
+  document.querySelector("#legfoot").innerHTML=
+    `1st <b>5</b> · 2nd <b>3</b> · 3rd <b>2</b> · 4th–6th <b>1</b> · 12th <b>−1</b>.
+     Four seasons scored, ${M.YRS[0]}–${M.YRS[M.YRS.length-1]}.
+     <span style="color:#c9a0ff">\u{1F56F} Betty and Edmonds</span> are scored on ${M.YRS[0]} alone.`;
+})();
 
 /* ══ THE MONEY — career net winnings ══ */
 (function(){
@@ -3769,13 +3817,16 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     const o=a.own||GUESTOWN, ring=RINGS[a.t.name];
     /* your own choice beats the league default — pick your body in the wardrobe.
        An "og" with no celebrity behind it falls through to the hand-drawn owner. */
+    /* a throw inside one costume used to take the rest of the frame with it and
+       blank half the room — contain it and fall through to the owner's own art */
+    const safe=(fn,arg2)=>{ try{ fn(a,arg2,isMe); return true; }
+      catch(e){ if(!drawAvatar._warned){ drawAvatar._warned=1; console.error("avatar draw failed:",e.message); } return false; } };
     if(isMe&&fit.persona&&typeof FITS!=="undefined"&&FITS[a.t.name]){
       const key=FITS[a.t.name][fit.persona];
-      if(key&&CELEBART[key]){ CELEBART[key](a,o,isMe); return; }
-      if(!key){ /* the owner as himself — keep going into the normal art below */ }
-      else if(o.draw2){ o.draw2(a,isMe); return; }
+      if(key&&CELEBART[key]){ if(safe(CELEBART[key],o)) return; }
+      else if(key&&o.draw2){ if(safe((av,_,me)=>o.draw2(av,me))) return; }
     }
-    else if(o.draw2){ o.draw2(a,isMe); return; }
+    else if(o.draw2){ if(safe((av,_,me)=>o.draw2(av,me))) return; }
     const f=isMe?fit:{hat:"signature",shades:o.shd?"on":"off",chain:o.chn?"on":"off",suit:"signature",tie:"gold"};
     const hs=o.hs, wf=o.wf;
     const b=Math.sin((a.bob+=(Math.abs(a.vx)+Math.abs(a.vy)>0.3?.35:.08)))*2.4;
@@ -7027,6 +7078,18 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     const mx=Math.max(...M.rows.map(r=>Math.abs(r.roi)))||1;
     const mine=(meTeam()||{}).name;
     return `
+      <div style="font-size:10px;letter-spacing:1.6px;color:#a89f8a;margin:14px 0 6px">ALL-TIME STANDINGS — 1st 5 · 2nd 3 · 3rd 2 · 4th–6th 1 · 12th −1</div>
+      <div style="border-radius:9px;background:rgba(0,0,0,.26);padding:6px">
+        ${M.rows.slice().sort((x,y)=>y.pts-x.pts||y.titles-x.titles).map((r,i)=>{
+          const c=r.pts>0?"#8df08d":r.pts<0?"#e0776a":"#a89f8a";
+          return `<div style="display:flex;align-items:center;gap:8px;padding:4px 7px;border-bottom:1px solid rgba(138,109,28,.14);font-size:10.5px;${r.team===mine&&!r.fallen?"background:rgba(212,175,55,.09);border-radius:6px":""}">
+            <span style="color:#6a635a;min-width:16px;text-align:right">${i+1}</span>
+            <b style="color:${r.fallen?"#c9a0ff":"#e8e4d8"};min-width:62px">${r.own}</b>
+            <span style="flex:1;color:#8a8378;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.team}</span>
+            <span style="color:#a89f8a;min-width:52px;text-align:right">${"🏆".repeat(r.titles)}${"🥈".repeat(r.seconds)}${"🥉".repeat(r.thirds)}</span>
+            <b style="color:${c};min-width:30px;text-align:right;font-size:12px">${r.pts>0?"+":""}${r.pts}</b></div>`;
+        }).join("")}
+      </div>
       <div style="font-size:10px;letter-spacing:1.6px;color:#a89f8a;margin:14px 0 6px">
         CAREER RETURN — ${M.YRS[0]}–${M.YRS[M.YRS.length-1]} · $${M.BUYIN}/season in · $${M.PRIZE[1].toLocaleString()} first · $${M.PRIZE[2]} second</div>
       <div style="max-height:250px;overflow:auto;border-radius:9px;background:rgba(0,0,0,.26);padding:6px">
@@ -8171,6 +8234,11 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       cx.beginPath(); cx.arc(a.x+tw+w/2-2,hy+len+2,4.4,0,7); cx.fill();
       return hy+len+2; },
     head(a,headY,hr,skin){ cx.fillStyle=skin; cx.beginPath(); cx.ellipse(a.x,headY,hr,hr*1.06,0,0,7); cx.fill(); },
+    beard(a,headY,hr,c,full){ cx.fillStyle=c;
+      if(full){ cx.beginPath(); cx.ellipse(a.x,headY+hr*.6,hr*.86,hr*.7,0,0,7); cx.fill();
+        cx.fillStyle="rgba(0,0,0,.16)";
+        for(let i=0;i<9;i++) cx.fillRect(a.x-hr*.7+i*hr*.16,headY+hr*.32+((i*5)%6),1.3,5); }
+      else { cx.globalAlpha=.45; cx.beginPath(); cx.ellipse(a.x,headY+hr*.54,hr*.64,hr*.38,0,0,7); cx.fill(); cx.globalAlpha=1; } },
     eyes(a,headY,hr,o){ o=o||{};
       const ex=hr*.34, ey=headY-hr*.04;
       if(o.shades){ cx.fillStyle=o.lens||"#14100c";
