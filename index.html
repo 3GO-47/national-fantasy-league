@@ -1941,6 +1941,16 @@ function needMult(pos,c,rd,t){
     case "DST":return rd>=Math.min((t&&t.firstD)||13,12)?(c===0?(rd>=14?9:1.5):.01):0;
   } return 0;
 }
+/* replacement level per position — what the twelfth-or-thirtieth best at that
+   spot is worth, which is the bar a pick has to clear to be worth spending on */
+const AIREPL=(function(){
+  const starters={QB:12,RB:30,WR:30,TE:14,K:12,DST:12}, out={};
+  for(const pos in starters){
+    const l=P.filter(p=>p.pos===pos&&p.proj).sort((a,b)=>b.proj-a.proj);
+    out[pos]=(l[starters[pos]-1]||l[l.length-1]||{proj:0}).proj;
+  }
+  return out;
+})();
 function aiChoose(team){
   const np = nextPickForTeam(team); if(np==null) return null;
   const rd = Math.ceil(np/12);
@@ -1951,11 +1961,20 @@ function aiChoose(team){
   let dist = {...(rd<=3? t.early : rd<=8? t.mid : t.late)};
   if(t.seq && t.seq[rd-1]) dist[t.seq[rd-1]] = (dist[t.seq[rd-1]]||0) + 0.5;
   const bestAt={}; for(const p of P){ if(!drafted.has(p.yr)&&bestAt[p.pos]===undefined) bestAt[p.pos]=p.proj||60; }
+  /* A quarterback outscores a running back by a hundred points and always will,
+     so weighting a position by its best remaining projection had all twelve
+     teams taking a QB in each of the first three rounds. What decides a pick is
+     the gap to what you could get at that position later — twelve QBs start in
+     this league, but about thirty backs and thirty receivers do. */
+  const val = pos => {
+    const best = bestAt[pos]; if(best==null) return .35;
+    const r = (AIREPL[pos]!=null) ? AIREPL[pos] : 60;
+    return Math.max(.35, Math.min(1.7, 0.55 + (best-r)/110));
+  };
   const ws = ["QB","RB","WR","TE","K","DST"].map(pos=>{
     const nm = needMult(pos,cnt(pos),rd,t);
     const tw = .35 + (dist[pos]||0.06);
-    const val = Math.max(.5,Math.min(1.6,(bestAt[pos]||60)/200));
-    return [pos, nm*tw*val]; });
+    return [pos, nm*tw*val(pos)]; });
   const tot = ws.reduce((s,[,w])=>s+w,0)||1;
   let r = Math.random()*tot, pos="RB";
   for(const [p,wgt] of ws){ r-=wgt; if(r<=0){ pos=p; break; } }
@@ -3114,8 +3133,14 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     $("#chatlog").innerHTML=chat.slice(-80).map(m=>m.s?`<div class="cmsg sys">${esc(m.x)}</div>`
       :`<div class="cmsg ${m.w===meN?'me':''}"><b style="color:${(teamBy(m.w)||{}).c||'var(--acc2)'}">${esc((OWN[m.w]||{}).o||m.w)}:</b> ${esc(m.x)}</div>`).join("");
     $("#chatlog").scrollTop=1e6; }
-  function sysLog(txt){ chat.push({s:1,x:txt}); if(chat.length>140) chat=chat.slice(-140); store.set("chat",chat); renderChat(); }
+  /* keep=1 marks a line worth recording. Everything else is flavour: it still
+     toasts and still floats over people's heads, it just doesn't go in the log. */
+  function sysLog(txt,keep){
+    if(!keep){ toast(String(txt).replace(/^[^\w]+\s*/,"").slice(0,64)); return; }
+    chat.push({s:1,x:txt}); if(chat.length>140) chat=chat.slice(-140);
+    store.set("chat",chat); renderChat(); }
   renderChat();
+  function sparkAt(x,y){ for(let i=0;i<7;i++) sparks.push({x,y,vx:(Math.random()-.5)*3.4,vy:-Math.random()*2.2,life:1,c:i<3?"#ffd36a":"#fff2c8"}); }
   function overhead(a,txt,me){ overs.push({a,txt:String(txt).slice(0,80),life:1,me:!!me});
     const mine=overs.filter(o=>o.a===a); if(mine.length>1) overs.splice(overs.indexOf(mine[0]),1); }
   function sendChat(){ const v=$("#chatin").value.trim(); if(!v) return;
@@ -3126,7 +3151,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     overhead(player,v,true); award("talk",14);
     if(Math.random()<.65){ setTimeout(()=>{ const n=NPCS[Math.floor(Math.random()*NPCS.length)]; if(!n)return;
       const qs=QUOTES[n.t.name]||GENERIC; const q=qs[Math.floor(Math.random()*qs.length)];
-      chat.push({w:n.t.name,x:q}); store.set("chat",chat); renderChat(); overhead(n,q); },900+Math.random()*1600); } }
+      overhead(n,q); },900+Math.random()*1600); } }
   $("#chatsend").onclick=sendChat;
   $("#chatin").addEventListener("keydown",e=>{ e.stopPropagation();
     if(e.key==="Enter"){ sendChat(); $("#chatin").blur(); }
@@ -3180,9 +3205,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
               <div style="font-size:10px;color:#8df08d;margin-top:4px">skills compound while you're away · tecmo best ${store.get("tecmoHS",0)||0} · rent money ${rentFmt(RENT.me)}</div></div>`; })(); }
     else if(panelMode==="fit"){ title.textContent="🕴 WARDROBE";
       const mt=meTeam(), F=(typeof FITS!=="undefined"&&mt)?FITS[mt.name]:null;
+      const KEYS=F?["og","funny","danger","sw","mob"].filter(k=>k in F):[];
       const who=F?`<div class="fitg"><div class="fitl">WHO YOU ARE</div><div class="fitc">`+
-        ["og","funny","danger"].map((k,i)=>`<button class="fchip pchip ${(fit.persona||fitMode())===k?"on":""}" data-p="${k}">${esc(F.n[i])}</button>`).join("")+
-        `</div></div><div class="pnote" style="margin:-2px 0 8px">the league is showing <b>${esc(F.n[["og","funny","danger"].indexOf(fitMode())])}</b> by default — this is just for you</div>`:"";
+        KEYS.map((k,i)=>`<button class="fchip pchip ${(fit.persona||fitMode())===k?"on":""}" data-p="${k}">${esc(F.n[i])}</button>`).join("")+
+        `</div></div><div class="pnote" style="margin:-2px 0 8px">the league is showing <b>${esc(F.n[KEYS.indexOf(fitMode())]||F.n[0])}</b> by default — this is just for you</div>`:"";
       el.innerHTML=who
         +'<div class="pnote" style="margin:0 0 8px">signature = your owner build, tailored by the league</div>'
         +Object.keys(FITDEF).map(g=>`<div class="fitg"><div class="fitl">${g.toUpperCase()}</div><div class="fitc">`+
@@ -3369,6 +3395,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(k==="escape"){ if(panelMode){ openPanel(panelMode); } else exitClub(); e.preventDefault(); return; }
     if(k==="enter"){ e.preventDefault(); if(dlg){ advDlg(); return; } $("#chatin").focus(); return; }
     if(k==="c"){ $("#clubchat").classList.toggle("min"); chatShift(); e.preventDefault(); return; }
+    if(k==="f"){ if(player){ player.shoot=14; sparkAt(player.x-24,player.y-24); sparkAt(player.x+24,player.y-24); }
+      e.preventDefault(); return; }
     if(k==="i"){ openPanel("inv"); e.preventDefault(); return; }
     if(k==="k"){ openPanel("skills"); e.preventDefault(); return; }
     if(["1","2","3","4"].includes(k)){ doEmote(player,["wave","dance","flex","rage"][+k-1],true); e.preventDefault(); return; }
@@ -5960,7 +5988,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
         if(!n.here&&Math.random()<.005){ n.here=true; n.gt=640+Math.random()*640; n.blink=0; }
         if(n.here&&n.gv<.15) edmondsBlink(n,kenny);
         if(n.here&&n.gv>.6){ n.blink=(n.blink||0)-1;
-          if(n.blink<=0){ n.blink=110+Math.floor(Math.random()*150); edmondsBlink(n,kenny);
+          /* he was on Kenny roughly every three seconds, which is a lot of haunting */
+          if(n.blink<=0){ n.blink=260+Math.floor(Math.random()*340); edmondsBlink(n,kenny);
             if(Math.random()<.5) overhead(n,["KENNY.","I'm not finished.","Behind you.","Look at me."][Math.floor(Math.random()*4)]); } }
         const d=Math.hypot(kenny.x-n.x,kenny.y-n.y);
         n.tx=kenny.x+16; n.ty=kenny.y+10;
@@ -8499,25 +8528,35 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   scarface(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#d8a074", t=Date.now()/1000;
     CB.legs(a,b,"#f0ead6","#241810",{baggy:1});
     CB.torso(a,tw,th,hy,"#f4efdc");
-    cx.fillStyle="#15151b";                                            /* the shirt */
-    cx.beginPath(); cx.moveTo(a.x-7.4,hy); cx.lineTo(a.x+7.4,hy);
-    cx.lineTo(a.x+4.6,hy+th*.92); cx.lineTo(a.x-4.6,hy+th*.92); cx.closePath(); cx.fill();
-    cx.fillStyle="#f4efdc";                                            /* lapels over it */
-    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2.2,hy+1); cx.lineTo(a.x-tw*.82,hy+th*.6); cx.closePath(); cx.fill();
-    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2.2,hy+1); cx.lineTo(a.x+tw*.82,hy+th*.6); cx.closePath(); cx.fill();
-    cx.strokeStyle="#d4af37"; cx.lineWidth=1.8;                        /* the chain */
-    cx.beginPath(); cx.arc(a.x,hy+1,7.8,.3,Math.PI-.3); cx.stroke();
-    cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(a.x,hy+9.2,1.7,0,7); cx.fill();
+    cx.fillStyle="#0e0e12";                                            /* the shirt, open past all reason */
+    cx.beginPath(); cx.moveTo(a.x-10.4,hy); cx.lineTo(a.x+10.4,hy);
+    cx.lineTo(a.x+6.4,hy+th*.96); cx.lineTo(a.x-6.4,hy+th*.96); cx.closePath(); cx.fill();
+    cx.fillStyle="#f4efdc";                                            /* lapels, cut back off the chest */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-6.8,hy+2); cx.lineTo(a.x-tw*.86,hy+th*.62); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+6.8,hy+2); cx.lineTo(a.x+tw*.86,hy+th*.62); cx.closePath(); cx.fill();
+    cx.fillStyle=sk;                                                   /* the chest, on display */
+    cx.beginPath(); cx.moveTo(a.x-5.6,hy); cx.lineTo(a.x+5.6,hy); cx.lineTo(a.x,hy+16); cx.closePath(); cx.fill();
+    cx.strokeStyle="#d4af37"; cx.lineWidth=2.6;                        /* the chain, heavier than the suit */
+    cx.beginPath(); cx.arc(a.x,hy+1,8.6,.28,Math.PI-.28); cx.stroke();
+    cx.fillStyle="#f0c95c"; cx.beginPath(); cx.arc(a.x,hy+10.4,2.6,0,7); cx.fill();
     const hq=CB.arms(a,tw,th,hy,"#f4efdc",sk,{});
-    cx.strokeStyle="#4a2a18"; cx.lineWidth=3;                          /* cigar, held out ── */
-    cx.beginPath(); cx.moveTo(a.x+tw+5,hq-2); cx.lineTo(a.x+tw+13,hq-7); cx.stroke();
-    cx.fillStyle="#ff8c2a"; cx.beginPath(); cx.arc(a.x+tw+13.6,hq-7.4,1.4,0,7); cx.fill();
+    cx.strokeStyle="#4a2a18"; cx.lineWidth=4;                          /* cigar, held out ── */
+    cx.beginPath(); cx.moveTo(a.x+tw+4,hq-1); cx.lineTo(a.x+tw+15,hq-8); cx.stroke();
+    cx.strokeStyle="#8a5a30"; cx.lineWidth=4;
+    cx.beginPath(); cx.moveTo(a.x+tw+4,hq-1); cx.lineTo(a.x+tw+7,hq-2.9); cx.stroke();
+    cx.fillStyle="#ff8c2a"; cx.beginPath(); cx.arc(a.x+tw+15.8,hq-8.5,1.7,0,7); cx.fill();
     cx.globalAlpha=.12; cx.fillStyle="#d9d2c2";
     for(let i=0;i<3;i++){ const sy=hq-11-((t*16+i*10)%28);
       cx.beginPath(); cx.arc(a.x+tw+13+Math.sin(t*1.2+i)*3,sy,2.2+i*1.3,0,7); cx.fill(); }
     cx.globalAlpha=1;
     CB.head(a,headY,hr,sk);
-    CB.hair(a,headY,hr,"#181410","slick");
+    cx.fillStyle="#131010";                                            /* slicked back, and the peak that comes with it */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.48,hr*1.06,hr*.7,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*.46,headY-hr*.44); cx.lineTo(a.x,headY+hr*.02);
+    cx.lineTo(a.x+hr*.46,headY-hr*.44); cx.closePath(); cx.fill();
+    cx.strokeStyle="rgba(255,255,255,.2)"; cx.lineWidth=1.1;
+    cx.beginPath(); cx.moveTo(a.x-hr*.62,headY-hr*.82);
+    cx.quadraticCurveTo(a.x,headY-hr*1.12,a.x+hr*.68,headY-hr*.7); cx.stroke();
     CB.eyes(a,headY,hr,{});
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
@@ -8637,10 +8676,16 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle="#c8c2b4"; cx.beginPath(); cx.roundRect(a.x+2.4,hy+17,5.4,3.4,1.6); cx.fill();
     CB.head(a,headY,hr,sk);
     CB.eyes(a,headY,hr,{shades:1,lens:"#14100c"});
-    cx.fillStyle="#16161a";                                            /* visor, worn backwards */
-    cx.beginPath(); cx.arc(a.x,headY-hr*.3,hr*1.04,Math.PI,0); cx.fill();
-    cx.fillStyle="#d4af37"; cx.fillRect(a.x-hr*1.04,headY-hr*.38,hr*2.08,3);
-    cx.fillStyle="#16161a"; cx.fillRect(a.x-hr*.44,headY-hr*.38,hr*.88,3.4);
+    cx.fillStyle="#0d0d10";                                            /* the brim, wide enough to be the point */
+    cx.beginPath(); cx.moveTo(a.x-hr*2.14,headY-hr*.74);
+    cx.quadraticCurveTo(a.x,headY-hr*.12,a.x+hr*2.14,headY-hr*.74);
+    cx.quadraticCurveTo(a.x,headY-hr*1.12,a.x-hr*2.14,headY-hr*.74); cx.closePath(); cx.fill();
+    cx.fillStyle="#17171c";                                            /* the crown, creased down the middle */
+    cx.beginPath(); cx.moveTo(a.x-hr*.9,headY-hr*.8);
+    cx.quadraticCurveTo(a.x-hr*.98,headY-hr*2.18,a.x,headY-hr*2.18);
+    cx.quadraticCurveTo(a.x+hr*.98,headY-hr*2.18,a.x+hr*.9,headY-hr*.8); cx.closePath(); cx.fill();
+    cx.fillStyle="#0a0a0c"; cx.fillRect(a.x-hr*.17,headY-hr*2.14,hr*.34,hr*.96);
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-hr*.9,headY-hr*1.1,hr*1.8,3.6);   /* gold band */
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
   /* ── Predator — the shoulder cannon tracks whoever is talking loudest ── */
@@ -8660,37 +8705,41 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.strokeStyle="#c8ccd4"; cx.lineWidth=1.6; cx.lineCap="round";
     cx.beginPath(); cx.moveTo(a.x-tw-9,hy+21); cx.lineTo(a.x-tw-10,hy+33); cx.stroke();
     cx.beginPath(); cx.moveTo(a.x-tw-5,hy+21); cx.lineTo(a.x-tw-6,hy+33); cx.stroke();
-    cx.fillStyle="#1e2024";                                            /* the cannon */
-    cx.beginPath(); cx.roundRect(a.x+tw-3,hy-13,7,10,2); cx.fill();
-    cx.beginPath(); cx.roundRect(a.x+tw-1,hy-11,13,4.4,2); cx.fill();
-    cx.fillStyle="#5a6068"; cx.fillRect(a.x+tw-2,hy-4,5,5);
-    /* the dreads — heavy, black, banded, and they fall in front of the mask
-       as well as behind it, which is the whole silhouette */
-    const drd=(i,front)=>{ const an=-2.95+i*.42, L=hr*(1.7+((i*7)%3)*.22);
+    /* the dreads — fewer, thicker, and fanned straight out, because the old
+       ones piled up on the head and read as one black lump */
+    const drd=i=>{ const an=-2.55+i*.28, L=hr*(2.1+((i*5)%3)*.36);
       cx.save();
-      cx.translate(a.x+Math.cos(an)*hr*.92, headY+Math.sin(an)*hr*.86);
-      cx.rotate(Math.cos(an)*.5+Math.sin(t*1.1+i)*.05);
-      cx.fillStyle=front?"#1a1c20":"#101216";
-      cx.beginPath(); cx.roundRect(-2,0,4,L,2); cx.fill();
-      cx.fillStyle="#6a6f78";                                          /* the metal bands */
-      cx.fillRect(-2.4,L*.34,4.8,1.8); cx.fillRect(-2.4,L*.66,4.8,1.8);
+      cx.translate(a.x+Math.cos(an)*hr*.88, headY+Math.sin(an)*hr*.82);
+      cx.rotate(an-Math.PI/2+Math.sign(Math.cos(an))*.5+Math.sin(t*1.1+i)*.06);
+      cx.fillStyle="#454b55";
+      cx.beginPath(); cx.roundRect(-2.9,0,5.8,L,2.9); cx.fill();
+      cx.fillStyle="#0a0b0e"; cx.fillRect(-2.9,0,5.8,2.2);             /* a gap at the root, so they separate */
+      cx.fillStyle="#aab2bc";                                          /* the metal bands */
+      cx.fillRect(-3.4,L*.3,6.8,2.2); cx.fillRect(-3.4,L*.62,6.8,2.2);
       cx.restore(); };
-    for(let i=0;i<8;i++) drd(i,false);
-    cx.fillStyle="#78808a";                                            /* biomask */
-    cx.beginPath(); cx.ellipse(a.x,headY,hr*.98,hr*1.08,0,0,7); cx.fill();
-    cx.fillStyle="#525a64";
-    cx.beginPath(); cx.moveTo(a.x-hr*.8,headY-hr*.4); cx.lineTo(a.x,headY-hr*.1);
-    cx.lineTo(a.x+hr*.8,headY-hr*.4); cx.lineTo(a.x+hr*.5,headY+hr*.96);
-    cx.lineTo(a.x-hr*.5,headY+hr*.96); cx.closePath(); cx.fill();
-    cx.fillStyle="#33383f";
-    cx.beginPath(); cx.roundRect(a.x-hr*.62,headY-hr*.34,hr*.5,3.4,1.4); cx.fill();
-    cx.beginPath(); cx.roundRect(a.x+hr*.12,headY-hr*.34,hr*.5,3.4,1.4); cx.fill();
-    drd(1,true); drd(6,true);                                          /* two fall across the mask */
+    for(let i=0;i<8;i++) drd(i);
+    cx.fillStyle="#3f454d";                                            /* the cannon, on a mount, over the dreads */
+    cx.beginPath(); cx.roundRect(a.x+tw-8,hy-6,14,7,2); cx.fill();
+    cx.fillStyle="#6e7680"; cx.beginPath(); cx.roundRect(a.x+tw-2.4,hy-16,5.4,11,2); cx.fill();
+    cx.fillStyle="#949ca6";
+    cx.beginPath(); cx.roundRect(a.x+tw-7,hy-22,16,6.6,2.6); cx.fill();
+    cx.fillStyle="#c8ced8"; cx.beginPath(); cx.roundRect(a.x+tw+7,hy-21,8,4.6,2); cx.fill();
+    cx.fillStyle="#22262c"; cx.fillRect(a.x+tw-4.4,hy-20.4,4.4,3.4);
+    cx.fillStyle="#c6ccd6";                                            /* biomask — light metal, black body */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.02,hr*1.12,0,0,7); cx.fill();
+    cx.fillStyle="#878f9a";                                            /* the brow and the jaw plate */
+    cx.beginPath(); cx.moveTo(a.x-hr*.98,headY-hr*.52); cx.lineTo(a.x,headY-hr*.18);
+    cx.lineTo(a.x+hr*.98,headY-hr*.52); cx.lineTo(a.x+hr*.6,headY+hr*1.04);
+    cx.lineTo(a.x-hr*.6,headY+hr*1.04); cx.closePath(); cx.fill();
+    cx.fillStyle="#0e1014";                                            /* the eye slots */
+    cx.beginPath(); cx.roundRect(a.x-hr*.76,headY-hr*.4,hr*.6,4.4,1.8); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.16,headY-hr*.4,hr*.6,4.4,1.8); cx.fill();
+    cx.fillStyle="#4e565f";                                            /* ribs down the mandible */
+    for(let i=0;i<3;i++) cx.fillRect(a.x-hr*.48,headY+hr*.28+i*3.6,hr*.96,1.8);
     const pl=.5+Math.sin(t*3.4)*.5;                                    /* three dots, and a decision */
-    cx.shadowColor="#ff2a2a"; cx.shadowBlur=6*pl; cx.fillStyle="#ff3b3b";
-    cx.beginPath(); cx.arc(a.x-4.4,headY-hr*1.5,1.2,0,7); cx.fill();
-    cx.beginPath(); cx.arc(a.x,headY-hr*1.72,1.2,0,7); cx.fill();
-    cx.beginPath(); cx.arc(a.x+4.4,headY-hr*1.5,1.2,0,7); cx.fill();
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=7*pl; cx.fillStyle="#ff3b3b";
+    for(let i=0;i<3;i++){ cx.beginPath();
+      cx.arc(a.x+tw+17+(i%2?3.6:0),hy-19+(i-1)*3.6,1.3,0,7); cx.fill(); }
     cx.shadowBlur=0;
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
@@ -8812,12 +8861,17 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(let i=0;i<3;i++){ cx.beginPath();
       cx.moveTo(a.x+tw+11+i*2,hy-24); cx.lineTo(a.x+tw+10.4+i*2,hy-21.6); cx.stroke(); }
     CB.head(a,headY,hr,sk);
-    cx.fillStyle="#6a4a26";                                            /* feathered, blow-dried, load-bearing */
+    cx.fillStyle="#171310";                                            /* feathered, blow-dried, load-bearing */
     cx.beginPath(); cx.ellipse(a.x,headY-hr*.46,hr*1.14,hr*.74,0,Math.PI,0); cx.fill();
     cx.beginPath(); cx.moveTo(a.x-hr*1.14,headY-hr*.46); cx.lineTo(a.x-hr*1.3,headY+hr*.3); cx.lineTo(a.x-hr*.7,headY-hr*.2); cx.closePath(); cx.fill();
     cx.beginPath(); cx.moveTo(a.x+hr*1.14,headY-hr*.46); cx.lineTo(a.x+hr*1.3,headY+hr*.3); cx.lineTo(a.x+hr*.7,headY-hr*.2); cx.closePath(); cx.fill();
+    cx.fillStyle="#efe9d4";                                            /* the headband, never once removed */
+    cx.beginPath(); cx.roundRect(a.x-hr*1.16,headY-hr*.56,hr*2.32,5.2,1.6); cx.fill();
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x-hr*1.16,headY-hr*.56+1.8,hr*2.32,1.6);
+    cx.fillStyle="#efe9d4";                                            /* and the knot, hanging off it */
+    cx.beginPath(); cx.roundRect(a.x-hr*1.34,headY-hr*.5,hr*.34,8.4,1.4); cx.fill();
     CB.eyes(a,headY,hr,{});
-    CB.tache(a,headY,hr,"#6a4a26");
+    CB.tache(a,headY,hr,"#171310");
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
   /* ── The Riddler — the suit asks a lot of questions ── */
@@ -8852,18 +8906,36 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── Belichick — the sleeves were a distraction ── */
   belichick(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#dcb08c";
-    CB.legs(a,b,"#4a4e56","#2a2a2e");
-    CB.torso(a,tw,th,hy,"#8a8f98");
-    cx.fillStyle="#7a7f88";                                            /* hood, slumped */
+    CB.legs(a,b,"#2a2c30","#1a1a1e");
+    CB.torso(a,tw,th,hy,"#0f1013");                                    /* black, and old gold */
+    cx.fillStyle="#191b1f";                                            /* hood, slumped */
     cx.beginPath(); cx.ellipse(a.x,hy+2,hr*1.2,6,0,Math.PI,0); cx.fill();
     cx.fillRect(a.x-hr*1.2,hy+1,hr*2.4,4.4);
-    cx.strokeStyle="#f2efe4"; cx.lineWidth=1;                          /* drawstrings */
+    cx.fillStyle="#d3bc8d"; cx.fillRect(a.x-hr*1.2,hy+5.2,hr*2.4,1.8);
+    cx.strokeStyle="#d3bc8d"; cx.lineWidth=1;                          /* drawstrings */
     cx.beginPath(); cx.moveTo(a.x-3,hy+5); cx.lineTo(a.x-4,hy+13); cx.stroke();
     cx.beginPath(); cx.moveTo(a.x+3,hy+5); cx.lineTo(a.x+4.4,hy+12); cx.stroke();
-    cx.fillStyle="#7a7f88"; cx.beginPath();                            /* pouch */
+    cx.fillStyle="#d3bc8d";                                            /* the fleur-de-lis */
+    cx.beginPath(); cx.moveTo(a.x,hy+4.6);                             /* the centre petal */
+    cx.quadraticCurveTo(a.x+3.2,hy+10,a.x+2.2,hy+15.2);
+    cx.lineTo(a.x-2.2,hy+15.2);
+    cx.quadraticCurveTo(a.x-3.2,hy+10,a.x,hy+4.6); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-2.6,hy+15.2);                        /* and the two that curl out */
+    cx.quadraticCurveTo(a.x-9.6,hy+13.4,a.x-7.4,hy+7.2);
+    cx.quadraticCurveTo(a.x-4.6,hy+11,a.x-4.6,hy+15.2); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+2.6,hy+15.2);
+    cx.quadraticCurveTo(a.x+9.6,hy+13.4,a.x+7.4,hy+7.2);
+    cx.quadraticCurveTo(a.x+4.6,hy+11,a.x+4.6,hy+15.2); cx.closePath(); cx.fill();
+    cx.fillRect(a.x-5.6,hy+15.6,11.2,2);                               /* the band */
+    cx.beginPath(); cx.moveTo(a.x,hy+20.6); cx.lineTo(a.x-2.8,hy+17.8);
+    cx.lineTo(a.x+2.8,hy+17.8); cx.closePath(); cx.fill();
+    cx.fillStyle="#191b1f"; cx.beginPath();                            /* pouch */
     cx.roundRect(a.x-9,hy+th*.6,18,9,3); cx.fill();
-    const hq=CB.arms(a,tw,th,hy,"#8a8f98",sk,{short:1});
-    cx.fillStyle="#8a8f98";                                            /* the sleeves, dealt with */
+    cx.fillStyle="#d3bc8d"; cx.fillRect(a.x-9,hy+th*.6,18,1.6);
+    const hq=CB.arms(a,tw,th,hy,"#0f1013",sk,{short:1});
+    cx.fillStyle="#d3bc8d";                                            /* gold at the cut edge */
+    cx.fillRect(a.x-tw-7,hy+13.4,7.4,2); cx.fillRect(a.x+tw-.4,hy+13.4,7.4,2);
+    cx.fillStyle="#0f1013";                                            /* the sleeves, dealt with */
     for(let s=-1;s<=1;s+=2) for(let i=0;i<4;i++){
       cx.beginPath(); cx.moveTo(a.x+s*(tw+1.6)+s*i*2.2,hy+15);
       cx.lineTo(a.x+s*(tw+3.6)+s*i*2.2,hy+15); cx.lineTo(a.x+s*(tw+2.6)+s*i*2.2,hy+19.4); cx.closePath(); cx.fill(); }
@@ -8872,14 +8944,14 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.strokeStyle="#9aa0a8"; cx.lineWidth=.7;
     for(let i=0;i<5;i++){ cx.beginPath(); cx.moveTo(a.x-tw-11.4,hq-6.4+i*2.8); cx.lineTo(a.x-tw-2.6,hq-6.4+i*2.8); cx.stroke(); }
     CB.head(a,headY,hr,sk);
-    CB.hair(a,headY,hr,"#8a8578","");
+    CB.hair(a,headY,hr,"#141414","");
     CB.eyes(a,headY,hr,{r:1.3});
-    cx.strokeStyle="#1c1c22"; cx.lineWidth=2.2;                        /* headset, permanently listening to bad news */
+    cx.strokeStyle="#5f656f"; cx.lineWidth=2.2;                        /* headset, permanently listening to bad news */
     cx.beginPath(); cx.arc(a.x,headY-hr*.34,hr*1.02,Math.PI+.25,-.25); cx.stroke();
-    cx.fillStyle="#1c1c22";
+    cx.fillStyle="#5f656f";
     cx.beginPath(); cx.roundRect(a.x-hr*1.22,headY-hr*.4,4.4,6.4,2); cx.fill();
     cx.beginPath(); cx.roundRect(a.x+hr*.82,headY-hr*.4,4.4,6.4,2); cx.fill();
-    cx.strokeStyle="#1c1c22"; cx.lineWidth=1.2;
+    cx.strokeStyle="#5f656f"; cx.lineWidth=1.2;
     cx.beginPath(); cx.moveTo(a.x-hr*1.06,headY+hr*.2); cx.quadraticCurveTo(a.x-hr*.9,headY+hr*.8,a.x-hr*.3,headY+hr*.74); cx.stroke();
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
@@ -9001,31 +9073,32 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
 
   /* ── Master Chief — there is no face, and that is the character ── */
   chief(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), t=Date.now()/1000;
+    const ct=tw*.72, cy=hy-4, ch=th+5;                                 /* narrow through the shoulders, long in the leg */
     CB.legs(a,b,"#3d5340","#232a24",{boot:"#2c3a2e"});
-    CB.torso(a,tw,th,hy,"#4a6a4c");
+    CB.torso(a,ct,ch,cy,"#4a6a4c",6);
     cx.fillStyle="#3d5340";                                            /* chest plate */
-    cx.beginPath(); cx.roundRect(a.x-tw*.78,hy+4,tw*1.56,th*.52,3); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-ct*.8,cy+5,ct*1.6,ch*.5,3); cx.fill();
     cx.strokeStyle="rgba(20,26,20,.7)"; cx.lineWidth=1;
-    cx.beginPath(); cx.moveTo(a.x,hy+4); cx.lineTo(a.x,hy+4+th*.52); cx.stroke();
-    cx.fillStyle="#2c3a2e"; cx.fillRect(a.x-tw+1,hy+th*.66,tw*2-2,5);  /* under-armour band */
+    cx.beginPath(); cx.moveTo(a.x,cy+5); cx.lineTo(a.x,cy+5+ch*.5); cx.stroke();
+    cx.fillStyle="#2c3a2e"; cx.fillRect(a.x-ct+1,cy+ch*.68,ct*2-2,5);  /* under-armour band */
     cx.fillStyle="#6a7f52";
-    for(let i=0;i<3;i++) cx.fillRect(a.x-9+i*7,hy+th*.66,3.4,5);
-    cx.fillStyle="#5a7a5c";                                            /* pauldrons, sized for a bad day */
-    cx.beginPath(); cx.moveTo(a.x-tw-9,hy+8); cx.lineTo(a.x-tw-6,hy-2);
-    cx.lineTo(a.x-tw+3,hy-2); cx.lineTo(a.x-tw+3,hy+12); cx.closePath(); cx.fill();
-    cx.beginPath(); cx.moveTo(a.x+tw+9,hy+8); cx.lineTo(a.x+tw+6,hy-2);
-    cx.lineTo(a.x+tw-3,hy-2); cx.lineTo(a.x+tw-3,hy+12); cx.closePath(); cx.fill();
-    CB.arms(a,tw,th,hy,"#3d5340","#2c3a2e",{bulk:1});
-    cx.fillStyle="#4a6a4c";                                            /* the helmet */
-    cx.beginPath(); cx.roundRect(a.x-hr*1.08,headY-hr*1.02,hr*2.16,hr*2.02,[7,7,5,5]); cx.fill();
-    cx.fillStyle="#3d5340"; cx.fillRect(a.x-hr*1.08,headY-hr*1.02,hr*2.16,hr*.42);
+    for(let i=0;i<3;i++) cx.fillRect(a.x-6.4+i*5.4,cy+ch*.68,2.8,5);
+    cx.fillStyle="#5a7a5c";                                            /* pauldrons, trimmed back */
+    cx.beginPath(); cx.moveTo(a.x-ct-6,cy+9); cx.lineTo(a.x-ct-4,cy);
+    cx.lineTo(a.x-ct+3,cy); cx.lineTo(a.x-ct+3,cy+12); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+ct+6,cy+9); cx.lineTo(a.x+ct+4,cy);
+    cx.lineTo(a.x+ct-3,cy); cx.lineTo(a.x+ct-3,cy+12); cx.closePath(); cx.fill();
+    CB.arms(a,ct,ch,cy,"#3d5340","#2c3a2e",{});
+    cx.fillStyle="#4a6a4c";                                            /* the helmet, taller than it is wide */
+    cx.beginPath(); cx.roundRect(a.x-hr*.92,headY-hr*1.12,hr*1.84,hr*2.14,[7,7,5,5]); cx.fill();
+    cx.fillStyle="#3d5340"; cx.fillRect(a.x-hr*.92,headY-hr*1.12,hr*1.84,hr*.44);
     cx.fillStyle="#d4af37";                                            /* gold visor, nothing behind it */
-    cx.beginPath(); cx.moveTo(a.x-hr*.86,headY-hr*.34); cx.lineTo(a.x+hr*.86,headY-hr*.34);
-    cx.lineTo(a.x+hr*.66,headY+hr*.62); cx.lineTo(a.x-hr*.66,headY+hr*.62); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*.72,headY-hr*.4); cx.lineTo(a.x+hr*.72,headY-hr*.4);
+    cx.lineTo(a.x+hr*.54,headY+hr*.62); cx.lineTo(a.x-hr*.54,headY+hr*.62); cx.closePath(); cx.fill();
     cx.fillStyle="rgba(255,240,190,"+(.22+Math.sin(t*1.6)*.12)+")";
-    cx.beginPath(); cx.moveTo(a.x-hr*.8,headY-hr*.28); cx.lineTo(a.x-hr*.1,headY-hr*.28);
-    cx.lineTo(a.x-hr*.44,headY+hr*.56); cx.lineTo(a.x-hr*.62,headY+hr*.56); cx.closePath(); cx.fill();
-    cx.fillStyle="#2c3a2e"; cx.fillRect(a.x-hr*1.08,headY+hr*.7,hr*2.16,hr*.3);
+    cx.beginPath(); cx.moveTo(a.x-hr*.66,headY-hr*.34); cx.lineTo(a.x-hr*.08,headY-hr*.34);
+    cx.lineTo(a.x-hr*.36,headY+hr*.56); cx.lineTo(a.x-hr*.52,headY+hr*.56); cx.closePath(); cx.fill();
+    cx.fillStyle="#2c3a2e"; cx.fillRect(a.x-hr*.92,headY+hr*.74,hr*1.84,hr*.3);
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
   /* ── Jordan Belfort — pinstripes, and a fistful of somebody else's money ── */
@@ -9148,22 +9221,36 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle="#5a75b4";
     cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-3,hy+3); cx.lineTo(a.x-tw*.72,hy+th*.66); cx.closePath(); cx.fill();
     cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+3,hy+3); cx.lineTo(a.x+tw*.72,hy+th*.66); cx.closePath(); cx.fill();
-    cx.fillStyle="#f6f4ec"; cx.beginPath();
-    cx.moveTo(a.x-4.6,hy); cx.lineTo(a.x+4.6,hy); cx.lineTo(a.x,hy+15); cx.closePath(); cx.fill();
-    cx.fillStyle="#e8a01f"; cx.beginPath();                            /* the tie */
-    cx.moveTo(a.x-2.6,hy+2); cx.lineTo(a.x+2.6,hy+2); cx.lineTo(a.x+1.6,hy+23); cx.lineTo(a.x-1.6,hy+23); cx.closePath(); cx.fill();
-    cx.fillStyle="#c8102e";
-    for(let i=0;i<4;i++) cx.fillRect(a.x-2.4,hy+5+i*5,4.8,1.6);
+    cx.fillStyle="#e8b81f"; cx.beginPath();                            /* the shirt, gold, on purpose */
+    cx.moveTo(a.x-6.2,hy); cx.lineTo(a.x+6.2,hy); cx.lineTo(a.x,hy+18); cx.closePath(); cx.fill();
+    cx.fillStyle="#c89412"; cx.fillRect(a.x-6.2,hy,12.4,2.2);          /* collar */
+    cx.save();                                                         /* the tie, clashing with all of it */
+    cx.beginPath(); cx.moveTo(a.x-2.8,hy+2); cx.lineTo(a.x+2.8,hy+2);
+    cx.lineTo(a.x+1.7,hy+24); cx.lineTo(a.x-1.7,hy+24); cx.closePath(); cx.clip();
+    cx.fillStyle="#7a1240"; cx.fillRect(a.x-4,hy+1,8,24);
+    cx.strokeStyle="#2f9a45"; cx.lineWidth=2.2;
+    for(let i=0;i<6;i++){ cx.beginPath();
+      cx.moveTo(a.x-4,hy+2+i*4.4); cx.lineTo(a.x+4,hy-1.4+i*4.4); cx.stroke(); }
+    cx.fillStyle="#e8b81f";
+    for(let i=0;i<5;i++) cx.fillRect(a.x-1.2,hy+4+i*4.4,2.4,2.4);
+    cx.restore();
+    cx.fillStyle="#d4af37"; cx.beginPath();                            /* the pin, in case of doubt */
+    cx.arc(a.x-tw*.66,hy+7,2.6,0,7); cx.fill();
+    cx.fillStyle="#8a6a1e"; cx.fillRect(a.x-tw*.66-1.6,hy+6.2,3.2,1.6);
     const hq=CB.arms(a,tw,th,hy,"#48619c",sk,{});
     cx.fillStyle="#e8e4d8";                                            /* a phone he is always mid-call on */
     cx.beginPath(); cx.roundRect(a.x-tw-11,hq-13,5,10,1.6); cx.fill();
     CB.head(a,headY,hr,sk);
-    cx.fillStyle="#a8763a";                                            /* the comb-over, doing its best */
-    cx.beginPath(); cx.ellipse(a.x,headY-hr*.46,hr*1.04,hr*.6,0,Math.PI,0); cx.fill();
-    cx.fillStyle="#8a5e2a";
-    cx.beginPath(); cx.moveTo(a.x-hr,headY-hr*.62);
-    cx.quadraticCurveTo(a.x-hr*.1,headY-hr*1.16,a.x+hr*.98,headY-hr*.72);
-    cx.lineTo(a.x+hr*.98,headY-hr*.5); cx.quadraticCurveTo(a.x-hr*.1,headY-hr*.92,a.x-hr,headY-hr*.44); cx.closePath(); cx.fill();
+    cx.fillStyle="#a8763a";                                            /* the comb-over, doing rather more */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.4,hr*1.18,hr*.86,0,Math.PI,0); cx.fill();
+    cx.fillStyle="#8a5e2a";                                            /* the sweep, all the way over */
+    cx.beginPath(); cx.moveTo(a.x-hr*1.16,headY-hr*.5);
+    cx.quadraticCurveTo(a.x-hr*.1,headY-hr*1.56,a.x+hr*1.12,headY-hr*.86);
+    cx.lineTo(a.x+hr*1.12,headY-hr*.5);
+    cx.quadraticCurveTo(a.x-hr*.1,headY-hr*1.14,a.x-hr*1.16,headY-hr*.28); cx.closePath(); cx.fill();
+    cx.fillStyle="#c08e4a";
+    cx.beginPath(); cx.moveTo(a.x+hr*1.12,headY-hr*.86); cx.lineTo(a.x+hr*1.42,headY-hr*.56);
+    cx.lineTo(a.x+hr*1.06,headY-hr*.4); cx.closePath(); cx.fill();
     CB.eyes(a,headY,hr,{});
     cx.fillStyle="#4d9fff";                                            /* the earpiece */
     cx.beginPath(); cx.roundRect(a.x+hr*.78,headY-hr*.24,3,5.4,1.4); cx.fill();
@@ -9173,39 +9260,532 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   /* ══ THE CAST — who is wearing whose body ══════════════════════════════ */
   const OWNBASE=JSON.parse(JSON.stringify(OWN));      /* the real twelve, kept whole */
 
+
+  /* ══ THE FAR-AWAY GALAXY WING — thirteen more bodies for the chairs ══ */
+  Object.assign(CELEBART,{
+
+  /* ── Mace Windu — the robes are quiet so the blade does not have to be ── */
+  macewindu(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#6b4426";
+    cx.fillStyle="#14120f";                                            /* outer robe, hanging past the knee */
+    cx.beginPath(); cx.moveTo(a.x-tw-4,hy+1); cx.lineTo(a.x-tw-10,a.y+21);
+    cx.lineTo(a.x+tw+10,a.y+21); cx.lineTo(a.x+tw+4,hy+1); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#2a231c","#17140f",{boot:"#1c1812"});
+    CB.torso(a,tw,th,hy,"#2e261e");
+    cx.fillStyle="#221c16";                                            /* tunic, crossed left over right */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x,hy+7);
+    cx.lineTo(a.x,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#3a3026";
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x,hy+7);
+    cx.lineTo(a.x,hy+th); cx.lineTo(a.x+tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#1a1610"; cx.fillRect(a.x-4.6,hy+6,9.2,th-6);        /* tabards */
+    cx.fillStyle="#4a3a26"; cx.fillRect(a.x-tw+1,hy+th*.62,tw*2-2,5);  /* belt */
+    cx.fillStyle="#8a6a3a"; cx.fillRect(a.x-3.4,hy+th*.62,6.8,5);
+    CB.arms(a,tw,th,hy,"#2e261e",sk,{});
+    cx.fillStyle="#9aa0a8";                                            /* hilt, ribbed */
+    cx.beginPath(); cx.roundRect(a.x+tw+4,hy+11,4.8,14,1.6); cx.fill();
+    cx.fillStyle="#5a5f66";
+    for(let i=0;i<3;i++) cx.fillRect(a.x+tw+4,hy+14+i*3.4,4.8,1.4);
+    cx.shadowColor="#a020f0"; cx.shadowBlur=10;                        /* the only purple in the galaxy */
+    cx.strokeStyle="#a03ce8"; cx.lineWidth=3.6; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(a.x+tw+6.4,hy+10); cx.lineTo(a.x+tw+6.4,hy-25); cx.stroke();
+    cx.strokeStyle="#eccfff"; cx.lineWidth=1.3;
+    cx.beginPath(); cx.moveTo(a.x+tw+6.4,hy+9); cx.lineTo(a.x+tw+6.4,hy-24); cx.stroke();
+    cx.shadowBlur=0;
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="rgba(0,0,0,.22)";                                    /* shaved, and unbothered */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.92,hr*.42,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Yoda — drawn short on purpose; the head does most of the work ── */
+  yoda(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sn="#8fae5a";
+    const R=hr*1.5, hd=headY+hr*.46, sh=hd+R*.62;                      /* shoulders sit under a big skull */
+    cx.fillStyle=sn;                                                   /* the ears, out before anything else */
+    cx.beginPath(); cx.moveTo(a.x-R*.72,hd-R*.06); cx.lineTo(a.x-R*2.5,hd-R*.92);
+    cx.lineTo(a.x-R*.66,hd+R*.5); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+R*.72,hd-R*.06); cx.lineTo(a.x+R*2.5,hd-R*.92);
+    cx.lineTo(a.x+R*.66,hd+R*.5); cx.closePath(); cx.fill();
+    cx.fillStyle="rgba(60,80,30,.45)";
+    cx.beginPath(); cx.moveTo(a.x-R*.8,hd); cx.lineTo(a.x-R*2.1,hd-R*.7); cx.lineTo(a.x-R*.76,hd+R*.24); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+R*.8,hd); cx.lineTo(a.x+R*2.1,hd-R*.7); cx.lineTo(a.x+R*.76,hd+R*.24); cx.closePath(); cx.fill();
+    cx.fillStyle="#6a5230";                                            /* the robe, floor length */
+    cx.beginPath(); cx.moveTo(a.x-tw*.72,sh); cx.lineTo(a.x-tw-7,a.y+23);
+    cx.lineTo(a.x+tw+7,a.y+23); cx.lineTo(a.x+tw*.72,sh); cx.closePath(); cx.fill();
+    cx.fillStyle="#57431f";                                            /* the fold down the middle */
+    cx.beginPath(); cx.moveTo(a.x-3.4,sh+2); cx.lineTo(a.x-6,a.y+23);
+    cx.lineTo(a.x+6,a.y+23); cx.lineTo(a.x+3.4,sh+2); cx.closePath(); cx.fill();
+    cx.fillStyle=sn;                                                   /* three toes a side, no more */
+    for(let s=-1;s<=1;s+=2) for(let i=0;i<3;i++)
+      cx.fillRect(a.x+s*4.4+(s<0?-i*3.2-3:i*3.2),a.y+21,2.6,4);
+    cx.fillStyle="#6a5230";                                            /* sleeves, far too long */
+    cx.beginPath(); cx.roundRect(a.x-tw-5,sh+1,8,15,4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw-3,sh+1,8,15,4); cx.fill();
+    cx.fillStyle=sn;
+    cx.beginPath(); cx.arc(a.x-tw-1,sh+17,3.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+1,sh+17,3.4,0,7); cx.fill();
+    cx.strokeStyle="#8a6a3a"; cx.lineWidth=2.2; cx.lineCap="round";    /* the gimer stick */
+    cx.beginPath(); cx.moveTo(a.x-tw-3,a.y+22);
+    cx.quadraticCurveTo(a.x-tw-4,sh+6,a.x-tw+1,sh+17); cx.stroke();
+    cx.fillStyle=sn;                                                   /* the head */
+    cx.beginPath(); cx.ellipse(a.x,hd,R,R*1.02,0,0,7); cx.fill();
+    cx.fillStyle="rgba(60,80,30,.3)";                                  /* the lines nine hundred years leaves */
+    for(let i=0;i<3;i++) cx.fillRect(a.x-R*.5,hd-R*.5+i*3.4,R,1.4);
+    cx.fillStyle="#6a5230";                                            /* hood, pushed back */
+    cx.beginPath(); cx.ellipse(a.x,hd-R*.42,R*1.06,R*.66,0,Math.PI,0); cx.fill();
+    cx.fillStyle="#c8c2b0";                                            /* what is left of the hair */
+    for(let i=0;i<5;i++) cx.fillRect(a.x-R*.5+i*R*.24,hd-R*.98,1.4,4);
+    cx.fillStyle="#1a1410";                                            /* two dots, on a bigger skull */
+    cx.beginPath(); cx.arc(a.x-R*.3,hd+R*.06,2.1,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+R*.3,hd+R*.06,2.1,0,7); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Jar Jar Binks — the earflaps are the entire silhouette ── */
+  jarjar(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e2a75e";
+    CB.legs(a,b,sk,"#7a5730");                                         /* no trousers, never had any */
+    CB.torso(a,tw,th,hy,sk);
+    cx.fillStyle="rgba(150,88,36,.5)";                                 /* mottling */
+    for(let i=0;i<10;i++){ const mx=a.x-tw+4+((i*9)%(tw*2-8)), my=hy+4+((i*13)%(th-10));
+      cx.beginPath(); cx.ellipse(mx,my,2.4,1.6,i,0,7); cx.fill(); }
+    cx.fillStyle="#5f4326";                                            /* the leather vest, held shut by hope */
+    cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*.78,th,[9,0,0,9]); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.22,hy,tw*.78,th,[0,9,9,0]); cx.fill();
+    cx.fillStyle="#8a6538";
+    cx.fillRect(a.x-tw*.26,hy,2.4,th); cx.fillRect(a.x+tw*.22,hy,2.4,th);
+    cx.fillStyle="#3f2c18"; cx.fillRect(a.x-tw+1,hy+th-6,tw*2-2,4.4);
+    CB.arms(a,tw,th,hy,sk,sk,{thin:1});
+    cx.fillStyle="#b8763a";                                            /* the flaps, hung clear of the head */
+    cx.beginPath(); cx.roundRect(a.x-hr*2.08,headY-hr*.7,hr*.94,hr*2.8,hr*.46); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*1.14,headY-hr*.7,hr*.94,hr*2.8,hr*.46); cx.fill();
+    cx.fillStyle="rgba(88,48,16,.55)";                                 /* spotted, so they read as flaps */
+    for(let i=0;i<4;i++){
+      cx.beginPath(); cx.arc(a.x-hr*1.6,headY+hr*.08+i*hr*.62,1.8,0,7); cx.fill();
+      cx.beginPath(); cx.arc(a.x+hr*1.62,headY+hr*.08+i*hr*.62,1.8,0,7); cx.fill(); }
+    cx.fillStyle=sk;                                                   /* and the stalks they hang from */
+    cx.fillRect(a.x-hr*1.32,headY-hr*.48,hr*.4,hr*.46);
+    cx.fillRect(a.x+hr*.92,headY-hr*.48,hr*.4,hr*.46);
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="rgba(150,88,36,.4)";                                 /* the ridge over the brow */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.62,hr*.7,hr*.26,0,0,7); cx.fill();
+    CB.eyes(a,headY,hr,{r:2.3});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Han Solo — white shirt, black vest, and the holster worn low ── */
+  hansolo(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e2b184";
+    CB.legs(a,b,"#3f4f80","#3a2a18",{boot:"#2a1e12"});
+    cx.fillStyle="#c8102e";                                            /* the Corellian bloodstripe */
+    cx.fillRect(a.x-10.2,a.y+1+b*.3,1.8,21);
+    cx.fillRect(a.x+8.4,a.y+1-b*.3,1.8,21);
+    CB.torso(a,tw,th,hy,"#f0ece0");
+    cx.fillStyle="#16161a";                                            /* the vest */
+    cx.beginPath(); cx.roundRect(a.x-tw,hy,tw*.66,th,[9,0,0,9]); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.34,hy,tw*.66,th,[0,9,9,0]); cx.fill();
+    cx.fillStyle="#d8d2c2"; cx.beginPath();                            /* the shirt, open at the neck */
+    cx.moveTo(a.x-4.4,hy); cx.lineTo(a.x+4.4,hy); cx.lineTo(a.x,hy+9); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a4028"; cx.fillRect(a.x-tw,hy+th-7,tw*2,5);        /* gunbelt */
+    cx.fillStyle="#8a6a3a"; cx.fillRect(a.x-3,hy+th-7,6,5);
+    CB.arms(a,tw,th,hy,"#f0ece0",sk,{});
+    cx.fillStyle="#4a3520";                                            /* the holster, slung a hand too low */
+    cx.beginPath(); cx.roundRect(a.x+tw-3,hy+th-2,9,13,2); cx.fill();
+    cx.fillStyle="#8a6a3a"; cx.fillRect(a.x+tw-3,hy+th+3,9,2);
+    cx.fillStyle="#22242a";                                            /* the grip, always out */
+    cx.beginPath(); cx.roundRect(a.x+tw-1,hy+th-9,4.4,9,1.4); cx.fill();
+    cx.fillStyle="#8a8f98"; cx.fillRect(a.x+tw-1,hy+th-9,4.4,2.4);
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#4a3520","");
+    cx.fillStyle="#4a3520";
+    cx.beginPath(); cx.moveTo(a.x-hr*1.02,headY-hr*.5); cx.lineTo(a.x-hr*1.06,headY+hr*.1);
+    cx.lineTo(a.x-hr*.62,headY-hr*.3); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Boba Fett — green and rust, and the jetpack is not for show ── */
+  bobafett(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    cx.fillStyle="#3a3f46";                                            /* jetpack, behind everything */
+    cx.beginPath(); cx.roundRect(a.x-tw*.8,hy-9,tw*1.6,20,3); cx.fill();
+    cx.fillStyle="#22262c";
+    cx.beginPath(); cx.roundRect(a.x-tw*.8,hy+7,tw*.5,6,2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw*.3,hy+7,tw*.5,6,2); cx.fill();
+    cx.fillStyle="#c8102e"; cx.beginPath();                            /* the missile, tipped and ready */
+    cx.moveTo(a.x-3,hy-9); cx.lineTo(a.x,hy-16); cx.lineTo(a.x+3,hy-9); cx.closePath(); cx.fill();
+    cx.fillStyle="#8a9098"; cx.fillRect(a.x-3,hy-9,6,7);
+    CB.legs(a,b,"#4f6a4a","#26301f",{boot:"#8a4a2a"});
+    CB.torso(a,tw,th,hy,"#4f6a4a");
+    cx.fillStyle="#8a4a2a";                                            /* rust plate over the chest */
+    cx.beginPath(); cx.roundRect(a.x-tw*.82,hy+4,tw*1.64,th*.42,2); cx.fill();
+    cx.fillStyle="#22262c"; cx.fillRect(a.x-1.4,hy+4,2.8,th*.42);
+    cx.fillStyle="#d4af37";                                            /* the little lights he never explains */
+    cx.fillRect(a.x-tw*.66,hy+6,3,2.4); cx.fillRect(a.x+tw*.42,hy+6,3,2.4);
+    cx.fillStyle="#33383f"; cx.fillRect(a.x-tw+1,hy+th*.7,tw*2-2,5);   /* utility belt */
+    cx.fillStyle="#6a7060";
+    for(let i=0;i<4;i++) cx.fillRect(a.x-tw+3+i*8,hy+th*.7,3.4,5);
+    cx.fillStyle="#8a4a2a";                                            /* pauldron, dented */
+    cx.beginPath(); cx.moveTo(a.x-tw-8,hy+9); cx.lineTo(a.x-tw-5,hy-2);
+    cx.lineTo(a.x-tw+4,hy-2); cx.lineTo(a.x-tw+4,hy+11); cx.closePath(); cx.fill();
+    CB.arms(a,tw,th,hy,"#4f6a4a","#33383f",{bulk:1});
+    cx.fillStyle="#8a7a58";                                            /* wookiee braids, taken not given */
+    for(let i=0;i<3;i++){ cx.beginPath();
+      cx.roundRect(a.x-tw-7+i*3.4,hy+1,2.2,13+i*2.4,1.1); cx.fill(); }
+    cx.fillStyle="#c8b070";
+    for(let i=0;i<3;i++){ cx.beginPath(); cx.arc(a.x-tw-6+i*3.4,hy+15+i*2.4,1.5,0,7); cx.fill(); }
+    cx.fillStyle="#5f7a52";                                            /* the helmet */
+    cx.beginPath(); cx.moveTo(a.x-hr*1.04,headY+hr*.92); cx.lineTo(a.x-hr*1.04,headY-hr*.24);
+    cx.quadraticCurveTo(a.x,headY-hr*1.5,a.x+hr*1.04,headY-hr*.24);
+    cx.lineTo(a.x+hr*1.04,headY+hr*.92); cx.closePath(); cx.fill();
+    cx.fillStyle="#1c2220";                                            /* the T, and nothing else */
+    cx.fillRect(a.x-hr*.88,headY-hr*.38,hr*1.76,hr*.44);
+    cx.fillRect(a.x-hr*.28,headY-hr*.38,hr*.56,hr*1.1);
+    cx.fillStyle="#8a4a2a"; cx.fillRect(a.x-hr*1.04,headY-hr*.62,hr*2.08,hr*.2);
+    cx.fillStyle="rgba(0,0,0,.28)";
+    cx.beginPath(); cx.arc(a.x+hr*.6,headY+hr*.4,2.2,0,7); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Luke Skywalker — farm boy tailoring, and a blade he has not earned yet ── */
+  luke(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6bc94";
+    CB.legs(a,b,"#d6cdb4","#4a3520",{boot:"#3a2a18"});
+    CB.torso(a,tw,th,hy,"#ece5d0");
+    cx.fillStyle="#dcd3ba";                                            /* the tunic, wrapped over */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x+2,hy+6);
+    cx.lineTo(a.x+2,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.strokeStyle="rgba(120,110,86,.5)"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x+2,hy+6); cx.stroke();
+    cx.fillStyle="#4a3520"; cx.fillRect(a.x-tw,hy+th*.66,tw*2,6);      /* the wide belt */
+    cx.fillStyle="#c8c2b4"; cx.fillRect(a.x-4,hy+th*.66,8,6);
+    CB.arms(a,tw,th,hy,"#ece5d0",sk,{});
+    cx.fillStyle="#9aa0a8";                                            /* his father's hilt */
+    cx.beginPath(); cx.roundRect(a.x+tw+4,hy+12,4.6,13,1.6); cx.fill();
+    cx.fillStyle="#141414"; cx.fillRect(a.x+tw+4,hy+18,4.6,4);
+    cx.shadowColor="#3cff6a"; cx.shadowBlur=10;                        /* green, and steady */
+    cx.strokeStyle="#3cdd5a"; cx.lineWidth=3.4; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(a.x+tw+6.3,hy+11); cx.lineTo(a.x+tw+6.3,hy-24); cx.stroke();
+    cx.strokeStyle="#dcffe4"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(a.x+tw+6.3,hy+10); cx.lineTo(a.x+tw+6.3,hy-23); cx.stroke();
+    cx.shadowBlur=0;
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#c8a45a","");
+    cx.fillStyle="#c8a45a";
+    cx.beginPath(); cx.moveTo(a.x-hr*1.02,headY-hr*.46); cx.lineTo(a.x-hr*1.1,headY+hr*.16);
+    cx.lineTo(a.x-hr*.5,headY-hr*.36); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Anakin Skywalker — layered black, blue blade, one hand that is not his ── */
+  anakin(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e0b489";
+    cx.fillStyle="#1a1610";                                            /* the outer robe */
+    cx.beginPath(); cx.moveTo(a.x-tw-3,hy+1); cx.lineTo(a.x-tw-9,a.y+21);
+    cx.lineTo(a.x+tw+9,a.y+21); cx.lineTo(a.x+tw+3,hy+1); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a4026";                                            /* the hair lives behind the shoulders */
+    cx.beginPath(); cx.roundRect(a.x-hr*1.3,headY-hr*.4,hr*.78,hr*2.2,3); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.52,headY-hr*.4,hr*.78,hr*2.2,3); cx.fill();
+    CB.legs(a,b,"#26201a","#14110d",{boot:"#1a1712"});
+    CB.torso(a,tw,th,hy,"#2b241c");
+    cx.fillStyle="#1c1712";                                            /* layer, then another layer */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x+3,hy+8);
+    cx.lineTo(a.x+3,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#3a3026"; cx.fillRect(a.x-4.6,hy+7,9.2,th-7);
+    cx.fillStyle="#4a3a26"; cx.fillRect(a.x-tw+1,hy+th*.64,tw*2-2,5);
+    const hq=CB.arms(a,tw,th,hy,"#2b241c",sk,{});
+    cx.fillStyle="#16161a";                                            /* the mechanical hand */
+    cx.beginPath(); cx.arc(a.x-tw-2.2,hq,4.6,0,7); cx.fill();
+    cx.strokeStyle="#6a7078"; cx.lineWidth=.9;
+    for(let i=0;i<3;i++){ cx.beginPath();
+      cx.moveTo(a.x-tw-6.2,hq-2.6+i*2.6); cx.lineTo(a.x-tw+1.8,hq-2.6+i*2.6); cx.stroke(); }
+    cx.fillStyle="#9aa0a8";                                            /* hilt */
+    cx.beginPath(); cx.roundRect(a.x+tw+4,hy+12,4.6,13,1.6); cx.fill();
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x+tw+4,hy+16,4.6,2.4);
+    cx.shadowColor="#3aa0ff"; cx.shadowBlur=10;                        /* blue, for now */
+    cx.strokeStyle="#3f8fe8"; cx.lineWidth=3.4; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(a.x+tw+6.3,hy+11); cx.lineTo(a.x+tw+6.3,hy-25); cx.stroke();
+    cx.strokeStyle="#dcefff"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(a.x+tw+6.3,hy+10); cx.lineTo(a.x+tw+6.3,hy-24); cx.stroke();
+    cx.shadowBlur=0;
+    CB.head(a,headY,hr,sk);
+    CB.hair(a,headY,hr,"#5a4026","");
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#7a2a1a";                                            /* the scar, right eye down */
+    cx.fillRect(a.x+hr*.24,headY-hr*.5,1.4,hr*.72);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Chewbacca — all fur, one strap, and a bowcaster nobody else can cock ── */
+  chewbacca(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), fr="#6f4d2a";
+    cx.fillStyle="#5a3d20";                                            /* the outline of fur, drawn first */
+    for(let i=0;i<14;i++){ const an=Math.PI*(i/13);
+      cx.beginPath(); cx.arc(a.x-Math.cos(an)*(tw+3),hy+4+Math.sin(an)*(th*.5),4.2,0,7); cx.fill(); }
+    CB.legs(a,b,fr,"#3a2612");
+    CB.torso(a,tw,th,hy,fr);
+    cx.fillStyle="rgba(60,38,16,.55)";                                 /* fur, going every direction at once */
+    for(let i=0;i<16;i++){ const mx=a.x-tw+3+((i*7)%(tw*2-6)), my=hy+3+((i*11)%(th-8));
+      cx.beginPath(); cx.ellipse(mx,my,1.6,3.4,.4+((i%3)*.5),0,7); cx.fill(); }
+    cx.fillStyle="#9a8a68";                                            /* the bandolier */
+    cx.save(); cx.translate(a.x,hy+th*.5); cx.rotate(.62);
+    cx.beginPath(); cx.roundRect(-tw*1.5,-4,tw*3,8,2); cx.fill();
+    cx.fillStyle="#5f6068";
+    for(let i=0;i<7;i++) cx.fillRect(-tw*1.5+3+i*6.4,-3,3.4,6);
+    cx.restore();
+    CB.arms(a,tw,th,hy,fr,fr,{bulk:1});
+    cx.save(); cx.translate(a.x+tw+9,hy+17); cx.rotate(-.26);          /* the bowcaster */
+    cx.fillStyle="#3f2c18"; cx.beginPath(); cx.roundRect(-2.4,-13,4.8,27,2); cx.fill();
+    cx.strokeStyle="#8a8f98"; cx.lineWidth=2.2; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(-11,-16); cx.quadraticCurveTo(0,-8,11,-16); cx.stroke();
+    cx.strokeStyle="rgba(220,230,240,.75)"; cx.lineWidth=.9;
+    cx.beginPath(); cx.moveTo(-11,-16); cx.lineTo(0,-5); cx.lineTo(11,-16); cx.stroke();
+    cx.fillStyle="#5f6068"; cx.fillRect(-3.4,-3,6.8,5);
+    cx.restore();
+    cx.fillStyle=fr;                                                   /* the head, more fur */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.14,hr*1.16,0,0,7); cx.fill();
+    cx.fillStyle="#5a3d20";
+    for(let i=0;i<9;i++){ const an=-2.9+i*.46;
+      cx.beginPath(); cx.arc(a.x+Math.cos(an)*hr*1.06,headY+Math.sin(an)*hr*1.06,3.2,0,7); cx.fill(); }
+    cx.fillStyle="#8a6a44";                                            /* muzzle fur, lighter */
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.5,hr*.72,hr*.46,0,0,7); cx.fill();
+    CB.eyes(a,headY,hr,{c:"#2a1c10",r:1.7});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Kylo Ren — the cowl, the vent, and three blades that should be one ── */
+  kyloren(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    cx.fillStyle="#0a0a0c";                                            /* the cowl, ragged at the hem */
+    cx.beginPath(); cx.moveTo(a.x-tw-5,hy-2);
+    for(let i=0;i<4;i++) cx.quadraticCurveTo(a.x-tw-11+i*((tw*2+22)/4),a.y+27,a.x-tw-5+(i+1)*((tw*2+10)/4),a.y+22);
+    cx.lineTo(a.x+tw+5,hy-2); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#101013","#08080a",{boot:"#141418"});
+    CB.torso(a,tw,th,hy,"#131317");
+    cx.fillStyle="#0c0c0f";                                            /* the tabard, crossed and pinned */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x,hy+9);
+    cx.lineTo(a.x,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#1c1c22";
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x,hy+9);
+    cx.lineTo(a.x+tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#26262e"; cx.fillRect(a.x-tw+1,hy+th*.68,tw*2-2,4.4);
+    CB.arms(a,tw,th,hy,"#131317","#141418",{});
+    cx.fillStyle="#0e0e12";                                            /* hilt, welded by somebody in a hurry */
+    cx.beginPath(); cx.roundRect(a.x+tw+8,hy+12,5.4,15,1.4); cx.fill();
+    cx.fillStyle="#4a4a52"; cx.fillRect(a.x+tw+4,hy+8,13.4,3.6);       /* the crossguard vents */
+    const jt=Math.sin(Date.now()/70)*1.1;
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=11;                        /* unstable, and it sounds like it */
+    cx.strokeStyle="#e02a2a"; cx.lineCap="round"; cx.lineWidth=2.6;
+    cx.beginPath(); cx.moveTo(a.x+tw+7,hy+8); cx.lineTo(a.x+tw-1-jt,hy+4); cx.stroke();
+    cx.beginPath(); cx.moveTo(a.x+tw+14.4,hy+8); cx.lineTo(a.x+tw+22+jt,hy+4); cx.stroke();
+    cx.lineWidth=3.8;
+    cx.beginPath(); cx.moveTo(a.x+tw+10.7,hy+8); cx.lineTo(a.x+tw+10.7+jt,hy-26); cx.stroke();
+    cx.strokeStyle="#ffdcdc"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(a.x+tw+10.7,hy+7); cx.lineTo(a.x+tw+10.7+jt,hy-25); cx.stroke();
+    cx.shadowBlur=0;
+    cx.fillStyle="#08080a";                                            /* the hood, and the mask sits inside it */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.12,hr*1.34,hr*1.2,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*1.34,headY-hr*.12); cx.lineTo(a.x-hr*1.16,headY+hr*1.24);
+    cx.lineTo(a.x-hr*.88,headY+hr*.1); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*1.34,headY-hr*.12); cx.lineTo(a.x+hr*1.16,headY+hr*1.24);
+    cx.lineTo(a.x+hr*.88,headY+hr*.1); cx.closePath(); cx.fill();
+    cx.fillStyle="#1a1a20";
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.06,hr*.9,hr*1.02,0,0,7); cx.fill();
+    cx.fillStyle="#aab0ba";                                            /* silver, only where it counts */
+    cx.beginPath(); cx.roundRect(a.x-hr*.86,headY-hr*.24,hr*1.72,hr*.5,2); cx.fill();
+    cx.fillRect(a.x-hr*.19,headY-hr*.24,hr*.38,hr*1.1);
+    cx.fillStyle="#08080a"; cx.fillRect(a.x-hr*.8,headY-hr*.12,hr*1.6,hr*.26);
+    cx.fillStyle="#9aa0aa";                                            /* the vent, horizontal, unmistakable */
+    cx.beginPath(); cx.roundRect(a.x-hr*.66,headY+hr*.6,hr*1.32,hr*.32,1.4); cx.fill();
+    cx.fillStyle="#08080a";
+    for(let i=0;i<4;i++) cx.fillRect(a.x-hr*.48+i*hr*.3,headY+hr*.6,1.6,hr*.32);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Obi-Wan Kenobi — sand-coloured, hooded, and endlessly patient ── */
+  obiwan(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e4b98e";
+    cx.fillStyle="#a8916a";                                            /* the cape, hood and all */
+    cx.beginPath(); cx.moveTo(a.x-tw-5,hy-2); cx.lineTo(a.x-tw-11,a.y+22);
+    cx.lineTo(a.x+tw+11,a.y+22); cx.lineTo(a.x+tw+5,hy-2); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#c8bb9c","#5a4530",{boot:"#4a3826"});
+    CB.torso(a,tw,th,hy,"#e0d5b8");
+    cx.fillStyle="#cfc2a2";                                            /* tunic over tunic */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x+3,hy+7);
+    cx.lineTo(a.x+3,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#bcae8c"; cx.fillRect(a.x-4.6,hy+6,9.2,th-6);        /* tabards */
+    cx.fillStyle="#6a5030"; cx.fillRect(a.x-tw+1,hy+th*.64,tw*2-2,5.4);
+    cx.fillStyle="#c8c2b4"; cx.fillRect(a.x-3.4,hy+th*.64,6.8,5.4);
+    CB.arms(a,tw,th,hy,"#e0d5b8",sk,{});
+    cx.fillStyle="#9aa0a8";                                            /* hilt */
+    cx.beginPath(); cx.roundRect(a.x+tw+4,hy+12,4.6,13,1.6); cx.fill();
+    cx.fillStyle="#3a3a42"; cx.fillRect(a.x+tw+4,hy+17,4.6,3);
+    cx.shadowColor="#3aa0ff"; cx.shadowBlur=10;
+    cx.strokeStyle="#3f8fe8"; cx.lineWidth=3.4; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(a.x+tw+6.3,hy+11); cx.lineTo(a.x+tw+6.3,hy-24); cx.stroke();
+    cx.strokeStyle="#dcefff"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(a.x+tw+6.3,hy+10); cx.lineTo(a.x+tw+6.3,hy-23); cx.stroke();
+    cx.shadowBlur=0;
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#a8875a";                                            /* the beard, jaw to jaw */
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.42,hr*.82,hr*.62,0,0,7); cx.fill();
+    cx.fillStyle=sk;
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.16,hr*.44,hr*.26,0,0,7); cx.fill();
+    CB.tache(a,headY,hr,"#a8875a");
+    CB.hair(a,headY,hr,"#a8875a","");
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#a8916a";                                            /* the hood, shrugged back */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.52,hr*1.36,hr*.8,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*1.36,headY-hr*.52); cx.lineTo(a.x-hr*1.2,headY+hr*.9);
+    cx.lineTo(a.x-hr*.92,headY-hr*.2); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*1.36,headY-hr*.52); cx.lineTo(a.x+hr*1.2,headY+hr*.9);
+    cx.lineTo(a.x+hr*.92,headY-hr*.2); cx.closePath(); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Darth Maul — red, tattooed, horned, and lit at both ends ── */
+  darthmaul(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#c8342a";
+    cx.fillStyle="#0c0c0e";                                            /* robe, and nothing under it worth seeing */
+    cx.beginPath(); cx.moveTo(a.x-tw-4,hy); cx.lineTo(a.x-tw-10,a.y+22);
+    cx.lineTo(a.x+tw+10,a.y+22); cx.lineTo(a.x+tw+4,hy); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#141418","#0a0a0c",{boot:"#101014"});
+    CB.torso(a,tw,th,hy,"#15151a");
+    cx.fillStyle="#0c0c0e";
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x,hy+8);
+    cx.lineTo(a.x,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#22222a"; cx.fillRect(a.x-tw+1,hy+th*.68,tw*2-2,4.4);
+    CB.arms(a,tw,th,hy,"#15151a","#15151a",{});                        /* gloved, all of it */
+    cx.save();                                                         /* the saberstaff, held at the middle */
+    cx.translate(a.x+tw+8,hy+24); cx.rotate(.38);
+    cx.fillStyle="#26262c"; cx.beginPath(); cx.roundRect(-2.8,-12,5.6,24,2); cx.fill();
+    cx.fillStyle="#8a8f98"; cx.fillRect(-2.8,-3,5.6,2.4); cx.fillRect(-2.8,2,5.6,2.4);
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=10;
+    cx.strokeStyle="#e02a2a"; cx.lineWidth=3.4; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(0,-13); cx.lineTo(0,-42); cx.stroke();   /* one end */
+    cx.beginPath(); cx.moveTo(0,13); cx.lineTo(0,42); cx.stroke();     /* and the other */
+    cx.strokeStyle="#ffdcdc"; cx.lineWidth=1.2;
+    cx.beginPath(); cx.moveTo(0,-14); cx.lineTo(0,-41); cx.stroke();
+    cx.beginPath(); cx.moveTo(0,14); cx.lineTo(0,41); cx.stroke();
+    cx.shadowBlur=0; cx.restore();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#0e0e10";                                            /* the markings, which are the face */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.92,hr*.4,0,0,7); cx.fill();
+    for(let i=0;i<4;i++){ const dx=(i<2?i-2:i-1)*hr*.44;
+      cx.beginPath(); cx.moveTo(a.x+dx-1.2,headY-hr*.2); cx.lineTo(a.x+dx+1.2,headY-hr*.2);
+      cx.lineTo(a.x+dx*1.5,headY+hr*.9); cx.closePath(); cx.fill(); }
+    cx.fillRect(a.x-hr*.94,headY-hr*.06,hr*.3,hr*.5);
+    cx.fillRect(a.x+hr*.64,headY-hr*.06,hr*.3,hr*.5);
+    cx.fillStyle="#e8e0cc";                                            /* the crown of horns */
+    for(let i=0;i<7;i++){ const an=-2.86+i*.42;
+      cx.beginPath();
+      cx.moveTo(a.x+Math.cos(an)*hr*.9-1.8,headY+Math.sin(an)*hr*.9);
+      cx.lineTo(a.x+Math.cos(an)*hr*1.62,headY+Math.sin(an)*hr*1.62-1);
+      cx.lineTo(a.x+Math.cos(an)*hr*.9+1.8,headY+Math.sin(an)*hr*.9); cx.closePath(); cx.fill(); }
+    CB.eyes(a,headY,hr,{c:"#f0c95c",r:1.8});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Vito Corleone — black tie, red rose, and the cat is not negotiable ── */
+  godfather(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#d8b492";
+    CB.legs(a,b,"#131317","#0c0c0e");
+    CB.torso(a,tw,th,hy,"#16161b");
+    cx.fillStyle="#fbf8f0"; cx.beginPath();                            /* the shirt front */
+    cx.moveTo(a.x-4.8,hy); cx.lineTo(a.x+4.8,hy); cx.lineTo(a.x+3.4,hy+21); cx.lineTo(a.x-3.4,hy+21); cx.closePath(); cx.fill();
+    cx.fillStyle="#0d0d10";                                            /* satin lapels */
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2.4,hy+1); cx.lineTo(a.x-tw*.86,hy+th*.66); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2.4,hy+1); cx.lineTo(a.x+tw*.86,hy+th*.66); cx.closePath(); cx.fill();
+    cx.fillStyle="#0a0a0c";                                            /* bow tie */
+    cx.beginPath(); cx.moveTo(a.x-5.4,hy+.6); cx.lineTo(a.x-1.2,hy+3.4); cx.lineTo(a.x-5.4,hy+6.2); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+5.4,hy+.6); cx.lineTo(a.x+1.2,hy+3.4); cx.lineTo(a.x+5.4,hy+6.2); cx.closePath(); cx.fill();
+    cx.fillStyle="#8a1220";                                            /* the rose, on the day of the wedding */
+    cx.beginPath(); cx.arc(a.x-tw*.72,hy+6.6,3.6,0,7); cx.fill();
+    cx.fillStyle="#d4162e"; cx.beginPath(); cx.arc(a.x-tw*.72,hy+5.8,2.2,0,7); cx.fill();
+    cx.strokeStyle="#3f7f4a"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(a.x-tw*.74,hy+9); cx.lineTo(a.x-tw*.6,hy+13); cx.stroke();
+    const hq=CB.arms(a,tw,th,hy,"#16161b",sk,{});
+    cx.fillStyle="#9a938a";                                            /* the cat, receiving no orders */
+    cx.beginPath(); cx.ellipse(a.x+tw+7,hq-6,8.6,5.6,.2,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+13.4,hq-9.4,4.4,0,7); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw+16.6,hq-11.8); cx.lineTo(a.x+tw+15.4,hq-15.6); cx.lineTo(a.x+tw+13.2,hq-12.4); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw+12.4,hq-12.8); cx.lineTo(a.x+tw+10.8,hq-15.8); cx.lineTo(a.x+tw+10,hq-12.2); cx.closePath(); cx.fill();
+    cx.strokeStyle="#7a746c"; cx.lineWidth=1.4;
+    cx.beginPath(); cx.moveTo(a.x+tw-1,hq-8); cx.quadraticCurveTo(a.x+tw-7,hq-14,a.x+tw-3,hq-17); cx.stroke();
+    cx.fillStyle="#2a2a30";
+    cx.beginPath(); cx.arc(a.x+tw+11.8,hq-9.6,.9,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+14.8,hq-9.6,.9,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle=sk;                                                   /* the jowls, earned over forty years */
+    cx.beginPath(); cx.ellipse(a.x-hr*.62,headY+hr*.56,hr*.42,hr*.46,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+hr*.62,headY+hr*.56,hr*.42,hr*.46,0,0,7); cx.fill();
+    cx.fillStyle="rgba(0,0,0,.1)";
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.74,hr*.5,hr*.2,0,0,7); cx.fill();
+    CB.hair(a,headY,hr,"#8f8a84","slick");
+    CB.eyes(a,headY,hr,{r:1.3});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Agent 47, both hands full — the barcode still does the introductions ── */
+  agent47b(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e4c2a4";
+    const sh=a.shoot||0, px=tw+6.2, py=hy+27;
+    CB.legs(a,b,"#16161a","#0e0e12");
+    CB.torso(a,tw,th,hy,"#1a1a20");
+    cx.fillStyle="#f8f6f0"; cx.beginPath();                            /* the shirt, pressed within an inch */
+    cx.moveTo(a.x-5.4,hy); cx.lineTo(a.x+5.4,hy); cx.lineTo(a.x+3.4,hy+21); cx.lineTo(a.x-3.4,hy+21); cx.closePath(); cx.fill();
+    cx.fillStyle="#0e0e12";
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2.4,hy+1); cx.lineTo(a.x-tw*.86,hy+th*.62); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2.4,hy+1); cx.lineTo(a.x+tw*.86,hy+th*.62); cx.closePath(); cx.fill();
+    cx.fillStyle="#c8102e"; cx.beginPath();                            /* the only colour he owns */
+    cx.moveTo(a.x-2.6,hy+1); cx.lineTo(a.x+2.6,hy+1); cx.lineTo(a.x+1.6,hy+24); cx.lineTo(a.x-1.6,hy+24); cx.closePath(); cx.fill();
+    CB.arms(a,tw,th,hy,"#1a1a20",sk,{});
+    for(let s=-1;s<=1;s+=2){                                           /* a silverballer either side */
+      cx.fillStyle="#b8bcc4";
+      cx.beginPath(); cx.roundRect(a.x+s*px+(s<0?-13:2),py-2.2,11,4.4,1.4); cx.fill();
+      cx.fillStyle="#8a8f98";
+      cx.beginPath(); cx.roundRect(a.x+s*px+(s<0?-6:1),py+1.4,5,7,1.6); cx.fill();
+      cx.fillStyle="#dfe3ea"; cx.fillRect(a.x+s*px+(s<0?-13:2),py-2.2,11,1.4); }
+    cx.fillStyle="#f8f6f0";                                            /* gloves over the grips */
+    cx.beginPath(); cx.arc(a.x-px,py,4.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+px,py,4.4,0,7); cx.fill();
+    if(sh>0){                                                          /* and when it goes off */
+      cx.save(); cx.globalAlpha=Math.min(1,sh);
+      for(let s=-1;s<=1;s+=2){ const mx=a.x+s*(px+13);
+        cx.fillStyle="#f0c95c";
+        cx.beginPath(); cx.moveTo(mx,py-4.6); cx.lineTo(mx+s*9,py); cx.lineTo(mx,py+4.6);
+        cx.lineTo(mx-s*2.6,py); cx.closePath(); cx.fill();
+        cx.fillStyle="#fff6d8";
+        cx.beginPath(); cx.moveTo(mx,py-2.2); cx.lineTo(mx+s*5,py); cx.lineTo(mx,py+2.2);
+        cx.lineTo(mx-s*1.4,py); cx.closePath(); cx.fill();
+        cx.strokeStyle="rgba(240,201,92,.55)"; cx.lineWidth=1.2; cx.lineCap="round";
+        cx.beginPath(); cx.moveTo(mx+s*10,py); cx.lineTo(mx+s*30,py-2.4); cx.stroke();
+        cx.beginPath(); cx.moveTo(mx+s*10,py); cx.lineTo(mx+s*26,py+3.4); cx.stroke(); }
+      cx.restore(); }
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="rgba(0,0,0,.12)";                                    /* nothing up top, by design */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*.9,hr*.4,0,Math.PI,0); cx.fill();
+    CB.eyes(a,headY,hr,{r:1.3});
+    cx.fillStyle="#1a1a20";                                            /* the barcode, round the back */
+    for(let i=0;i<6;i++) cx.fillRect(a.x+hr*.46+i*1.5,headY-hr*.94,(i%2?1.5:.8),5.4);
+    cx.font="700 3.4px Sora"; cx.textAlign="center";
+    cx.fillText("640509",a.x+hr*.82,headY-hr*.46);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  });
+
   /* ══════════════════════════════════════════════════════════════════════
-     THE FITS — three bodies per chair. OG is the owner drawn as himself,
+     THE FITS — four bodies per chair. OG is the owner drawn as himself,
      the one we started with; FUNNY and DANGER are borrowed. The commissioner
      sets what the league sees by default; any device can override for itself.
      ══════════════════════════════════════════════════════════════════════ */
   const FITS={
-    "DoughBoy$":            {og:null,        funny:"rothstein",  danger:"scarface",
-                             n:["Jake","Ace Rothstein","Tony Montana"]},
-    "Suck my Footballz":    {og:null,        funny:"happy",      danger:"themask",
-                             n:["Jacob","Happy Gilmore","The Mask"]},
-    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",
-                             n:["Scott","Saul Goodman","Dr Evil"]},
-    "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",
-                             n:["Tylor","Coach Prime","Predator"]},
-    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"vader",
-                             n:["Ferrand","Ron Burgundy","Darth Vader"]},
-    "Are you winning son?": {og:null,        funny:"borat",      danger:"homelander",
-                             n:["Phillips","Borat","Homelander"]},
-    "My Kupp Hurts":        {og:null,        funny:"soprano",    danger:"bane",
-                             n:["Griff","Tony Soprano","Bane"]},
-    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine",
-                             n:["Uncle Rico","The Riddler","Wolverine"]},
-    "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",
-                             n:["Belichick","Colonel Sanders","Bobby Boucher"]},
-    "Kill Bill":            {og:null,        funny:"bravo",      danger:"batman",
-                             n:["Garrett","Johnny Bravo","Batman"]},
-    "Blitz":                {og:"osufan",    funny:"brutus",     danger:"chief",
-                             n:["Buckeye Guy","Brutus","Master Chief"]},
-    "Flacc Shots":          {og:"belfort",   funny:"wonka",      danger:"agent47",
-                             n:["Jordan Belfort","Willy Wonka","Agent 47"]}
+    "DoughBoy$":            {og:null,        funny:"rothstein",  danger:"scarface",  sw:"bobafett",
+                             n:["Jake","Ace Rothstein","Tony Montana","Boba Fett"]},
+    "Suck my Footballz":    {og:null,        funny:"happy",      danger:"themask",   sw:"kyloren",
+                             n:["Jacob","Happy Gilmore","The Mask","Kylo Ren"]},
+    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",    sw:"hansolo",
+                             n:["Scott","Saul Goodman","Dr Evil","Han Solo"]},
+    "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",  sw:"macewindu",
+                             n:["Tylor","Coach Prime","Predator","Mace Windu"]},
+    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"vader",     sw:"vader",
+                             n:["Ferrand","Ron Burgundy","Darth Vader","Darth Vader"]},
+    "Are you winning son?": {og:null,        funny:"borat",      danger:"homelander",sw:"obiwan",
+                             n:["Phillips","Borat","Homelander","Obi-Wan"]},
+    "My Kupp Hurts":        {og:null,        funny:"soprano",    danger:"bane",      sw:"chewbacca",
+                             n:["Griff","Tony Soprano","Bane","Chewbacca"]},
+    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine", sw:"jarjar",
+                             n:["Uncle Rico","The Riddler","Wolverine","Jar Jar"]},
+    "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",   sw:"yoda",
+                             n:["Belichick","Colonel Sanders","Bobby Boucher","Yoda"]},
+    "Kill Bill":            {og:null,        funny:"bravo",      danger:"batman",    sw:"anakin",
+                             n:["Garrett","Johnny Bravo","Batman","Anakin"]},
+    "Blitz":                {og:"osufan",    funny:"brutus",     danger:"chief",     sw:"luke",
+                             n:["Buckeye Guy","Brutus","Master Chief","Luke Skywalker"]},
+    /* the commissioner keeps one more in the wardrobe than the toggle exposes */
+    "Flacc Shots":          {og:"belfort",   funny:"wonka",      danger:"agent47b",  sw:"darthmaul", mob:"godfather",
+                             n:["Jordan Belfort","Willy Wonka","Agent 47","Darth Maul","The Godfather"]}
   };
-  const FITKEYS=["og","funny","danger"];
-  const FITLBL={og:"OG",funny:"FUNNY",danger:"DANGER"};
+  const FITKEYS=["og","funny","danger","sw"];
+  const FITLBL={og:"OG",funny:"FUNNY",danger:"DANGER",sw:"STAR WARS",mob:"THE FAMILY"};
+  const FITICON={og:"\u{1F464}",funny:"\u{1F3AD}",danger:"\u2620\uFE0F",sw:"\u2694\uFE0F",mob:"\u{1F339}"};
 
   /* the commissioner's choice travels with the site; a device can pin its own */
   const LEAGUEFIT="funny";                    /* what Flacc Shots has the league set to */
@@ -9228,13 +9808,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       /* og:null means the owner's own body — leaving base untouched does that */
     }
     const btn=$("#castbtn");
-    if(btn) btn.innerHTML=(FITMODE==="og"?"👤":FITMODE==="funny"?"🎭":"☠️")+
-      '<span class="lbl"> '+FITLBL[FITMODE]+'</span>';
+    if(btn) btn.innerHTML=(FITICON[FITMODE]||"👤")+'<span class="lbl"> '+FITLBL[FITMODE]+'</span>';
     if(!quiet){ sysLog("👕 The floor changes clothes — "+FITLBL[FITMODE]+" fits.");
-      toast((FITMODE==="og"?"👤 ":FITMODE==="funny"?"🎭 ":"☠️ ")+FITLBL[FITMODE]); }
+      toast((FITICON[FITMODE]||"")+" "+FITLBL[FITMODE]); }
   }
   /* the button cycles; the commissioner gets a panel to set the league default */
-  function cycleFit(){ applyFit(FITKEYS[(FITKEYS.indexOf(FITMODE)+1)%3]); }
+  function cycleFit(){ applyFit(FITKEYS[(FITKEYS.indexOf(FITMODE)+1)%FITKEYS.length]); }
   function fitPanel(){
     let el=$("#fitui");
     if(!el){ el=document.createElement("div"); el.id="fitui";
@@ -9737,12 +10316,17 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   }
   function netLogLine(l,quiet){
     if(!l) return;
+    /* the server logs house chatter too — only a person typing or a person
+       arriving belongs on the wire */
+    if(l.k!=="chat" && !/walked in\.|stepped out\./.test(l.x||"")) return;
     const txt = l.k==="chat" ? `${l.who}: ${l.x}` : l.x;
     chat.push({s:l.k!=="chat"?1:0, w:l.k==="chat"?l.team:undefined, x:l.k==="chat"?l.x:txt});
     if(chat.length>140) chat=chat.slice(-140);
     if(!quiet) store.set("chat",chat);
     renderChat();
   }
+  function stepShoot(){ if(player&&player.shoot>0) player.shoot--; 
+    for(const n of NPCS) if(n.shoot>0) n.shoot--; }
   function stepNet(){
     if(!NET.on) return;
     const t=Date.now();
@@ -10076,7 +10660,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     for(let i=confetti.length-1;i>=0;i--){ const p=confetti[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=.02; p.life-=.004;
       if(p.life<=0||p.y>H){confetti.splice(i,1);continue;}
       cx.globalAlpha=Math.min(1,p.life*2); cx.fillStyle=p.c; cx.fillRect(p.x,p.y,p.r,p.r*.6); cx.globalAlpha=1; }
-    stepProps(); stepSouls(); stepServe(); stepBuffs(); if(!NET.on) stepRent(); stepNet(); stepBookHud(); stepSeats(); stepAmb(); drawAmb(); drawCeiling();
+    stepProps(); stepSouls(); stepServe(); stepBuffs(); if(!NET.on) stepRent(); stepNet(); stepShoot(); stepBookHud(); stepSeats(); stepAmb(); drawAmb(); drawCeiling();
     if(party&&Math.random()<.3) confetti.push({x:Math.random()*W,y:WALL,vx:(Math.random()-.5)*1.4,vy:1+Math.random()*2,c:["#d4af37","#c8102e","#4d9fff","#2e8b57","#c959ff"][Math.floor(Math.random()*5)],r:3+Math.random()*4,life:1});
     cx.setTransform(DPR,0,0,DPR,0,0);
     const vg=cx.createRadialGradient(innerWidth/2,innerHeight/2,Math.min(innerWidth,innerHeight)*.42,innerWidth/2,innerHeight/2,Math.max(innerWidth,innerHeight)*.75);
