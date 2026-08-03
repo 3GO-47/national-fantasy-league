@@ -2835,7 +2835,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
    "Are you winning son?":{o:"Phillips",p:"bosnian",  hs:.97, wf:1.16, skin:"#d9a06b", hair:"#3a2a18"},
    "Silence of the Lamb": {o:"Ferrand",   p:"colts-skel",hs:1.10,wf:.74,  skin:"#e6e0d2", hair:"#26221c", loud:1},
    "My Kupp Hurts":       {o:"Griff",   p:"pnw",      hs:1.13, wf:1.06, skin:"#d9b08c", hair:"#4a3018"},
-   "Django Achaned":      {o:"Kenny",   p:"pads",     hs:.86,  wf:1.02, skin:"#c9a879", hair:"#1c1c1c", quick:1},
+   "Django Achaned":      {o:"Kenny",   p:"pads",     hs:.97,  wf:1.02, skin:"#c9a879", hair:"#1c1c1c", quick:1},
    "Suck my Footballz":   {o:"Jacob",   p:"iu",       hs:1.10, wf:.72,  skin:"#cfa77c", hair:"#5a4a2f"},
    "DoughBoy$":           {o:"Jake",    p:"dadbod",   hs:1.0,  wf:.90, skin:"#d9b08c", hair:"#3a2a18", chn:1, loud:1, shady:1},
    "Sandusky Shower Buddy":{o:"Scott",  p:"bears",    hs:.92,  wf:.90,  skin:"#f0c8a8", hair:"#e2582b"},
@@ -6024,7 +6024,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   }
 
   /* ═══════════════ v6 · BLACKJACK with a built-in count ═══════════════ */
-  const BJ={shoe:[],run:0,seen:0,DECKS:6,hand:[],dealer:[],bet:25,state:"idle",get bank(){return RENT.me;}, set bank(v){RENT.me=Math.max(0,v); rentSave(); rentHud();},msg:"",wins:0,plays:0};
+  const BJ={shoe:[],run:0,seen:0,DECKS:6,hand:[],hands:[],hi:0,ins:0,insOffer:false,solo:false,dealer:[],bet:25,state:"idle",get bank(){return RENT.me;}, set bank(v){RENT.me=Math.max(0,v); rentSave(); rentHud();},msg:"",wins:0,plays:0};
   function bjShuffle(){ BJ.shoe=[]; for(let d=0;d<BJ.DECKS;d++) for(let s=0;s<4;s++) for(let r=1;r<=13;r++) BJ.shoe.push({r,s});
     for(let i=BJ.shoe.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [BJ.shoe[i],BJ.shoe[j]]=[BJ.shoe[j],BJ.shoe[i]]; }
     BJ.run=0; BJ.seen=0; }
@@ -6060,7 +6060,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     return el; }
   function bjRender(){
     const el=bjUI(); if(el.style.display==="none") return;
-    if(NET.on) return bjLive(el);
+    if(NET.on&&!BJ.solo) return bjLive(el);
     const card=c=>`<span style="display:inline-block;min-width:32px;text-align:center;background:#f4f1e8;color:${c.s===1||c.s===2?"#c8102e":"#14100c"};border-radius:4px;padding:5px 4px;margin:2px;font-weight:800;font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.4)">${RANK[c.r]}${SUIT[c.s]}</span>`;
     const back=`<span style="display:inline-block;min-width:32px;text-align:center;background:linear-gradient(135deg,#8f1d2c,#4a0d16);color:#d4af37;border-radius:4px;padding:5px 4px;margin:2px;font-weight:800;font-size:14px">★</span>`;
     const tc=bjTrue(), pen=((BJ.seen/(BJ.DECKS*52))*100).toFixed(0);
@@ -6072,9 +6072,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       <div style="background:rgba(0,0,0,.32);border-radius:10px;padding:10px 12px;margin-bottom:8px">
         <div style="font-size:10px;letter-spacing:2px;color:#7fbf95">THE HOUSE SHOWS</div>
         <div>${dealerCards} <b style="color:#cfe8d4;font-size:12px">${BJ.state==="play"?"":bjTotal(BJ.dealer)}</b></div></div>
-      <div style="background:rgba(0,0,0,.32);border-radius:10px;padding:10px 12px">
-        <div style="font-size:10px;letter-spacing:2px;color:#7fbf95">YOU</div>
-        <div>${BJ.hand.map(card).join("")} <b style="color:#f0c95c;font-size:13px">${bjTotal(BJ.hand)}</b></div></div>
+      ${(BJ.hands.length?BJ.hands:[{cards:BJ.hand,bet:BJ.bet}]).map((h,i)=>`
+      <div style="background:${BJ.state==="play"&&i===BJ.hi?"rgba(240,201,92,.12)":"rgba(0,0,0,.32)"};border-radius:10px;padding:9px 12px;margin-bottom:5px;border:1px solid ${BJ.state==="play"&&i===BJ.hi?"rgba(240,201,92,.5)":"transparent"}">
+        <div style="font-size:10px;letter-spacing:2px;color:#7fbf95">${BJ.hands.length>1?"HAND "+(i+1):"YOU"}${h.bet?` · $${h.bet}`:""}${h.surr?" · SURRENDERED":""}${h.dbl?" · DOUBLED":""}</div>
+        <div>${(h.cards||[]).map(card).join("")} <b style="color:#f0c95c;font-size:13px">${bjTotal(h.cards||[])}</b></div></div>`).join("")}
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0;font-size:10px;text-align:center">
         <div style="background:rgba(46,139,87,.14);border-radius:7px;padding:6px"><div style="color:#7fbf95;letter-spacing:1px">RUNNING</div><b style="font-size:15px;color:${BJ.run>0?"#8df08d":BJ.run<0?"#ff8a8a":"#e8f2ea"}">${BJ.run>0?"+":""}${BJ.run}</b></div>
         <div style="background:rgba(46,139,87,.14);border-radius:7px;padding:6px"><div style="color:#7fbf95;letter-spacing:1px">TRUE</div><b style="font-size:15px;color:${tc>=2?"#f0c95c":"#e8f2ea"}">${tc>0?"+":""}${tc.toFixed(1)}</b></div>
@@ -6083,38 +6084,111 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       <div style="font-size:11px;color:#9fd8b4;margin-bottom:8px">📐 BASIC STRATEGY: <b style="color:#f0c95c">${bjHint()}</b>${tc>=2?` · <span style="color:#f0c95c">count is hot — press the bet</span>`:tc<=-1?` · <span style="color:#ff9a9a">count is cold — bet the minimum</span>`:""}</div>
       <div style="min-height:18px;font-size:12px;font-weight:700;color:#f0c95c;margin-bottom:8px">${BJ.msg}</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        ${BJ.state==="play"
-          ? `<button class="bjb" data-a="hit">HIT</button><button class="bjb" data-a="stand">STAND</button><button class="bjb" data-a="double">DOUBLE</button>`
+        ${BJ.state==="ins"
+          ? `<button class="bjb" data-a="ins-yes">INSURANCE $${Math.floor((BJ.hands[0]||{bet:BJ.bet}).bet/2)}</button><button class="bjb" data-a="ins-no">NO INSURANCE</button>`
+          : BJ.state==="play"
+          ? `<button class="bjb" data-a="hit">HIT</button><button class="bjb" data-a="stand">STAND</button>`
+            +`<button class="bjb" data-a="double">DOUBLE</button>`
+            +(bjCanSplit(bjHand())?`<button class="bjb" data-a="split">SPLIT</button>`:"")
+            +((bjHand().cards||[]).length===2&&BJ.hands.length===1?`<button class="bjb" data-a="surrender">SURRENDER</button>`:"")
           : `<button class="bjb" data-a="bet-">– $25</button><button class="bjb" data-a="deal">DEAL $${BJ.bet}</button><button class="bjb" data-a="bet+">+ $25</button><button class="bjb" data-a="shuffle">NEW SHOE</button>`}
       </div>
-      <div style="margin-top:8px;font-size:10px;color:#5f8f72">hands ${BJ.plays} · won ${BJ.wins} · hi-lo count runs live off every card dealt</div>`;
+      <div style="margin-top:8px;font-size:10px;color:#5f8f72">hands ${BJ.plays} · won ${BJ.wins} · every card out of the shoe moves the running count
+        ${NET.on?`· <a href="#" id="bjback" style="color:#8df08d">back to the house table</a>`:""}</div>`;
     el.querySelectorAll(".bjb").forEach(b=>{
       b.style.cssText="flex:1;min-width:88px;background:linear-gradient(180deg,#2e8b57,#1d5c39);border:none;color:#eafff0;font-weight:800;letter-spacing:1px;border-radius:8px;padding:9px 6px;cursor:pointer;font-size:11px;font-family:inherit";
       b.onclick=()=>bjAct(b.dataset.a); });
     $("#bjx").onclick=()=>{ el.style.display="none"; };
+    const bk=$("#bjback"); if(bk) bk.onclick=e=>{ e.preventDefault(); BJ.solo=false; bjRender(); };
   }
+  /* ══════════════════════════════════════════════════════════════════════════
+     THE TABLE — six decks, S17, blackjack pays 3:2, surrender allowed, split
+     to three hands, insurance offered when the house shows an ace. The running
+     count moves on every card that leaves the shoe, yours or the dealer's.
+     ══════════════════════════════════════════════════════════════════════════ */
+  const bjNewHand=()=>({cards:[],bet:0,done:false,res:null,dbl:false,surr:false});
+  function bjReset(){ BJ.hands=[]; BJ.hi=0; BJ.dealer=[]; BJ.ins=0; BJ.insOffer=false; BJ.state="idle"; }
+  const bjHand=()=>BJ.hands[BJ.hi]||{cards:[]};
+  const bjIsBJ=h=>h.cards.length===2&&bjTotal(h.cards)===21&&!h.split;
+  function bjPay(n,why){ BJ.bank+=n; ledgerTx(-n,"you","blackjack · "+why); rentSave(); }
+  function bjTake(n,why){ BJ.bank-=n; ledgerTx(n,"you","blackjack · "+why); rentSave(); }
+
+  function bjStake(){ return BJ.hands.reduce((s,h)=>s+h.bet,0)+BJ.ins; }
+  function bjCanSplit(h){
+    return BJ.hands.length<3 && h.cards.length===2 && !h.done
+      && bjVal(h.cards[0])===bjVal(h.cards[1]) && BJ.bank>=h.bet;
+  }
+  function bjNext(){
+    /* move to the next hand that still needs a decision */
+    while(BJ.hi<BJ.hands.length && BJ.hands[BJ.hi].done) BJ.hi++;
+    if(BJ.hi<BJ.hands.length){
+      const h=BJ.hands[BJ.hi];
+      if(h.cards.length===1) h.cards.push(bjDraw());      /* a freshly split hand gets its second card */
+      if(bjTotal(h.cards)===21){ h.done=true; return bjNext(); }
+      return;
+    }
+    bjSettle();
+  }
+  function bjSettle(){
+    /* the house plays only if somebody is still standing */
+    const live=BJ.hands.some(h=>!h.surr&&bjTotal(h.cards)<=21);
+    if(live) while(bjTotal(BJ.dealer)<17) BJ.dealer.push(bjDraw());
+    const d=bjTotal(BJ.dealer), dBJ=BJ.dealer.length===2&&d===21;
+    const lines=[];
+    for(const h of BJ.hands){
+      const p=bjTotal(h.cards);
+      if(h.surr){ bjTake(Math.round(h.bet/2),"surrender"); lines.push(`surrendered −$${Math.round(h.bet/2)}`); continue; }
+      if(bjIsBJ(h)&&!dBJ){ const w=Math.round(h.bet*1.5); bjPay(w,"natural"); BJ.wins++; lines.push(`BLACKJACK +$${w}`); award("card",30); continue; }
+      if(p>21){ bjTake(h.bet,"bust"); lines.push(`bust ${p} −$${h.bet}`); continue; }
+      if(dBJ&&!bjIsBJ(h)){ bjTake(h.bet,"dealer blackjack"); lines.push(`dealer blackjack −$${h.bet}`); continue; }
+      if(d>21||p>d){ bjPay(h.bet,"player wins"); BJ.wins++; lines.push(`${p} beats ${d>21?"bust":d} +$${h.bet}`); award("card",22); }
+      else if(p===d){ lines.push(`push ${p}`); award("card",6); }
+      else { bjTake(h.bet,"house wins"); lines.push(`${p} loses to ${d} −$${h.bet}`); award("card",4); }
+    }
+    /* insurance settles against the dealer's hole card, not the hand */
+    if(BJ.ins>0){ if(dBJ){ bjPay(BJ.ins*2,"insurance"); lines.push(`insurance +$${BJ.ins*2}`); }
+      else { bjTake(BJ.ins,"insurance lost"); lines.push(`insurance −$${BJ.ins}`); } }
+    BJ.msg=lines.join(" · ");
+    BJ.state="idle"; BJ.hi=0;
+  }
+
   function bjAct(a){
+    const h=bjHand();
     if(a==="bet+") BJ.bet=Math.min(500,BJ.bet+25);
     else if(a==="bet-") BJ.bet=Math.max(25,BJ.bet-25);
-    else if(a==="shuffle"){ bjShuffle(); BJ.msg="Fresh shoe. Count reset."; }
+    else if(a==="shuffle"){ bjShuffle(); BJ.msg="Fresh shoe. The count resets."; }
     else if(a==="deal"){
       if(BJ.bank<BJ.bet){ BJ.msg="Lloyd: so you're telling me there's a chance? No. You're out of rent money."; bjRender(); return; }
-      BJ.hand=[bjDraw(),bjDraw()]; BJ.dealer=[bjDraw(),bjDraw()]; BJ.state="play"; BJ.msg=""; BJ.plays++;
-      if(bjTotal(BJ.hand)===21){ BJ.bank+=Math.round(BJ.bet*1.5); ledgerTx(-Math.round(BJ.bet*1.5),"you","blackjack · natural"); BJ.wins++; BJ.state="idle";
-        BJ.msg=`BLACKJACK. +$${Math.round(BJ.bet*1.5)}`; award("card",30); rentSave(); } }
-    else if(a==="hit"){ BJ.hand.push(bjDraw());
-      if(bjTotal(BJ.hand)>21){ BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · bust"); BJ.state="idle"; BJ.msg=`BUST at ${bjTotal(BJ.hand)}. −$${BJ.bet}`; rentSave(); award("card",4); } }
-    else if(a==="double"){ if(BJ.bank>=BJ.bet*2){ BJ.bet*=2; BJ.hand.push(bjDraw()); a="stand"; } else BJ.msg="Not enough in the bank to double."; }
-    if(a==="stand"&&BJ.state==="play"){
-      while(bjTotal(BJ.dealer)<17) BJ.dealer.push(bjDraw());
-      const p=bjTotal(BJ.hand), d=bjTotal(BJ.dealer);
-      if(p>21){ BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · bust"); BJ.msg=`BUST. −$${BJ.bet}`; }
-      else if(d>21||p>d){ BJ.bank+=BJ.bet; BJ.wins++; ledgerTx(-BJ.bet,"you","blackjack · player wins"); BJ.msg=`YOU WIN ${p} to ${d>21?"BUST":d}. +$${BJ.bet}`; award("card",22); grant("chip"); }
-      else if(p===d){ BJ.msg=`PUSH at ${p}.`; award("card",6); }
-      else { BJ.bank-=BJ.bet; ledgerTx(BJ.bet,"you","blackjack · house wins"); BJ.msg=`HOUSE TAKES IT ${d} to ${p}. −$${BJ.bet}`; award("card",4); }
-      BJ.state="idle"; BJ.bet=Math.max(25,Math.min(500,BJ.bet)); rentSave(); }
+      bjReset();
+      const first=bjNewHand(); first.bet=BJ.bet; first.cards=[bjDraw(),bjDraw()];
+      BJ.hands=[first]; BJ.dealer=[bjDraw(),bjDraw()];
+      BJ.state="play"; BJ.msg=""; BJ.plays++;
+      if(BJ.dealer[0].r===1&&BJ.bank>=Math.floor(BJ.bet/2)){ BJ.insOffer=true; BJ.state="ins"; BJ.msg="The house shows an ace."; }
+      else if(bjTotal(first.cards)===21||bjTotal(BJ.dealer)===21){ first.done=true; bjSettle(); }
+    }
+    else if(a==="ins-yes"){ BJ.ins=Math.floor(BJ.hands[0].bet/2); BJ.insOffer=false; BJ.state="play"; BJ.msg=`Insurance $${BJ.ins}.`;
+      if(bjTotal(BJ.dealer)===21||bjTotal(BJ.hands[0].cards)===21){ BJ.hands[0].done=true; bjSettle(); } }
+    else if(a==="ins-no"){ BJ.insOffer=false; BJ.state="play"; BJ.msg="";
+      if(bjTotal(BJ.dealer)===21||bjTotal(BJ.hands[0].cards)===21){ BJ.hands[0].done=true; bjSettle(); } }
+    else if(a==="hit"){ h.cards.push(bjDraw());
+      if(bjTotal(h.cards)>=21){ h.done=true; bjNext(); } }
+    else if(a==="stand"){ h.done=true; bjNext(); }
+    else if(a==="double"){
+      if(BJ.bank<bjStake()+h.bet){ BJ.msg="Not enough rent money to double."; }
+      else { h.bet*=2; h.dbl=true; h.cards.push(bjDraw()); h.done=true; bjNext(); } }
+    else if(a==="split"){
+      if(!bjCanSplit(h)) BJ.msg="That hand cannot be split.";
+      else { const n=bjNewHand(); n.bet=h.bet; n.split=h.split=true;
+        n.cards=[h.cards.pop()]; h.cards.push(bjDraw());
+        BJ.hands.splice(BJ.hi+1,0,n);
+        if(bjTotal(h.cards)===21){ h.done=true; bjNext(); } } }
+    else if(a==="surrender"){
+      if(h.cards.length!==2||BJ.hands.length>1) BJ.msg="Surrender is only on the opening two cards.";
+      else { h.surr=true; h.done=true; bjNext(); } }
+    BJ.bet=Math.max(25,Math.min(500,BJ.bet));
     bjRender();
   }
+
   function bjLive(el){
     const B=NET.sbj;
     if(!B){ el.innerHTML='<div style="color:#8df08d">Waiting for the house…</div>'; return; }
@@ -9751,6 +9825,59 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     CB.chrome(a,o,isMe,tw,hy,headY,hr); }
   });
 
+  Object.assign(CELEBART,{
+  /* ── QUI-GON JINN — the long coat, the long hair, the green blade ── */
+  quigon(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e2bb94";
+    cx.fillStyle="#4a3524";                                            /* the outer robe, open */
+    cx.beginPath(); cx.moveTo(a.x-tw-4,hy+1); cx.lineTo(a.x-tw-7,a.y+20);
+    cx.lineTo(a.x+tw+7,a.y+20); cx.lineTo(a.x+tw+4,hy+1); cx.closePath(); cx.fill();
+    CB.legs(a,b,"#6b5436","#3a2a18");
+    CB.torso(a,tw,th,hy,"#cbb389");                                    /* the tunic under it */
+    cx.fillStyle="#8a7048"; cx.beginPath();                            /* crossed front */
+    cx.moveTo(a.x-tw,hy); cx.lineTo(a.x+4,hy+6); cx.lineTo(a.x-tw*.6,hy+th); cx.lineTo(a.x-tw,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="#4a3524"; cx.fillRect(a.x-tw+1,hy+th-9,tw*2-2,6);    /* the belt */
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-4,hy+th-9,8,6);
+    const hq=CB.arms(a,tw,th,hy,"#cbb389",sk,{});
+    cx.strokeStyle="#8a8f98"; cx.lineWidth=2.6;                        /* hilt */
+    cx.beginPath(); cx.moveTo(a.x+tw+8,hq-2); cx.lineTo(a.x+tw+8,hq-13); cx.stroke();
+    cx.shadowColor="#3bff6a"; cx.shadowBlur=9;
+    cx.strokeStyle="#5cff86"; cx.lineWidth=3;
+    cx.beginPath(); cx.moveTo(a.x+tw+8,hq-14); cx.lineTo(a.x+tw+8,hq-46); cx.stroke();
+    cx.shadowBlur=0;
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#8a7357";                                            /* long hair, tucked behind */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.42,hr*1.06,hr*.66,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*1.06,headY-hr*.5,hr*.42,hr*1.9,4); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+hr*.64,headY-hr*.5,hr*.42,hr*1.9,4); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    CB.beard(a,headY,hr,"#8a7357",1);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── THE TERMINATOR — leather, shades, and one eye that gives it away ── */
+  terminator(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), t=Date.now()/1000;
+    CB.legs(a,b,"#16161a","#0e0e12",{boot:"#101014"});
+    CB.torso(a,tw,th,hy,"#1c1c20");                                    /* the jacket */
+    cx.fillStyle="#0e0e12";
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-3,hy+4); cx.lineTo(a.x-tw*.64,hy+th); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+3,hy+4); cx.lineTo(a.x+tw*.64,hy+th); cx.closePath(); cx.fill();
+    cx.fillStyle="rgba(190,196,206,.5)"; cx.fillRect(a.x-3,hy+5,6,th-12);   /* chrome showing through */
+    cx.strokeStyle="rgba(120,128,140,.45)"; cx.lineWidth=.9;
+    for(let i=0;i<4;i++){ cx.beginPath(); cx.moveTo(a.x-3,hy+9+i*6); cx.lineTo(a.x+3,hy+9+i*6); cx.stroke(); }
+    cx.fillStyle="#2a2a30"; cx.fillRect(a.x-tw+1,hy+th-7,tw*2-2,5);
+    CB.arms(a,tw,th,hy,"#1c1c20","#d8b092",{bulk:1});
+    CB.head(a,headY,hr,"#d8b092");
+    cx.fillStyle="#241c18";                                            /* dark crop */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.5,hr*1.02,hr*.62,0,Math.PI,0); cx.fill();
+    cx.fillStyle="#101014";                                            /* shades */
+    cx.beginPath(); cx.roundRect(a.x-hr*.86,headY-hr*.22,hr*1.72,5.4,2); cx.fill();
+    const gl=.5+Math.sin(t*2.6)*.5;
+    cx.shadowColor="#ff2a2a"; cx.shadowBlur=8*gl;
+    cx.fillStyle=`rgba(255,45,45,${.6+gl*.4})`;
+    cx.beginPath(); cx.arc(a.x+hr*.34,headY-hr*.02,1.9,0,7); cx.fill();
+    cx.shadowBlur=0;
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  });
+
   /* ══════════════════════════════════════════════════════════════════════
      THE FITS — four bodies per chair. OG is the owner drawn as himself,
      the one we started with; FUNNY and DANGER are borrowed. The commissioner
@@ -9765,14 +9892,14 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
                              n:["Scott","Saul Goodman","Dr Evil","Han Solo"]},
     "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",  sw:"macewindu",
                              n:["Tylor","Coach Prime","Predator","Mace Windu"]},
-    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"vader",     sw:"vader",
-                             n:["Ferrand","Ron Burgundy","Darth Vader","Darth Vader"]},
-    "Are you winning son?": {og:null,        funny:"borat",      danger:"homelander",sw:"obiwan",
-                             n:["Phillips","Borat","Homelander","Obi-Wan"]},
+    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"homelander",sw:"vader",
+                             n:["Ferrand","Ron Burgundy","Homelander","Darth Vader"]},
+    "Are you winning son?": {og:null,        funny:"borat",      danger:"terminator",sw:"obiwan",
+                             n:["Phillips","Borat","Terminator","Obi-Wan"]},
     "My Kupp Hurts":        {og:null,        funny:"soprano",    danger:"bane",      sw:"chewbacca",
                              n:["Griff","Tony Soprano","Bane","Chewbacca"]},
-    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine", sw:"jarjar",
-                             n:["Uncle Rico","The Riddler","Wolverine","Jar Jar"]},
+    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine", sw:"quigon",
+                             n:["Uncle Rico","The Riddler","Wolverine","Qui-Gon Jinn"]},
     "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",   sw:"yoda",
                              n:["Belichick","Colonel Sanders","Bobby Boucher","Yoda"]},
     "Kill Bill":            {og:null,        funny:"bravo",      danger:"batman",    sw:"anakin",
