@@ -3253,7 +3253,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
               <div style="font-size:10px;color:#8df08d;margin-top:4px">skills compound while you're away · tecmo best ${store.get("tecmoHS",0)||0} · rent money ${rentFmt(RENT.me)}</div></div>`; })(); }
     else if(panelMode==="fit"){ title.textContent="🕴 WARDROBE";
       const mt=meTeam(), F=(typeof FITS!=="undefined"&&mt)?FITS[mt.name]:null;
-      const KEYS=F?["og","funny","danger","sw","mob"].filter(k=>k in F):[];
+      const KEYS=F?["og","funny","danger","sw","n64","mob","mm"].filter(k=>k in F):[];
       const who=F?`<div class="fitg"><div class="fitl">WHO YOU ARE</div><div class="fitc">`+
         KEYS.map((k,i)=>`<button class="fchip pchip ${(fit.persona||fitMode())===k?"on":""}" data-p="${k}">${esc(F.n[i])}</button>`).join("")+
         `</div></div><div class="pnote" style="margin:-2px 0 8px">the league is showing <b>${esc(F.n[KEYS.indexOf(fitMode())]||F.n[0])}</b> by default — this is just for you</div>`:"";
@@ -9482,6 +9482,12 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     cx.fillStyle="#1a1410";                                            /* two dots, on a bigger skull */
     cx.beginPath(); cx.arc(a.x-R*.3,hd+R*.06,2.1,0,7); cx.fill();
     cx.beginPath(); cx.arc(a.x+R*.3,hd+R*.06,2.1,0,7); cx.fill();
+    cx.strokeStyle="#8a8f98"; cx.lineWidth=2.4;                        /* the hilt, held low */
+    cx.beginPath(); cx.moveTo(a.x+tw+6,hy+22); cx.lineTo(a.x+tw+6,hy+14); cx.stroke();
+    cx.shadowColor="#3bff6a"; cx.shadowBlur=9;                         /* and the blade */
+    cx.strokeStyle="#5cff86"; cx.lineWidth=3;
+    cx.beginPath(); cx.moveTo(a.x+tw+6,hy+13); cx.lineTo(a.x+tw+6,hy-15); cx.stroke();
+    cx.shadowBlur=0;
     CB.chrome(a,o,isMe,tw,hy,headY,hr); },
 
   /* ── Jar Jar Binks — the earflaps are the entire silhouette ── */
@@ -9949,41 +9955,480 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     CB.chrome(a,o,isMe,tw,hy,headY,hr); }
   });
 
+
+  /* ══ THE N64 CAST ══ */
+  Object.assign(CELEBART,{
+
+  /* ── Mario — the cap does the introductions, the gloves do the rest ── */
+  mario(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    CB.legs(a,b,"#2a52be","#4a2f14",{boot:"#4a2f14"});
+    CB.torso(a,tw,th,hy,"#c8102e");                                    /* the shirt, under everything */
+    cx.fillStyle="#2a52be";                                            /* dungarees, bib and all */
+    cx.beginPath(); cx.roundRect(a.x-tw*.68,hy+th*.3,tw*1.36,th*.72,[3,3,8,8]); cx.fill();
+    cx.fillRect(a.x-tw*.62,hy+2,4.4,th*.42);
+    cx.fillRect(a.x+tw*.62-4.4,hy+2,4.4,th*.42);
+    cx.fillStyle="#f0c95c";                                            /* two brass buttons */
+    cx.beginPath(); cx.arc(a.x-tw*.46,hy+th*.36,2.1,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw*.46,hy+th*.36,2.1,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,"#c8102e","#f4f1e8",{});                        /* gloves, permanently white */
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#2a1a10";                                            /* sideburns */
+    cx.fillRect(a.x-hr*.98,headY-hr*.16,hr*.26,hr*.6);
+    cx.fillRect(a.x+hr*.72,headY-hr*.16,hr*.26,hr*.6);
+    CB.eyes(a,headY,hr,{});
+    CB.tache(a,headY,hr,"#2a1a10");
+    cx.fillStyle="#c8102e";                                            /* the cap */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.4,hr*1.06,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*1.3,headY-hr*.56,hr*2.6,hr*.34,2); cx.fill();
+    cx.fillStyle="#f4f1e8";
+    cx.beginPath(); cx.arc(a.x,headY-hr*.98,hr*.42,0,7); cx.fill();
+    cx.fillStyle="#c8102e"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("M",a.x,headY-hr*.78);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Luigi — the same man drawn longer, and never quite first ── */
+  luigi(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    CB.legs(a,b,"#2a52be","#3a2610",{boot:"#3a2610"});
+    CB.torso(a,tw,th,hy,"#2f9f4a");                                    /* green, and leaner with it */
+    cx.fillStyle="#2a52be";
+    cx.beginPath(); cx.roundRect(a.x-tw*.62,hy+th*.34,tw*1.24,th*.68,[3,3,8,8]); cx.fill();
+    cx.fillRect(a.x-tw*.56,hy+2,4,th*.44);
+    cx.fillRect(a.x+tw*.56-4,hy+2,4,th*.44);
+    cx.fillStyle="#f0c95c";
+    cx.beginPath(); cx.arc(a.x-tw*.42,hy+th*.4,2,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw*.42,hy+th*.4,2,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,"#2f9f4a","#f4f1e8",{thin:1});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle="#2a1a10";
+    cx.fillRect(a.x-hr*.98,headY-hr*.16,hr*.26,hr*.62);
+    cx.fillRect(a.x+hr*.72,headY-hr*.16,hr*.26,hr*.62);
+    CB.eyes(a,headY,hr,{});
+    CB.tache(a,headY,hr,"#2a1a10");
+    cx.fillStyle="#2f9f4a";                                            /* the cap, a size taller */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.44,hr*1.04,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*1.28,headY-hr*.58,hr*2.56,hr*.32,2); cx.fill();
+    cx.fillStyle="#f4f1e8";
+    cx.beginPath(); cx.arc(a.x,headY-hr*1.02,hr*.42,0,7); cx.fill();
+    cx.fillStyle="#2f9f4a"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("L",a.x,headY-hr*.82);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Wario — wider than he is tall, and the moustache arrived first ── */
+  wario(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    CB.legs(a,b,"#6b2fa0","#2f8f3f",{boot:"#2f8f3f"});
+    CB.torso(a,tw,th,hy,"#f0c020");                                    /* yellow, loudly */
+    cx.fillStyle="#6b2fa0";                                            /* purple dungarees */
+    cx.beginPath(); cx.roundRect(a.x-tw*.78,hy+th*.28,tw*1.56,th*.74,[3,3,8,8]); cx.fill();
+    cx.fillRect(a.x-tw*.7,hy+2,5,th*.4);
+    cx.fillRect(a.x+tw*.7-5,hy+2,5,th*.4);
+    cx.fillStyle="#f0c95c";
+    cx.beginPath(); cx.arc(a.x-tw*.5,hy+th*.34,2.3,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw*.5,hy+th*.34,2.3,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,"#f0c020","#f4f1e8",{bulk:1});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle=sk; cx.beginPath();                                   /* the chin, sharpened */
+    cx.moveTo(a.x-hr*.46,headY+hr*.7); cx.lineTo(a.x+hr*.46,headY+hr*.7);
+    cx.lineTo(a.x,headY+hr*1.66); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#cf8496"; cx.beginPath();                            /* jagged, and the width of the head */
+    cx.moveTo(a.x-hr*1.28,headY+hr*.1); cx.lineTo(a.x+hr*1.28,headY+hr*.1);
+    cx.lineTo(a.x+hr*.92,headY+hr*.48); cx.lineTo(a.x+hr*.6,headY+hr*.18);
+    cx.lineTo(a.x+hr*.3,headY+hr*.6); cx.lineTo(a.x,headY+hr*.22);
+    cx.lineTo(a.x-hr*.3,headY+hr*.6); cx.lineTo(a.x-hr*.6,headY+hr*.18);
+    cx.lineTo(a.x-hr*.92,headY+hr*.48); cx.closePath(); cx.fill();
+    cx.fillStyle="#f0c020";                                            /* the cap */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.4,hr*1.08,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*1.34,headY-hr*.54,hr*2.68,hr*.34,2); cx.fill();
+    cx.fillStyle="#f4f1e8";
+    cx.beginPath(); cx.arc(a.x,headY-hr*.98,hr*.44,0,7); cx.fill();
+    cx.fillStyle="#2a52be"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("W",a.x,headY-hr*.78);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Waluigi — all vertical, and the L is on upside down for a reason ── */
+  waluigi(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e8bb90";
+    CB.legs(a,b,"#1a1a20","#e07a20",{boot:"#e07a20"});
+    CB.torso(a,tw,th,hy,"#7b3fb0");                                    /* purple, stretched */
+    cx.fillStyle="#17171c";                                            /* black dungarees */
+    cx.beginPath(); cx.roundRect(a.x-tw*.56,hy+th*.36,tw*1.12,th*.66,[3,3,8,8]); cx.fill();
+    cx.fillRect(a.x-tw*.5,hy+2,3.6,th*.46);
+    cx.fillRect(a.x+tw*.5-3.6,hy+2,3.6,th*.46);
+    cx.fillStyle="#f0c020";
+    cx.beginPath(); cx.arc(a.x-tw*.38,hy+th*.42,1.9,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw*.38,hy+th*.42,1.9,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,"#7b3fb0","#f4f1e8",{thin:1});
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle=sk; cx.beginPath();                                   /* the chin, longer still */
+    cx.moveTo(a.x-hr*.4,headY+hr*.76); cx.lineTo(a.x+hr*.4,headY+hr*.76);
+    cx.lineTo(a.x,headY+hr*1.72); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#2a1a10"; cx.beginPath();                            /* thin, and pointed at both ends */
+    cx.moveTo(a.x-hr*1.4,headY+hr*.02); cx.lineTo(a.x,headY+hr*.3);
+    cx.lineTo(a.x+hr*1.4,headY+hr*.02); cx.lineTo(a.x,headY+hr*.48); cx.closePath(); cx.fill();
+    cx.fillStyle="#7b3fb0";                                            /* the cap */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.44,hr*1.02,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x-hr*1.26,headY-hr*.58,hr*2.52,hr*.32,2); cx.fill();
+    cx.fillStyle="#f4f1e8";
+    cx.beginPath(); cx.arc(a.x,headY-hr*1.02,hr*.42,0,7); cx.fill();
+    cx.save(); cx.translate(a.x,headY-hr*1.02); cx.rotate(Math.PI);    /* upside down, on purpose */
+    cx.fillStyle="#f0c020"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("L",0,2.2); cx.restore();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Yoshi — the shell is a saddle, which tells you what he is for ── */
+  yoshi(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), gr="#3fa83f";
+    cx.fillStyle="#e07a20";                                            /* the saddle, drawn first so it sits behind */
+    cx.beginPath(); cx.roundRect(a.x-tw*1.14,hy+th*.2,tw*2.28,th*.74,10); cx.fill();
+    cx.fillStyle="#f0ece0"; cx.fillRect(a.x-tw*1.14,hy+th*.82,tw*2.28,4.4);
+    CB.legs(a,b,gr,"#e07a20",{boot:"#e07a20"});
+    CB.torso(a,tw,th,hy,gr,13);
+    cx.fillStyle="#f4f1e8";                                            /* the belly */
+    cx.beginPath(); cx.ellipse(a.x,hy+th*.64,tw*.7,th*.32,0,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,gr,gr,{short:1});
+    cx.fillStyle=gr;                                                   /* the head, and the snout that carries it */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.16,hr*1.02,hr*1.02,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.52,hr*.86,hr*.54,0,0,7); cx.fill();
+    cx.fillStyle="rgba(30,90,30,.28)";
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.76,hr*.6,hr*.22,0,0,7); cx.fill();
+    cx.fillStyle="#c8102e";                                            /* spines, back over the skull */
+    for(let i=0;i<4;i++){ const sx=a.x-hr*.1-i*hr*.44, sy=headY-hr*.9+i*hr*.2;
+      cx.beginPath(); cx.moveTo(sx,sy); cx.lineTo(sx-hr*.34,sy-hr*.44);
+      cx.lineTo(sx-hr*.42,sy+hr*.06); cx.closePath(); cx.fill(); }
+    cx.fillStyle="#f8f6f0";                                            /* the eyes are most of the face */
+    cx.beginPath(); cx.ellipse(a.x-hr*.4,headY-hr*.54,hr*.34,hr*.5,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+hr*.4,headY-hr*.54,hr*.34,hr*.5,0,0,7); cx.fill();
+    cx.fillStyle="#1a1410";                                            /* two dots, riding high in them */
+    cx.beginPath(); cx.arc(a.x-hr*.38,headY-hr*.46,1.7,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+hr*.42,headY-hr*.46,1.7,0,7); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Bowser — the shell arrives a half second before the rest of him ── */
+  bowser(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), gr="#9cc03a";
+    cx.fillStyle="#e07a20";                                            /* the shell, over the shoulders */
+    cx.beginPath(); cx.ellipse(a.x,hy+th*.52,tw*1.34,th*.64,0,0,7); cx.fill();
+    cx.fillStyle="#e8e0cc";                                            /* and everything nailed to it */
+    for(let i=0;i<7;i++){ const an=Math.PI+i*(Math.PI/6);
+      const px=a.x+Math.cos(an)*tw*1.3, py=hy+th*.52+Math.sin(an)*th*.6;
+      cx.beginPath(); cx.moveTo(px-3.4,py); cx.lineTo(px+Math.cos(an)*7,py+Math.sin(an)*7);
+      cx.lineTo(px+3.4,py); cx.closePath(); cx.fill(); }
+    CB.legs(a,b,gr,"#e8c878",{});
+    CB.torso(a,tw,th,hy,gr,11);
+    cx.fillStyle="#e8c878";                                            /* belly plates, ledger-ruled */
+    cx.beginPath(); cx.roundRect(a.x-tw*.72,hy+th*.24,tw*1.44,th*.72,6); cx.fill();
+    cx.strokeStyle="rgba(150,110,50,.5)"; cx.lineWidth=1.1;
+    for(let i=0;i<4;i++){ cx.beginPath();
+      cx.moveTo(a.x-tw*.66,hy+th*.36+i*th*.16); cx.lineTo(a.x+tw*.66,hy+th*.36+i*th*.16); cx.stroke(); }
+    const hq=CB.arms(a,tw,th,hy,gr,gr,{bulk:1});
+    cx.fillStyle="#16161a";                                            /* the cuffs */
+    cx.beginPath(); cx.roundRect(a.x-tw-12,hq-11,12,7,2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw,hq-11,12,7,2); cx.fill();
+    cx.fillStyle="#e8e0cc";
+    for(let i=0;i<3;i++){
+      cx.beginPath(); cx.moveTo(a.x-tw-11+i*4,hq-11); cx.lineTo(a.x-tw-9+i*4,hq-16);
+      cx.lineTo(a.x-tw-7+i*4,hq-11); cx.closePath(); cx.fill();
+      cx.beginPath(); cx.moveTo(a.x+tw+1+i*4,hq-11); cx.lineTo(a.x+tw+3+i*4,hq-16);
+      cx.lineTo(a.x+tw+5+i*4,hq-11); cx.closePath(); cx.fill(); }
+    CB.head(a,headY,hr,gr);
+    cx.fillStyle="#e8c878";                                            /* the muzzle */
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.5,hr*.7,hr*.42,0,0,7); cx.fill();
+    cx.fillStyle="#e8e0cc";                                            /* horns, modest by his standards */
+    cx.beginPath(); cx.moveTo(a.x-hr*1.0,headY-hr*.34); cx.lineTo(a.x-hr*1.5,headY-hr*.96);
+    cx.lineTo(a.x-hr*.68,headY-hr*.66); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*1.0,headY-hr*.34); cx.lineTo(a.x+hr*1.5,headY-hr*.96);
+    cx.lineTo(a.x+hr*.68,headY-hr*.66); cx.closePath(); cx.fill();
+    CB.hair(a,headY,hr,"#c8302a","mop");                               /* red, and not a wig */
+    CB.eyes(a,headY,hr,{c:"#c8102e",r:1.7});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Bowser Jr — the bandana is the face; nothing under it is on show ── */
+  bowserjr(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), gr="#9cc03a";
+    cx.fillStyle="#efe9d8";                                            /* the shell, white and too big for him */
+    cx.beginPath(); cx.ellipse(a.x,hy+th*.56,tw*1.22,th*.58,0,0,7); cx.fill();
+    cx.fillStyle="#d8d2c0";
+    for(let i=0;i<6;i++){ const an=Math.PI+i*(Math.PI/5);
+      const px=a.x+Math.cos(an)*tw*1.18, py=hy+th*.56+Math.sin(an)*th*.54;
+      cx.beginPath(); cx.moveTo(px-3,py); cx.lineTo(px+Math.cos(an)*6,py+Math.sin(an)*6);
+      cx.lineTo(px+3,py); cx.closePath(); cx.fill(); }
+    CB.legs(a,b,gr,"#e8c878",{});
+    CB.torso(a,tw,th,hy,gr,11);
+    cx.fillStyle="#e8c878";
+    cx.beginPath(); cx.roundRect(a.x-tw*.66,hy+th*.3,tw*1.32,th*.66,6); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,gr,gr,{});
+    cx.fillStyle="#16161a";                                            /* the cuffs, inherited */
+    cx.beginPath(); cx.roundRect(a.x-tw-10,hq-10,10,6,2); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw,hq-10,10,6,2); cx.fill();
+    CB.head(a,headY,hr,gr);
+    CB.eyes(a,headY,hr,{r:1.6});
+    cx.fillStyle="#f0c020";                                            /* the ponytail, pulled through */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*1.16,hr*.3,hr*.44,0,0,7); cx.fill();
+    cx.fillStyle="#f8f6f0";                                            /* the bandana, tied on and drawn on */
+    cx.beginPath(); cx.moveTo(a.x-hr*1.02,headY+hr*.14); cx.lineTo(a.x+hr*1.02,headY+hr*.14);
+    cx.lineTo(a.x+hr*.7,headY+hr*1.06); cx.lineTo(a.x-hr*.7,headY+hr*1.06); cx.closePath(); cx.fill();
+    cx.fillStyle="#e2dccb";
+    cx.beginPath(); cx.moveTo(a.x+hr*1.02,headY+hr*.14); cx.lineTo(a.x+hr*1.6,headY+hr*.5);
+    cx.lineTo(a.x+hr*.94,headY+hr*.64); cx.closePath(); cx.fill();
+    cx.fillStyle="#1a1410"; cx.beginPath();                            /* the mouth somebody else gave him */
+    cx.moveTo(a.x-hr*.62,headY+hr*.42);
+    for(let i=0;i<5;i++) cx.lineTo(a.x-hr*.62+(i+1)*hr*.25,headY+hr*(i%2?.42:.72));
+    cx.lineTo(a.x+hr*.63,headY+hr*.9); cx.lineTo(a.x-hr*.62,headY+hr*.9); cx.closePath(); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Donkey Kong — the tie is the only thing he wears and it is monogrammed ── */
+  dk(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), fr="#7a4a24";
+    CB.legs(a,b,fr,"#4a2c12");
+    CB.torso(a,tw,th,hy,fr,11);
+    cx.fillStyle="#d8a86a";                                            /* the chest, lighter and load-bearing */
+    cx.beginPath(); cx.ellipse(a.x,hy+th*.42,tw*.8,th*.4,0,0,7); cx.fill();
+    const hq=CB.arms(a,tw,th,hy,fr,fr,{bulk:1});
+    cx.fillStyle=fr;                                                   /* the arms keep going */
+    cx.beginPath(); cx.roundRect(a.x-tw-12,hq-5,11,17,5.5); cx.fill();
+    cx.beginPath(); cx.roundRect(a.x+tw+1,hq-5,11,17,5.5); cx.fill();
+    cx.fillStyle="#d8a86a";                                            /* knuckles, near the floor where they belong */
+    cx.beginPath(); cx.arc(a.x-tw-6.5,hq+12,5,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+6.5,hq+12,5,0,7); cx.fill();
+    cx.fillStyle="rgba(70,40,16,.45)";
+    for(let i=0;i<3;i++){
+      cx.fillRect(a.x-tw-10+i*3,hq+13,1.6,4);
+      cx.fillRect(a.x+tw+3+i*3,hq+13,1.6,4); }
+    cx.fillStyle="#c8102e";                                            /* the tie */
+    cx.beginPath(); cx.moveTo(a.x-5.4,hy+1); cx.lineTo(a.x+5.4,hy+1);
+    cx.lineTo(a.x+4.4,hy+th*.6); cx.lineTo(a.x-4.4,hy+th*.6); cx.closePath(); cx.fill();
+    cx.fillStyle="#8a1220"; cx.fillRect(a.x-5.4,hy+1,10.8,3.4);
+    cx.fillStyle="#f0c95c"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("DK",a.x,hy+th*.4);
+    CB.head(a,headY,hr,fr);
+    cx.fillStyle="#d8a86a";                                            /* the muzzle takes the lower half */
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.44,hr*.86,hr*.56,0,0,7); cx.fill();
+    cx.fillStyle="#5f3818";                                            /* brow, permanently unimpressed */
+    cx.beginPath(); cx.roundRect(a.x-hr*.86,headY-hr*.36,hr*1.72,hr*.34,2); cx.fill();
+    CB.eyes(a,headY,hr,{c:"#2a1c10",r:1.6});
+    cx.fillStyle=fr;                                                   /* ears, one either side */
+    cx.beginPath(); cx.arc(a.x-hr*1.04,headY-hr*.1,hr*.3,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+hr*1.04,headY-hr*.1,hr*.3,0,7); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Link — the shield is on the back, which is where it usually stays ── */
+  link(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), sk="#e6bc94";
+    cx.fillStyle="#3a5fa8";                                            /* the shield, behind everything */
+    cx.beginPath(); cx.moveTo(a.x-tw*.94,hy+2); cx.lineTo(a.x+tw*.94,hy+2);
+    cx.lineTo(a.x+tw*.82,hy+th*.62); cx.quadraticCurveTo(a.x,hy+th*1.02,a.x-tw*.82,hy+th*.62);
+    cx.closePath(); cx.fill();
+    cx.strokeStyle="#d4af37"; cx.lineWidth=1.8; cx.stroke();
+    cx.fillStyle="#d4af37";
+    cx.beginPath(); cx.moveTo(a.x,hy+8); cx.lineTo(a.x+4.4,hy+16); cx.lineTo(a.x-4.4,hy+16); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a4530";                                            /* scabbard, slung the other way */
+    cx.beginPath(); cx.roundRect(a.x-tw-4,hy+6,5.4,24,2); cx.fill();
+    CB.legs(a,b,"#d8cdb0","#5a3a1e",{boot:"#5a3a1e"});
+    CB.torso(a,tw,th,hy,"#3f8f3f");
+    cx.fillStyle="#f0ece0"; cx.beginPath();                            /* the undershirt at the collar */
+    cx.moveTo(a.x-5,hy); cx.lineTo(a.x+5,hy); cx.lineTo(a.x,hy+8); cx.closePath(); cx.fill();
+    cx.fillStyle="#5a3a1e"; cx.fillRect(a.x-tw,hy+th*.66,tw*2,6);      /* the belt */
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-4,hy+th*.66,8,6);
+    CB.arms(a,tw,th,hy,"#3f8f3f",sk,{});
+    cx.fillStyle="#8a8f98";                                            /* the hilt, over the shoulder */
+    cx.beginPath(); cx.roundRect(a.x+tw+3,hy-11,4.6,13,1.6); cx.fill();
+    cx.fillStyle="#4a2f7a"; cx.fillRect(a.x+tw+1.4,hy-2,7.8,3.4);
+    cx.fillStyle="#d4af37"; cx.beginPath(); cx.arc(a.x+tw+5.3,hy-12,2.6,0,7); cx.fill();
+    CB.head(a,headY,hr,sk);
+    cx.fillStyle=sk;                                                   /* ears, and they are the giveaway */
+    cx.beginPath(); cx.moveTo(a.x-hr*.9,headY-hr*.2); cx.lineTo(a.x-hr*1.62,headY-hr*.66);
+    cx.lineTo(a.x-hr*.86,headY+hr*.3); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*.9,headY-hr*.2); cx.lineTo(a.x+hr*1.62,headY-hr*.66);
+    cx.lineTo(a.x+hr*.86,headY+hr*.3); cx.closePath(); cx.fill();
+    CB.hair(a,headY,hr,"#d8b45a","");
+    cx.fillStyle="#d8b45a";                                            /* the fringe, never once cut */
+    cx.beginPath(); cx.moveTo(a.x-hr*.96,headY-hr*.42); cx.lineTo(a.x-hr*.24,headY-hr*.3);
+    cx.lineTo(a.x-hr*.68,headY+hr*.2); cx.closePath(); cx.fill();
+    CB.eyes(a,headY,hr,{});
+    cx.fillStyle="#3f8f3f";                                            /* the cap, and the point it trails */
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.36,hr*1.02,hr*.72,0,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x-hr*.86,headY-hr*.78); cx.lineTo(a.x-hr*2.5,headY-hr*.1);
+    cx.lineTo(a.x-hr*.42,headY-hr*.22); cx.closePath(); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Samus — the pauldrons are the silhouette, the visor answers nothing ── */
+  samus(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#e07a20","#c8102e",{baggy:1,boot:"#c8102e"});
+    CB.torso(a,tw,th,hy,"#e07a20",7);
+    cx.fillStyle="#c8102e";                                            /* the chest plate */
+    cx.beginPath(); cx.roundRect(a.x-tw*.84,hy+3,tw*1.68,th*.42,4); cx.fill();
+    cx.fillStyle="#f0c95c";
+    cx.beginPath(); cx.arc(a.x,hy+th*.24,3.4,0,7); cx.fill();
+    cx.fillStyle="#8a4a12"; cx.fillRect(a.x-tw+1,hy+th*.66,tw*2-2,5);
+    CB.arms(a,tw,th,hy,"#e07a20","#c8102e",{bulk:1});
+    cx.fillStyle="#e07a20";                                            /* pauldrons, sized like a bad decision */
+    cx.beginPath(); cx.arc(a.x-tw-2,hy+7,hr*1.24,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+2,hy+7,hr*1.24,0,7); cx.fill();
+    cx.fillStyle="#c8102e";
+    cx.beginPath(); cx.arc(a.x-tw-2,hy+4,hr*.86,Math.PI,0); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw+2,hy+4,hr*.86,Math.PI,0); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.22)";
+    cx.beginPath(); cx.arc(a.x-tw-5,hy+3,hr*.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw-1,hy+3,hr*.4,0,7); cx.fill();
+    cx.fillStyle="#e07a20";                                            /* the cannon, and it is the whole forearm */
+    cx.beginPath(); cx.roundRect(a.x+tw+1,hy+16,13,19,5); cx.fill();
+    cx.fillStyle="#c8102e"; cx.fillRect(a.x+tw+1,hy+23,13,3.6);
+    cx.fillStyle="#8a4a12"; cx.fillRect(a.x+tw+1,hy+29,13,2.4);
+    cx.fillStyle="#1a1a20";
+    cx.beginPath(); cx.ellipse(a.x+tw+7.5,hy+35,6.2,2.8,0,0,7); cx.fill();
+    cx.fillStyle="#e07a20";                                            /* the helmet */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.12,hr*1.16,0,0,7); cx.fill();
+    cx.fillStyle="#c8102e";                                            /* the fin down the middle */
+    cx.beginPath(); cx.moveTo(a.x-hr*.24,headY-hr*1.16); cx.lineTo(a.x+hr*.24,headY-hr*1.16);
+    cx.lineTo(a.x+hr*.34,headY-hr*.06); cx.lineTo(a.x-hr*.34,headY-hr*.06); cx.closePath(); cx.fill();
+    cx.fillStyle="#2f9f4f"; cx.beginPath();                            /* green glass, and nothing behind it */
+    cx.moveTo(a.x-hr*.94,headY-hr*.06); cx.quadraticCurveTo(a.x,headY+hr*.14,a.x+hr*.94,headY-hr*.06);
+    cx.lineTo(a.x+hr*.72,headY+hr*.62); cx.quadraticCurveTo(a.x,headY+hr*.9,a.x-hr*.72,headY+hr*.62);
+    cx.closePath(); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.3)";
+    cx.beginPath(); cx.ellipse(a.x-hr*.44,headY+hr*.2,hr*.24,hr*.16,-.4,0,7); cx.fill();
+    cx.fillStyle="#8a4a12"; cx.fillRect(a.x-hr*1.06,headY-hr*.22,hr*2.12,2.4);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Fox McCloud — the jacket is regulation, the tail is not ── */
+  fox(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), fr="#d86a2a";
+    cx.save(); cx.translate(a.x-tw-7,hy+th*.66); cx.rotate(-.55);      /* the tail, out behind him */
+    cx.fillStyle=fr; cx.beginPath(); cx.ellipse(0,0,7.6,14,0,0,7); cx.fill();
+    cx.fillStyle="#f0ece0"; cx.beginPath(); cx.ellipse(0,11.6,6.2,5.6,0,0,7); cx.fill();
+    cx.restore();
+    CB.legs(a,b,"#e2ddcc","#4a3520",{boot:"#4a3520"});
+    CB.torso(a,tw,th,hy,"#4a7a3a");                                    /* flight jacket, buttoned once */
+    cx.fillStyle="#f0ece0"; cx.beginPath();                            /* white chest, showing through */
+    cx.moveTo(a.x-6,hy); cx.lineTo(a.x+6,hy); cx.lineTo(a.x,hy+th*.5); cx.closePath(); cx.fill();
+    cx.fillStyle="#3a6230";
+    cx.beginPath(); cx.moveTo(a.x-tw,hy); cx.lineTo(a.x-2.4,hy+1); cx.lineTo(a.x-tw*.8,hy+th*.56); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw,hy); cx.lineTo(a.x+2.4,hy+1); cx.lineTo(a.x+tw*.8,hy+th*.56); cx.closePath(); cx.fill();
+    cx.fillStyle="#8a5a2a"; cx.fillRect(a.x-tw+1,hy+th*.7,tw*2-2,5);   /* belt */
+    cx.fillStyle="#d4af37"; cx.fillRect(a.x-3.4,hy+th*.7,6.8,5);
+    CB.arms(a,tw,th,hy,"#4a7a3a",fr,{});
+    cx.fillStyle="#f4f1e8";                                            /* the scarf, and the end of it */
+    cx.beginPath(); cx.roundRect(a.x-tw*.7,hy-2.4,tw*1.4,6,3); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+tw*.5,hy+2); cx.lineTo(a.x+tw+6,hy+9);
+    cx.lineTo(a.x+tw*.44,hy+8); cx.closePath(); cx.fill();
+    cx.fillStyle=fr;                                                   /* ears, before the head, so they read */
+    cx.beginPath(); cx.moveTo(a.x-hr*.9,headY-hr*.5); cx.lineTo(a.x-hr*1.4,headY-hr*1.9);
+    cx.lineTo(a.x-hr*.2,headY-hr*.94); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*.9,headY-hr*.5); cx.lineTo(a.x+hr*1.4,headY-hr*1.9);
+    cx.lineTo(a.x+hr*.2,headY-hr*.94); cx.closePath(); cx.fill();
+    cx.fillStyle="#2a1c10";
+    cx.beginPath(); cx.moveTo(a.x-hr*.86,headY-hr*.72); cx.lineTo(a.x-hr*1.18,headY-hr*1.6);
+    cx.lineTo(a.x-hr*.44,headY-hr*.96); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(a.x+hr*.86,headY-hr*.72); cx.lineTo(a.x+hr*1.18,headY-hr*1.6);
+    cx.lineTo(a.x+hr*.44,headY-hr*.96); cx.closePath(); cx.fill();
+    CB.head(a,headY,hr,fr);
+    cx.fillStyle="#f4f1e8";                                            /* muzzle, and the cheeks either side */
+    cx.beginPath(); cx.ellipse(a.x,headY+hr*.5,hr*.72,hr*.46,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x-hr*.86,headY+hr*.16,hr*.28,hr*.34,-.4,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+hr*.86,headY+hr*.16,hr*.28,hr*.34,.4,0,7); cx.fill();
+    CB.eyes(a,headY,hr,{c:"#2a4f9a",r:1.7});
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Kirby — a ball. Anything else drawn here would be an argument ── */
+  kirby(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    const R=hr*1.92, cy=a.y+1+b;                                       /* one circle, and it is the whole avatar */
+    cx.fillStyle="#d8305a";                                            /* the feet, planted before the ball lands */
+    cx.beginPath(); cx.ellipse(a.x-R*.52,cy+R*.94,R*.42,R*.24,-.24,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+R*.52,cy+R*.94,R*.42,R*.24,.24,0,7); cx.fill();
+    cx.fillStyle="#f0a0c0";                                            /* the stubs that pass for arms */
+    cx.beginPath(); cx.ellipse(a.x-R*.94,cy+R*.06,R*.3,R*.24,-.3,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+R*.94,cy+R*.06,R*.3,R*.24,.3,0,7); cx.fill();
+    cx.fillStyle="#f4aecb";                                            /* and the ball */
+    cx.beginPath(); cx.arc(a.x,cy,R,0,7); cx.fill();
+    cx.fillStyle="rgba(190,90,130,.28)";                               /* one edge of shading, no more */
+    cx.beginPath(); cx.arc(a.x,cy,R,.6,2.1); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.34)";
+    cx.beginPath(); cx.ellipse(a.x-R*.4,cy-R*.5,R*.24,R*.14,-.5,0,7); cx.fill();
+    cx.fillStyle="#f0708f";                                            /* the cheeks */
+    cx.beginPath(); cx.arc(a.x-R*.5,cy+R*.02,R*.17,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+R*.5,cy+R*.02,R*.17,0,7); cx.fill();
+    cx.fillStyle="#1e2440";                                            /* two dots, standing tall */
+    cx.beginPath(); cx.ellipse(a.x-R*.2,cy-R*.28,R*.09,R*.2,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+R*.2,cy-R*.28,R*.09,R*.2,0,0,7); cx.fill();
+    cx.fillStyle="#f8f6f0";
+    cx.beginPath(); cx.ellipse(a.x-R*.2,cy-R*.38,R*.07,R*.08,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+R*.2,cy-R*.38,R*.07,R*.08,0,0,7); cx.fill();
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); },
+
+  /* ── Metal Mario — same man, same fit, every surface handed to a polisher ── */
+  metalmario(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o), st="#b6bdc8";
+    CB.legs(a,b,"#8e96a4","#5c636e",{boot:"#5c636e"});
+    CB.torso(a,tw,th,hy,st);
+    cx.fillStyle="rgba(24,34,48,.34)";                                 /* one side is always in shadow */
+    cx.beginPath(); cx.roundRect(a.x+tw*.24,hy,tw*.76,th,[0,9,9,0]); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.55)";                              /* and one side always is not */
+    cx.beginPath(); cx.roundRect(a.x-tw*.86,hy+2,3.4,th*.8,1.7); cx.fill();
+    cx.fillStyle="#8e96a4";                                            /* dungarees, in the same alloy */
+    cx.beginPath(); cx.roundRect(a.x-tw*.68,hy+th*.3,tw*1.36,th*.72,[3,3,8,8]); cx.fill();
+    cx.fillRect(a.x-tw*.62,hy+2,4.4,th*.42);
+    cx.fillRect(a.x+tw*.62-4.4,hy+2,4.4,th*.42);
+    cx.fillStyle="rgba(24,34,48,.3)";
+    cx.beginPath(); cx.roundRect(a.x+tw*.16,hy+th*.3,tw*.52,th*.72,[0,3,8,0]); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.6)"; cx.fillRect(a.x-tw*.5,hy+th*.4,2.4,th*.44);
+    cx.fillStyle="#dfe4ea";
+    cx.beginPath(); cx.arc(a.x-tw*.46,hy+th*.36,2.1,0,7); cx.fill();
+    cx.beginPath(); cx.arc(a.x+tw*.46,hy+th*.36,2.1,0,7); cx.fill();
+    CB.arms(a,tw,th,hy,st,"#dfe4ea",{});                               /* the gloves went the same way */
+    CB.head(a,headY,hr,"#c2c9d4");
+    cx.fillStyle="rgba(24,34,48,.32)";
+    cx.beginPath(); cx.arc(a.x,headY,hr*.98,-1.2,1.5); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.6)";
+    cx.beginPath(); cx.ellipse(a.x-hr*.42,headY-hr*.34,hr*.24,hr*.12,-.5,0,7); cx.fill();
+    cx.fillStyle="#5c636e";                                            /* sideburns, cast not grown */
+    cx.fillRect(a.x-hr*.98,headY-hr*.16,hr*.26,hr*.6);
+    cx.fillRect(a.x+hr*.72,headY-hr*.16,hr*.26,hr*.6);
+    CB.eyes(a,headY,hr,{c:"#2a323e"});
+    CB.tache(a,headY,hr,"#5c636e");
+    cx.fillStyle="#c2c9d4";                                            /* the cap, and it still says what it said */
+    cx.beginPath(); cx.arc(a.x,headY-hr*.4,hr*1.06,Math.PI,0); cx.fill();
+    cx.fillStyle="rgba(24,34,48,.3)";
+    cx.beginPath(); cx.arc(a.x,headY-hr*.4,hr*1.06,-1.1,0); cx.fill();
+    cx.fillStyle="rgba(255,255,255,.7)";
+    cx.beginPath(); cx.arc(a.x,headY-hr*.4,hr*.86,Math.PI+.3,Math.PI+.8); cx.fill();
+    cx.fillStyle="#aab2be";
+    cx.beginPath(); cx.roundRect(a.x-hr*1.3,headY-hr*.56,hr*2.6,hr*.34,2); cx.fill();
+    cx.fillStyle="#eef2f7";
+    cx.beginPath(); cx.arc(a.x,headY-hr*.98,hr*.42,0,7); cx.fill();
+    cx.fillStyle="#5c636e"; cx.font="900 6px 'Archivo Black'"; cx.textAlign="center";
+    cx.fillText("M",a.x,headY-hr*.78);
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  });
+
   /* ══════════════════════════════════════════════════════════════════════
-     THE FITS — four bodies per chair. OG is the owner drawn as himself,
+     THE FITS — five bodies per chair. OG is the owner drawn as himself,
      the one we started with; FUNNY and DANGER are borrowed. The commissioner
      sets what the league sees by default; any device can override for itself.
      ══════════════════════════════════════════════════════════════════════ */
   const FITS={
-    "DoughBoy$":            {og:null,        funny:"rothstein",  danger:"scarface",  sw:"bobafett",
-                             n:["Jake","Ace Rothstein","Tony Montana","Boba Fett"]},
-    "Suck my Footballz":    {og:null,        funny:"happy",      danger:"themask",   sw:"kyloren",
-                             n:["Jacob","Happy Gilmore","The Mask","Kylo Ren"]},
-    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",    sw:"hansolo",
-                             n:["Scott","Saul Goodman","Dr Evil","Han Solo"]},
-    "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",  sw:"macewindu",
-                             n:["Tylor","Coach Prime","Predator","Mace Windu"]},
-    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"homelander",sw:"vader",
-                             n:["Ferrand","Ron Burgundy","Homelander","Darth Vader"]},
-    "Are you winning son?": {og:null,        funny:"borat",      danger:"terminator",sw:"obiwan",
-                             n:["Phillips","Borat","Terminator","Obi-Wan"]},
-    "My Kupp Hurts":        {og:null,        funny:"soprano",    danger:"bane",      sw:"chewbacca",
-                             n:["Griff","Tony Soprano","Bane","Chewbacca"]},
-    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine", sw:"quigon",
-                             n:["Uncle Rico","The Riddler","Wolverine","Qui-Gon Jinn"]},
-    "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",   sw:"yoda",
-                             n:["Belichick","Colonel Sanders","Bobby Boucher","Yoda"]},
-    "Kill Bill":            {og:null,        funny:"bravo",      danger:"batman",    sw:"anakin",
-                             n:["Garrett","Johnny Bravo","Batman","Anakin"]},
-    "Blitz":                {og:"osufan",    funny:"brutus",     danger:"chief",     sw:"luke",
-                             n:["Buckeye Guy","Brutus","Master Chief","Luke Skywalker"]},
-    /* the commissioner keeps one more in the wardrobe than the toggle exposes */
-    "Flacc Shots":          {og:"belfort",   funny:"wonka",      danger:"agent47b",  sw:"darthmaul", mob:"godfather",
-                             n:["Jordan Belfort","Willy Wonka","Agent 47","Darth Maul","The Godfather"]}
+    "DoughBoy$":            {og:null,        funny:"rothstein",  danger:"scarface",  sw:"bobafett",  n64:"mario",
+                             n:["Jake","Ace Rothstein","Tony Montana","Boba Fett","Mario"]},
+    "Suck my Footballz":    {og:null,        funny:"happy",      danger:"themask",   sw:"kyloren",   n64:"luigi",
+                             n:["Jacob","Happy Gilmore","The Mask","Kylo Ren","Luigi"]},
+    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",    sw:"hansolo",   n64:"bowserjr",
+                             n:["Scott","Saul Goodman","Dr Evil","Han Solo","Bowser Jr."]},
+    "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",  sw:"macewindu", n64:"yoshi",
+                             n:["Tylor","Coach Prime","Predator","Mace Windu","Yoshi"]},
+    "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"homelander",sw:"vader",     n64:"waluigi",
+                             n:["Ferrand","Ron Burgundy","Homelander","Darth Vader","Waluigi"]},
+    "Are you winning son?": {og:null,        funny:"borat",      danger:"terminator",sw:"obiwan",    n64:"dk",
+                             n:["Phillips","Borat","Terminator","Obi-Wan","Donkey Kong"]},
+    "My Kupp Hurts":        {og:null,        funny:"soprano",    danger:"bane",      sw:"chewbacca", n64:"bowser",
+                             n:["Griff","Tony Soprano","Bane","Chewbacca","Bowser"]},
+    "Tig Bits":             {og:"unclerico", funny:"riddler",    danger:"wolverine", sw:"quigon",    n64:"fox",
+                             n:["Uncle Rico","The Riddler","Wolverine","Qui-Gon Jinn","Fox"]},
+    "Django Achaned":       {og:"belichick", funny:"colonel",    danger:"boucher",   sw:"yoda",      n64:"samus",
+                             n:["Belichick","Colonel Sanders","Bobby Boucher","Yoda","Samus"]},
+    "Kill Bill":            {og:null,        funny:"bravo",      danger:"batman",    sw:"anakin",    n64:"wario",
+                             n:["Garrett","Johnny Bravo","Batman","Anakin","Wario"]},
+    "Blitz":                {og:"osufan",    funny:"brutus",     danger:"chief",     sw:"luke",      n64:"link",
+                             n:["Buckeye Guy","Brutus","Master Chief","Luke Skywalker","Link"]},
+    /* the commissioner keeps two more than the toggle exposes */
+    "Flacc Shots":          {og:"belfort",   funny:"wonka",      danger:"agent47b",  sw:"darthmaul", n64:"kirby",
+                             mob:"godfather", mm:"metalmario",
+                             n:["Jordan Belfort","Willy Wonka","Agent 47","Darth Maul","Kirby","The Godfather","Metal Mario"]}
   };
-  const FITKEYS=["og","funny","danger","sw"];
-  const FITLBL={og:"OG",funny:"FUNNY",danger:"DANGER",sw:"STAR WARS",mob:"THE FAMILY"};
-  const FITICON={og:"\u{1F464}",funny:"\u{1F3AD}",danger:"\u2620\uFE0F",sw:"\u2694\uFE0F",mob:"\u{1F339}"};
+  const FITKEYS=["og","funny","danger","sw","n64"];
+  const FITLBL={og:"OG",funny:"FUNNY",danger:"DANGER",sw:"STAR WARS",n64:"N64",mob:"THE FAMILY",mm:"METAL"};
+  const FITICON={og:"\u{1F464}",funny:"\u{1F3AD}",danger:"\u2620\uFE0F",sw:"\u2694\uFE0F",n64:"\u{1F3AE}",mob:"\u{1F339}",mm:"\u2699\uFE0F"};
 
   /* the commissioner's choice travels with the site; a device can pin its own */
   const LEAGUEFIT="funny";                    /* what Flacc Shots has the league set to */
