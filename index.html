@@ -10393,6 +10393,43 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     CB.chrome(a,o,isMe,tw,hy,headY,hr); }
   });
 
+  Object.assign(CELEBART,{
+  /* ── CAPTAIN FALCON — blue racing leather, gold pauldrons, the falcon helmet ── */
+  falcon(a,o,isMe){ const {b,tw,th,hy,headY,hr}=CB.frame(a,o);
+    CB.legs(a,b,"#1e3a8f","#8a1a1a",{boot:"#c81f2c"});
+    CB.torso(a,tw,th,hy,"#22459e");                                    /* the suit */
+    cx.fillStyle="#1a3478";                                            /* panel seams */
+    cx.fillRect(a.x-tw,hy+th*.46,tw*2,3.4);
+    cx.beginPath(); cx.moveTo(a.x,hy+2); cx.lineTo(a.x+5,hy+th*.44); cx.lineTo(a.x-5,hy+th*.44); cx.closePath(); cx.fill();
+    cx.fillStyle="#e8b93a";                                            /* gold pauldrons, the widest thing on him */
+    cx.beginPath(); cx.ellipse(a.x-tw-1,hy+7,8.6,7.4,-.25,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+tw+1,hy+7,8.6,7.4,.25,0,7); cx.fill();
+    cx.fillStyle="#b8871e";
+    cx.beginPath(); cx.ellipse(a.x-tw-1,hy+9.6,8.6,3,-.25,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(a.x+tw+1,hy+9.6,8.6,3,.25,0,7); cx.fill();
+    cx.fillStyle="#c81f2c"; cx.fillRect(a.x-tw+1,hy+th-8,tw*2-2,6);    /* red belt */
+    cx.fillStyle="#e8b93a"; cx.fillRect(a.x-4,hy+th-8,8,6);
+    const hq=CB.arms(a,tw,th,hy,"#22459e","#c81f2c",{bulk:1});         /* red gloves */
+    cx.fillStyle="#e8c84a";                                            /* the scarf, always moving */
+    const t=Date.now()/1000;
+    cx.beginPath(); cx.moveTo(a.x-6,hy+1); cx.lineTo(a.x+6,hy+1);
+    cx.quadraticCurveTo(a.x+16,hy+6+Math.sin(t*2.2)*3,a.x+26+Math.sin(t*1.7)*4,hy+2+Math.cos(t*2)*5);
+    cx.lineTo(a.x+22,hy+9); cx.quadraticCurveTo(a.x+12,hy+9,a.x-6,hy+7); cx.closePath(); cx.fill();
+    cx.fillStyle="#22459e";                                            /* the helmet */
+    cx.beginPath(); cx.ellipse(a.x,headY,hr*1.06,hr*1.12,0,0,7); cx.fill();
+    cx.fillStyle="#1a3478";
+    cx.beginPath(); cx.ellipse(a.x,headY-hr*.36,hr*1.06,hr*.62,0,Math.PI,0); cx.fill();
+    cx.fillStyle="#c81f2c";                                            /* the falcon crest */
+    cx.beginPath(); cx.moveTo(a.x,headY-hr*1.12); cx.lineTo(a.x-hr*.78,headY-hr*.5);
+    cx.lineTo(a.x-hr*.2,headY-hr*.62); cx.lineTo(a.x,headY-hr*.94);
+    cx.lineTo(a.x+hr*.2,headY-hr*.62); cx.lineTo(a.x+hr*.78,headY-hr*.5); cx.closePath(); cx.fill();
+    cx.fillStyle="#0c1830";                                            /* visor, and no face behind it */
+    cx.beginPath(); cx.roundRect(a.x-hr*.8,headY-hr*.22,hr*1.6,5.6,2.4); cx.fill();
+    cx.fillStyle="rgba(160,200,255,.5)"; cx.fillRect(a.x-hr*.68,headY-hr*.16,hr*.5,1.8);
+    cx.fillStyle="#d8a878"; cx.fillRect(a.x-hr*.52,headY+hr*.44,hr*1.04,hr*.5);   /* jaw */
+    CB.chrome(a,o,isMe,tw,hy,headY,hr); }
+  });
+
   /* ══════════════════════════════════════════════════════════════════════
      THE FITS — five bodies per chair. OG is the owner drawn as himself,
      the one we started with; FUNNY and DANGER are borrowed. The commissioner
@@ -10403,8 +10440,8 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
                              n:["Jake","Ace Rothstein","Tony Montana","Boba Fett","Mario"]},
     "Suck my Footballz":    {og:null,        funny:"happy",      danger:"themask",   sw:"kyloren",   n64:"luigi",
                              n:["Jacob","Happy Gilmore","The Mask","Kylo Ren","Luigi"]},
-    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",    sw:"hansolo",   n64:"bowserjr",
-                             n:["Scott","Saul Goodman","Dr Evil","Han Solo","Bowser Jr."]},
+    "Sandusky Shower Buddy":{og:null,        funny:"saul",       danger:"drevil",    sw:"hansolo",   n64:"falcon",
+                             n:["Scott","Saul Goodman","Dr Evil","Han Solo","Captain Falcon"]},
     "Team Martens":         {og:null,        funny:"coachprime", danger:"predator",  sw:"macewindu", n64:"yoshi",
                              n:["Tylor","Coach Prime","Predator","Mace Windu","Yoshi"]},
     "Silence of the Lamb":  {og:null,        funny:"burgundy",   danger:"homelander",sw:"vader",     n64:"waluigi",
