@@ -181,6 +181,7 @@ h2 .lt{font:400 12px var(--body);color:var(--dim);letter-spacing:0}
 #actbtn{position:absolute;right:26px;bottom:140px;width:64px;height:64px;border-radius:50%;background:rgba(16,13,9,.85);border:2px solid #8a6d1c;color:#f0c95c;font:900 22px Georgia;z-index:6;display:none}
 #actbtn.hot{border-color:#f0c95c;box-shadow:0 0 18px rgba(240,201,92,.5)}
 #clubfs.tecmo #clubchat,#clubfs.tecmo #minimap,#clubfs.tecmo #sidepanel,#clubfs.tecmo .ptab,#clubfs.tecmo #clubdlg{display:none!important}
+#clubfs.pent #clubdlg.on{display:block!important}
 /* DRAFT THEATRE */
 #theatre{position:fixed;inset:0;z-index:290;background:radial-gradient(1100px 500px at 50% -10%,rgba(212,175,55,.07),transparent 60%),rgba(7,5,3,.98);display:none;flex-direction:column}
 #theatre.on{display:flex;animation:fade .2s}
@@ -3697,9 +3698,9 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
   /* ═══ CAESARS PENTHOUSE ═══ */
   const PP={x:550,y:430,vx:0,vy:0};
   let pentNear=null;
-  function startPent(){ MODE="pent"; fs.classList.add("tecmo"); PP.x=550; PP.y=520;
+  function startPent(){ MODE="pent"; fs.classList.add("tecmo","pent"); PP.x=550; PP.y=520;
     sysLog("🗝 The odd brick gives way. An elevator hums."); toast("🎰 CAESARS PALACE — PENTHOUSE"); }
-  function endPent(){ MODE="world"; fs.classList.remove("tecmo"); player.x=1735; player.y=WALL+90; }
+  function endPent(){ MODE="world"; fs.classList.remove("tecmo","pent"); player.x=1735; player.y=WALL+90; }
   function pentAction(){
     if(!pentNear) return;
     if(pentNear==="elev"){ endPent(); return; }
@@ -3715,55 +3716,78 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(pentNear==="wind") openDlg("THE STRIP","#f0c95c",["Caesars below, the Bellagio fountains mid-show, the Sphere blinking like a giant eye.","From up here you can almost see September."]); }
   function drawMarissa(mx,my,t){
     const bob=Math.sin(t*1.6)*2.2, y=my+bob;
-    cx.save(); cx.translate(mx,y); cx.textAlign="center";
+    cx.save(); cx.translate(mx,y); cx.rotate(-0.045); cx.textAlign="center";
     /* shadow */
-    cx.fillStyle="rgba(0,0,0,.35)"; cx.beginPath(); cx.ellipse(0,34-bob*0.4,20,6,0,0,7); cx.fill();
-    /* skirt — black with white lace hem, slight flare */
+    cx.fillStyle="rgba(0,0,0,.35)"; cx.beginPath(); cx.ellipse(1,40-bob*0.4,19,6,0,0,7); cx.fill();
+    /* legs — long, thigh-high black stockings with a band of tan above, heels */
+    cx.strokeStyle="#d8a276"; cx.lineWidth=5; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(-5,8); cx.lineTo(-7,16); cx.stroke();
+    cx.beginPath(); cx.moveTo(6,8); cx.lineTo(8,16); cx.stroke();
+    cx.strokeStyle="#141018";
+    cx.beginPath(); cx.moveTo(-7,15); cx.lineTo(-8,36); cx.stroke();
+    cx.beginPath(); cx.moveTo(8,15); cx.lineTo(9,36); cx.stroke();
+    cx.strokeStyle="#f5f0ea"; cx.lineWidth=1.6;
+    cx.beginPath(); cx.moveTo(-9.6,15); cx.lineTo(-4.6,15); cx.stroke();
+    cx.beginPath(); cx.moveTo(5.4,15); cx.lineTo(10.6,15); cx.stroke();
+    cx.fillStyle="#0c0a0f";
+    cx.beginPath(); cx.moveTo(-11,36); cx.lineTo(-4,36); cx.lineTo(-4,40); cx.lineTo(-13,40); cx.closePath(); cx.fill();
+    cx.beginPath(); cx.moveTo(6,36); cx.lineTo(13,36); cx.lineTo(15,40); cx.lineTo(6,40); cx.closePath(); cx.fill();
+    /* short flared skirt with white lace, hip cocked */
     cx.fillStyle="#16121a"; cx.beginPath();
-    cx.moveTo(-11,-2); cx.quadraticCurveTo(-22,22,-19,26); cx.lineTo(19,26); cx.quadraticCurveTo(22,22,11,-2); cx.closePath(); cx.fill();
-    cx.strokeStyle="#f5f0ea"; cx.lineWidth=2.4; cx.beginPath();
-    for(let i=-18;i<18;i+=6){ cx.moveTo(i,26); cx.quadraticCurveTo(i+3,29.5,i+6,26); } cx.stroke();
-    /* legs + shoes */
-    cx.fillStyle="#d8a276"; cx.fillRect(-7,26,5,8); cx.fillRect(2,26,5,8);
-    cx.fillStyle="#0c0a0f"; cx.fillRect(-8,33,7,4); cx.fillRect(1,33,7,4);
-    /* bodice — fitted black, fuller through the chest */
+    cx.moveTo(-8,-6); cx.quadraticCurveTo(-20,6,-17,11); cx.lineTo(18,11); cx.quadraticCurveTo(21,6,9,-6); cx.closePath(); cx.fill();
+    cx.strokeStyle="#f5f0ea"; cx.lineWidth=2.2; cx.beginPath();
+    for(let i=-15;i<16;i+=6){ cx.moveTo(i,11); cx.quadraticCurveTo(i+3,14.5,i+6,11); } cx.stroke();
+    /* hourglass torso — cinched waist */
     cx.fillStyle="#16121a"; cx.beginPath();
-    cx.moveTo(-10,-24); cx.quadraticCurveTo(-15,-15,-13,-6); cx.quadraticCurveTo(-8,0,0,0);
-    cx.quadraticCurveTo(8,0,13,-6); cx.quadraticCurveTo(15,-15,10,-24); cx.closePath(); cx.fill();
-    cx.fillStyle="#211a26"; cx.beginPath(); cx.ellipse(-5.5,-16,5.5,6,0,0,7); cx.fill();
-    cx.beginPath(); cx.ellipse(5.5,-16,5.5,6,0,0,7); cx.fill();
-    /* white apron + lace neckline */
+    cx.moveTo(-12,-26); cx.quadraticCurveTo(-14,-18,-6,-11); cx.quadraticCurveTo(-9,-8,-8,-6);
+    cx.lineTo(9,-6); cx.quadraticCurveTo(10,-8,7,-11); cx.quadraticCurveTo(15,-18,13,-26);
+    cx.quadraticCurveTo(6,-31,0,-31); cx.quadraticCurveTo(-6,-31,-12,-26); cx.closePath(); cx.fill();
+    /* sweetheart neckline — tan décolletage above the bodice */
+    cx.fillStyle="#d8a276"; cx.beginPath();
+    cx.moveTo(-8,-31); cx.quadraticCurveTo(0,-26,8,-31); cx.lineTo(7,-35); cx.lineTo(-7,-35); cx.closePath(); cx.fill();
+    /* bust — full, shaded */
+    cx.fillStyle="#211a26"; cx.beginPath(); cx.ellipse(-6,-24,6.5,7,0.15,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(6,-24,6.5,7,-0.15,0,7); cx.fill();
+    cx.strokeStyle="rgba(245,240,234,.75)"; cx.lineWidth=1.4;
+    cx.beginPath(); cx.moveTo(-11,-27); cx.quadraticCurveTo(-6,-32,-1,-28); cx.stroke();
+    cx.beginPath(); cx.moveTo(11,-27); cx.quadraticCurveTo(6,-32,1,-28); cx.stroke();
+    /* tiny white apron */
     cx.fillStyle="#f5f0ea"; cx.beginPath();
-    cx.moveTo(-8,-4); cx.quadraticCurveTo(0,-8,8,-4); cx.lineTo(10,18); cx.quadraticCurveTo(0,23,-10,18); cx.closePath(); cx.fill();
-    cx.strokeStyle="#f5f0ea"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(-9,-23); cx.quadraticCurveTo(0,-19,9,-23); cx.stroke();
-    /* apron bow at the back peeking out */
-    cx.fillStyle="#f5f0ea"; cx.beginPath(); cx.ellipse(-13,2,3.5,2.4,.5,0,7); cx.fill();
-    cx.beginPath(); cx.ellipse(13,2,3.5,2.4,-.5,0,7); cx.fill();
-    /* puff sleeves + arms, one hand holding a feather duster */
-    cx.fillStyle="#16121a"; cx.beginPath(); cx.arc(-13,-21,4.5,0,7); cx.fill(); cx.beginPath(); cx.arc(13,-21,4.5,0,7); cx.fill();
-    cx.strokeStyle="#d8a276"; cx.lineWidth=4; cx.lineCap="round";
-    cx.beginPath(); cx.moveTo(-14,-18); cx.lineTo(-17,-6); cx.stroke();
-    cx.beginPath(); cx.moveTo(14,-18); cx.lineTo(19,-8); cx.stroke();
+    cx.moveTo(-5,-10); cx.quadraticCurveTo(0,-12,5,-10); cx.lineTo(7,7); cx.quadraticCurveTo(0,10,-7,7); cx.closePath(); cx.fill();
+    /* arms — one hand on hip, one holding the feather duster */
+    cx.fillStyle="#16121a"; cx.beginPath(); cx.arc(-14,-27,4,0,7); cx.fill(); cx.beginPath(); cx.arc(15,-27,4,0,7); cx.fill();
+    cx.strokeStyle="#d8a276"; cx.lineWidth=3.6; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(-15,-24); cx.quadraticCurveTo(-19,-16,-13,-10); cx.stroke();
+    cx.beginPath(); cx.moveTo(16,-24); cx.lineTo(21,-13); cx.stroke();
     /* feather duster */
-    cx.strokeStyle="#8a6d1c"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(19,-8); cx.lineTo(24,-22); cx.stroke();
+    cx.strokeStyle="#8a6d1c"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(21,-13); cx.lineTo(27,-27); cx.stroke();
     cx.fillStyle="#e8b4c8"; for(let i=0;i<5;i++){ cx.beginPath();
-      cx.ellipse(24+Math.cos(i*1.26)*4,-26+Math.sin(i*1.26)*4,3,5,i*1.26,0,7); cx.fill(); }
+      cx.ellipse(27+Math.cos(i*1.26)*4,-31+Math.sin(i*1.26)*4,3,5,i*1.26,0,7); cx.fill(); }
+    /* choker */
+    cx.strokeStyle="#0c0a0f"; cx.lineWidth=2.4; cx.beginPath(); cx.moveTo(-5,-36); cx.lineTo(5,-36); cx.stroke();
     /* head — tan skin */
-    cx.fillStyle="#d8a276"; cx.beginPath(); cx.arc(0,-33,9.5,0,7); cx.fill();
-    /* curly brown hair — cluster of curls around the face, down past shoulders */
+    cx.fillStyle="#d8a276"; cx.beginPath(); cx.arc(0,-45,9.5,0,7); cx.fill();
+    /* big soft curls framing the face, spilling past the shoulders */
     cx.fillStyle="#5a3620";
-    for(const [hx,hy,hr] of [[-8,-40,5.5],[-2,-43,6],[5,-41,5.5],[9,-36,4.5],[-10,-34,4.5],
-      [-11,-27,4],[11,-28,4],[-12,-20,3.6],[12,-21,3.6],[-10,-14,3.2],[11,-14,3.2]]){
+    for(const [hx,hy,hr] of [[-8,-52,5.5],[-2,-55,6],[5,-53,5.5],[9,-48,4.5],[-10,-46,4.5],
+      [-11,-39,4.2],[11,-40,4.2],[-13,-32,3.8],[13,-33,3.8],[-14,-25,3.4],[14,-26,3.4],[-13,-19,3],[14,-19,3]]){
       cx.beginPath(); cx.arc(hx,hy,hr,0,7); cx.fill(); }
+    cx.fillStyle="#6d4428";
+    cx.beginPath(); cx.arc(-6,-51,2.2,0,7); cx.fill(); cx.beginPath(); cx.arc(3,-53,2.2,0,7); cx.fill();
+    cx.beginPath(); cx.arc(-11,-37,1.8,0,7); cx.fill(); cx.beginPath(); cx.arc(12,-31,1.8,0,7); cx.fill();
     /* lace headpiece */
     cx.fillStyle="#f5f0ea"; cx.beginPath();
-    cx.moveTo(-6,-44); cx.quadraticCurveTo(-3,-47,0,-44); cx.quadraticCurveTo(3,-47,6,-44);
-    cx.quadraticCurveTo(0,-42,-6,-44); cx.fill();
-    /* face — two brown-eyed dots, the house style */
-    cx.fillStyle="#4a2c17"; cx.beginPath(); cx.arc(-3,-34,1.4,0,7); cx.fill();
-    cx.beginPath(); cx.arc(3,-34,1.4,0,7); cx.fill();
+    cx.moveTo(-6,-56); cx.quadraticCurveTo(-3,-59,0,-56); cx.quadraticCurveTo(3,-59,6,-56);
+    cx.quadraticCurveTo(0,-54,-6,-56); cx.fill();
+    /* face — two brown-eyed dots with lashes, a hint of red lip */
+    cx.fillStyle="#4a2c17"; cx.beginPath(); cx.arc(-3,-46,1.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(3,-46,1.4,0,7); cx.fill();
+    cx.strokeStyle="#2a1810"; cx.lineWidth=1;
+    cx.beginPath(); cx.moveTo(-4.8,-48); cx.lineTo(-5.8,-48.8); cx.stroke();
+    cx.beginPath(); cx.moveTo(4.8,-48); cx.lineTo(5.8,-48.8); cx.stroke();
+    cx.fillStyle="#c8102e"; cx.beginPath(); cx.ellipse(0,-41.5,1.8,1,0,0,7); cx.fill();
     /* nameplate */
-    cx.fillStyle="rgba(255,182,193,.9)"; cx.font="700 9px Sora"; cx.fillText("MARISSA",0,-52);
+    cx.fillStyle="rgba(255,182,193,.9)"; cx.font="700 9px Sora"; cx.fillText("MARISSA",0,-64);
     cx.restore(); }
   function pentStep(){
     const vw=innerWidth, vh=innerHeight;
