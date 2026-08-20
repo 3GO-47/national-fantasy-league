@@ -3707,8 +3707,64 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       openDlg("THE COMMISSIONER'S THRONE","#d4af37", me&&me.slot===8?
         ["Welcome home, Commissioner. The city glitters for you.","Somewhere below, eleven owners plot. Let them.","The 9/9/9 shirt is folded in the closet. Just in case."]
         :["You sit where the Commissioner sits. It feels expensive.","Security has been notified. Finish your champagne first."]); }
+    if(pentNear==="mari"){ const me=meTeam();
+      openDlg("MARISSA","#ffb6c1", me&&me.slot===8?
+        ["Hey you. I dusted the throne — someone keeps leaving championship dreams all over it.","The champagne tower is restocked. Try not to bet the rent on the over this week.","Go win the whole thing. I already picked out the shelf for the trophy."]
+        :["Oh — hi! Josh is around here somewhere. Probably counting the hold again.","I'd offer you champagne, but the top of the tower is commissioner-only.","Careful on the marble, I just did the floors."]); }
     if(pentNear==="jacz") openDlg("THE JACUZZI","#4d9fff",["104° and bubbling like the group chat on trade deadline day.","A rubber duck in a tiny Eagles jersey floats past."]);
     if(pentNear==="wind") openDlg("THE STRIP","#f0c95c",["Caesars below, the Bellagio fountains mid-show, the Sphere blinking like a giant eye.","From up here you can almost see September."]); }
+  function drawMarissa(mx,my,t){
+    const bob=Math.sin(t*1.6)*2.2, y=my+bob;
+    cx.save(); cx.translate(mx,y); cx.textAlign="center";
+    /* shadow */
+    cx.fillStyle="rgba(0,0,0,.35)"; cx.beginPath(); cx.ellipse(0,34-bob*0.4,20,6,0,0,7); cx.fill();
+    /* skirt — black with white lace hem, slight flare */
+    cx.fillStyle="#16121a"; cx.beginPath();
+    cx.moveTo(-11,-2); cx.quadraticCurveTo(-22,22,-19,26); cx.lineTo(19,26); cx.quadraticCurveTo(22,22,11,-2); cx.closePath(); cx.fill();
+    cx.strokeStyle="#f5f0ea"; cx.lineWidth=2.4; cx.beginPath();
+    for(let i=-18;i<18;i+=6){ cx.moveTo(i,26); cx.quadraticCurveTo(i+3,29.5,i+6,26); } cx.stroke();
+    /* legs + shoes */
+    cx.fillStyle="#d8a276"; cx.fillRect(-7,26,5,8); cx.fillRect(2,26,5,8);
+    cx.fillStyle="#0c0a0f"; cx.fillRect(-8,33,7,4); cx.fillRect(1,33,7,4);
+    /* bodice — fitted black, fuller through the chest */
+    cx.fillStyle="#16121a"; cx.beginPath();
+    cx.moveTo(-10,-24); cx.quadraticCurveTo(-15,-15,-13,-6); cx.quadraticCurveTo(-8,0,0,0);
+    cx.quadraticCurveTo(8,0,13,-6); cx.quadraticCurveTo(15,-15,10,-24); cx.closePath(); cx.fill();
+    cx.fillStyle="#211a26"; cx.beginPath(); cx.ellipse(-5.5,-16,5.5,6,0,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(5.5,-16,5.5,6,0,0,7); cx.fill();
+    /* white apron + lace neckline */
+    cx.fillStyle="#f5f0ea"; cx.beginPath();
+    cx.moveTo(-8,-4); cx.quadraticCurveTo(0,-8,8,-4); cx.lineTo(10,18); cx.quadraticCurveTo(0,23,-10,18); cx.closePath(); cx.fill();
+    cx.strokeStyle="#f5f0ea"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(-9,-23); cx.quadraticCurveTo(0,-19,9,-23); cx.stroke();
+    /* apron bow at the back peeking out */
+    cx.fillStyle="#f5f0ea"; cx.beginPath(); cx.ellipse(-13,2,3.5,2.4,.5,0,7); cx.fill();
+    cx.beginPath(); cx.ellipse(13,2,3.5,2.4,-.5,0,7); cx.fill();
+    /* puff sleeves + arms, one hand holding a feather duster */
+    cx.fillStyle="#16121a"; cx.beginPath(); cx.arc(-13,-21,4.5,0,7); cx.fill(); cx.beginPath(); cx.arc(13,-21,4.5,0,7); cx.fill();
+    cx.strokeStyle="#d8a276"; cx.lineWidth=4; cx.lineCap="round";
+    cx.beginPath(); cx.moveTo(-14,-18); cx.lineTo(-17,-6); cx.stroke();
+    cx.beginPath(); cx.moveTo(14,-18); cx.lineTo(19,-8); cx.stroke();
+    /* feather duster */
+    cx.strokeStyle="#8a6d1c"; cx.lineWidth=2; cx.beginPath(); cx.moveTo(19,-8); cx.lineTo(24,-22); cx.stroke();
+    cx.fillStyle="#e8b4c8"; for(let i=0;i<5;i++){ cx.beginPath();
+      cx.ellipse(24+Math.cos(i*1.26)*4,-26+Math.sin(i*1.26)*4,3,5,i*1.26,0,7); cx.fill(); }
+    /* head — tan skin */
+    cx.fillStyle="#d8a276"; cx.beginPath(); cx.arc(0,-33,9.5,0,7); cx.fill();
+    /* curly brown hair — cluster of curls around the face, down past shoulders */
+    cx.fillStyle="#5a3620";
+    for(const [hx,hy,hr] of [[-8,-40,5.5],[-2,-43,6],[5,-41,5.5],[9,-36,4.5],[-10,-34,4.5],
+      [-11,-27,4],[11,-28,4],[-12,-20,3.6],[12,-21,3.6],[-10,-14,3.2],[11,-14,3.2]]){
+      cx.beginPath(); cx.arc(hx,hy,hr,0,7); cx.fill(); }
+    /* lace headpiece */
+    cx.fillStyle="#f5f0ea"; cx.beginPath();
+    cx.moveTo(-6,-44); cx.quadraticCurveTo(-3,-47,0,-44); cx.quadraticCurveTo(3,-47,6,-44);
+    cx.quadraticCurveTo(0,-42,-6,-44); cx.fill();
+    /* face — two brown-eyed dots, the house style */
+    cx.fillStyle="#4a2c17"; cx.beginPath(); cx.arc(-3,-34,1.4,0,7); cx.fill();
+    cx.beginPath(); cx.arc(3,-34,1.4,0,7); cx.fill();
+    /* nameplate */
+    cx.fillStyle="rgba(255,182,193,.9)"; cx.font="700 9px Sora"; cx.fillText("MARISSA",0,-52);
+    cx.restore(); }
   function pentStep(){
     const vw=innerWidth, vh=innerHeight;
     let ax=0,ay=0;
@@ -3717,10 +3773,10 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
     if(joy.a){ ax+=joy.dx; ay+=joy.dy; }
     if((ax||ay)&&!dlg){ const m=Math.hypot(ax,ay); PP.vx+=ax/m*.8; PP.vy+=ay/m*.8; }
     PP.vx*=.84; PP.vy*=.84; PP.x=Math.max(90,Math.min(1010,PP.x+PP.vx)); PP.y=Math.max(300,Math.min(640,PP.y+PP.vy));
-    const hs2=[["throne",550,330,120],["elev",95,540,90],["jacz",920,560,110],["wind",550,210,150]];
+    const hs2=[["throne",550,330,120],["elev",95,540,90],["jacz",920,560,110],["wind",550,210,150],["mari",400,545,85]];
     pentNear=null; let bd2=1e9;
     for(const [id,hx,hy2,hr2] of hs2){ const d2=Math.hypot(PP.x-hx,PP.y-hy2); if(d2<hr2&&d2<bd2){bd2=d2;pentNear=id;} }
-    $("#clubhint").innerHTML = dlg?"E ▸ continue":pentNear?`<b>E</b> — ${{throne:"take the throne",elev:"ride down",jacz:"admire the jacuzzi",wind:"take in the strip"}[pentNear]}`:"CAESARS PENTHOUSE · Esc to descend";
+    $("#clubhint").innerHTML = dlg?"E ▸ continue":pentNear?`<b>E</b> — ${{throne:"take the throne",elev:"ride down",jacz:"admire the jacuzzi",wind:"take in the strip",mari:"say hi to Marissa"}[pentNear]}`:"CAESARS PENTHOUSE · Esc to descend";
     /* render */
     const sc2=Math.min(vw/1100,vh/720), ox2=(vw-1100*sc2)/2, oy2=(vh-720*sc2)/2;
     cx.setTransform(DPR,0,0,DPR,0,0);
@@ -3812,6 +3868,7 @@ if(savedPin&&dec(savedPin)){ MK=dec(savedPin); $("#warlock").style.display="none
       const gl=cx.createRadialGradient(910,560,10,910,560,190);
       gl.addColorStop(0,`rgba(240,201,92,${.10+Math.sin(t9*1.4)*.03})`); gl.addColorStop(1,"transparent");
       cx.fillStyle=gl; cx.beginPath(); cx.arc(910,560,190,0,7); cx.fill(); }
+    drawMarissa(400,545,t4);
     /* the man himself */
     drawAvatar({...player,x:PP.x,y:PP.y,bob:player.bob,emote:player.emote,t:player.t,own:player.own},true);
     stepDlg();
