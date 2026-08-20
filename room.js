@@ -94,7 +94,7 @@ export class Room {
       case "emote": this.bcast({t:"emote", id, e:String(msg.e||"").slice(0,12)}, id); break;
       /* the gavel is the commissioner's alone */
       case "seats":
-        if(c.meta.team !== "Flacc Shots") return this.to(id,{t:"err",x:"Only the commissioner calls the table."});
+        if(!c.meta.commish) return this.to(id,{t:"err",x:"Only the commissioner calls the table."});
         this.bcast({t:"seats", on:!!msg.on, by:c.meta.owner||c.meta.team}); break;
       case "fit":   Object.assign(c.meta, {fit:msg.fit}); this.bcast({t:"fit", id, fit:msg.fit}, id); break;
 
@@ -104,7 +104,7 @@ export class Room {
         const team  = c.meta.team;
         if((this.rent[team]||0) < stake) return this.to(id,{t:"err",x:"Not enough rent money."});
         const dec = clamp(+msg.dec || 2, 1.05, 60);
-        const bet = {id:"B"+String(this.seq++).padStart(4,"0"), by:team, owner:c.meta.owner||team,
+        const bet = {id:"B"+String(this.seq++).padStart(4,"0"), human:1, by:team, owner:c.meta.owner||team,
           mk:msg.mk, mkt:msg.mkt, sel:msg.sel, dec:+dec.toFixed(2), am:msg.am,
           stk:stake, pay:Math.round(stake*dec), st:"LIVE", at:now()};
         this.setRent(team, this.rent[team]-stake);
@@ -115,7 +115,7 @@ export class Room {
         this.log(`🎟 ${bet.owner} takes ${bet.sel} at ${bet.am} for $${stake}`, "bet");
         break; }
       case "grade": {
-        if(c.meta.team !== "Flacc Shots") return this.to(id,{t:"err",x:"Commissioner only."});
+        if(!c.meta.commish) return this.to(id,{t:"err",x:"Commissioner only."});
         const {mk, winner} = msg;
         this.results[mk] = {w:winner, at:now()};
         let paid=0, won=0, lost=0;
